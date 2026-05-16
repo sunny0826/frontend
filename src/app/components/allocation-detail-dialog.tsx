@@ -1,0 +1,447 @@
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { Loader2 } from "lucide-react";
+import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+import api, { getApiError } from "@/lib/api";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/app/components/ui/dialog";
+import { Badge } from "@/app/components/ui/badge";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/app/components/ui/tabs";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/app/components/ui/table";
+import { DataPagination } from "@/app/components/ui/data-pagination";
+
+interface ContributionItem {
+  github_login: string;
+  github_id?: string;
+  email?: string;
+  is_registered: boolean;
+  user_id?: number | null;
+  contribution_score?: number;
+  calculated_points?: number;
+  adjusted_points?: number;
+}
+
+interface PendingGrantItem {
+  id: number;
+  github_login: string;
+  email: string;
+  amount: number;
+  point_type: "cash" | "gift";
+  is_claimed: boolean;
+  claimed_at: string | null;
+  expires_at: string | null;
+}
+
+interface AllocationDetail {
+  id: number;
+  status: string;
+  total_amount: number;
+  start_month: string;
+  end_month: string;
+  adjustment_ratio: number;
+  contribution_data: ContributionItem[];
+  pending_grants: PendingGrantItem[];
+  total_recipients: number;
+  registered_recipients: number;
+  unregistered_recipients: number;
+  created_at: string;
+  executed_at: string | null;
+}
+
+interface AllocationDetailDialogProps {
+  allocationId: number | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+const DETAIL_PAGE_SIZE = 10;
+
+function statusBadgeVariant(
+  status: string,
+): "default" | "secondary" | "destructive" | "outline" {
+  switch (status) {
+    case "completed":
+      return "default";
+    case "failed":
+      return "destructive";
+    case "draft":
+    case "previewing":
+      return "outline";
+    default:
+      return "secondary";
+  }
+}
+
+/**
+ * 从 reference_id (格式: allocation_{id}) 中解析出分配 ID
+ * 不匹配时返回 null
+ */
+export function parseAllocationIdFromReference(
+  referenceId: string | null | undefined,
+): number | null {
+  if (!referenceId) return null;
+  const match = /^allocation_(\d+)$/.exec(referenceId);
+  if (!match) return null;
+  const id = Number(match[1]);
+  return Number.isFinite(id) ? id : null;
+}
+
+export default function AllocationDetailDialog({
+  allocationId,
+  open,
+  onOpenChange,
+}: AllocationDetailDialogProps) {
+  const { t } = useTranslation();
+  const [loading, setLoading] = useState(false);
+  const [detail, setDetail] = useState<AllocationDetail | null>(null);
+  const [registeredPage, setRegisteredPage] = useState(1);
+  const [pendingPage, setPendingPage] = useState(1);
+
+  const fetchDetail = useCallback(
+    async (id: number) => {
+      setLoading(true);
+      try {
+        const { data } = await api.get<AllocationDetail>(
+          `/points/allocations/${id}`,
+        );
+        setDetail(data);
+      } catch (err) {
+        const apiErr = getApiError(err);
+        toast.error(t("allocationDetail.loadFailed"), {
+          description: apiErr.message,
+        });
+        onOpenChange(false);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [t, onOpenChange],
+  );
+
+  useEffect(() => {
+    if (open && allocationId != null) {
+      setDetail(null);
+      setRegisteredPage(1);
+      setPendingPage(1);
+      fetchDetail(allocationId);
+    }
+  }, [open, allocationId, fetchDetail]);
+
+  const registeredList = useMemo(
+    () =>
+      (detail?.contribution_data || []).filter(
+        (item) => item.is_registered && (item.adjusted_points ?? 0) > 0,
+      ),
+    [detail],
+  );
+
+  const pendingList = detail?.pending_grants || [];
+
+  const registeredTotalPages = Math.max(
+    1,
+    Math.ceil(registeredList.length / DETAIL_PAGE_SIZE),
+  );
+  const pendingTotalPages = Math.max(
+    1,
+    Math.ceil(pendingList.length / DETAIL_PAGE_SIZE),
+  );
+
+  const registeredPageItems = useMemo(() => {
+    const start = (registeredPage - 1) * DETAIL_PAGE_SIZE;
+    return registeredList.slice(start, start + DETAIL_PAGE_SIZE);
+  }, [registeredList, registeredPage]);
+
+  const pendingPageItems = useMemo(() => {
+    const start = (pendingPage - 1) * DETAIL_PAGE_SIZE;
+    return pendingList.slice(start, start + DETAIL_PAGE_SIZE);
+  }, [pendingList, pendingPage]);
+
+  const statusLabel = detail
+    ? t(`allocationDetail.status.${detail.status}`, {
+        defaultValue: detail.status,
+      })
+    : "";
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-hidden flex flex-col">
+        <DialogHeader>
+          <DialogTitle>
+            {detail
+              ? t("allocationDetail.titleWithId", { id: detail.id })
+              : t("allocationDetail.title")}
+          </DialogTitle>
+          <DialogDescription>
+            {t("allocationDetail.subtitle")}
+          </DialogDescription>
+        </DialogHeader>
+
+        {loading ? (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="size-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : !detail ? (
+          <p className="text-center text-muted-foreground py-16">
+            {t("allocationDetail.empty")}
+          </p>
+        ) : (
+          <div className="flex flex-col gap-4 overflow-hidden">
+            {/* 概要信息 */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 rounded-md border p-3 bg-muted/30">
+              <InfoItem
+                label={t("allocationDetail.status.label")}
+                value={
+                  <Badge variant={statusBadgeVariant(detail.status)}>
+                    {statusLabel}
+                  </Badge>
+                }
+              />
+              <InfoItem
+                label={t("allocationDetail.totalAmount")}
+                value={
+                  <span className="font-medium">
+                    {detail.total_amount.toLocaleString()}
+                  </span>
+                }
+              />
+              <InfoItem
+                label={t("allocationDetail.totalRecipients")}
+                value={
+                  <span>
+                    {detail.total_recipients}
+                    <span className="text-muted-foreground text-xs ml-1">
+                      (
+                      {t("allocationDetail.recipientsBreakdown", {
+                        registered: detail.registered_recipients,
+                        unregistered: detail.unregistered_recipients,
+                      })}
+                      )
+                    </span>
+                  </span>
+                }
+              />
+              <InfoItem
+                label={t("allocationDetail.period")}
+                value={`${detail.start_month.slice(0, 7)} ~ ${detail.end_month.slice(0, 7)}`}
+              />
+              <InfoItem
+                label={t("allocationDetail.adjustmentRatio")}
+                value={`×${detail.adjustment_ratio}`}
+              />
+              <InfoItem
+                label={t("allocationDetail.executedAt")}
+                value={
+                  detail.executed_at
+                    ? format(
+                        new Date(detail.executed_at),
+                        "yyyy-MM-dd HH:mm",
+                      )
+                    : "-"
+                }
+              />
+            </div>
+
+            {/* Tabs */}
+            <Tabs
+              defaultValue="registered"
+              className="flex-1 flex flex-col overflow-hidden"
+            >
+              <TabsList>
+                <TabsTrigger value="registered">
+                  {t("allocationDetail.registeredTab", {
+                    count: registeredList.length,
+                  })}
+                </TabsTrigger>
+                <TabsTrigger value="pending">
+                  {t("allocationDetail.pendingTab", {
+                    count: pendingList.length,
+                  })}
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent
+                value="registered"
+                className="flex flex-col gap-3 overflow-hidden"
+              >
+                <div className="overflow-auto border rounded-md">
+                {registeredList.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-10 text-sm">
+                    {t("allocationDetail.emptyRegistered")}
+                  </p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>
+                          {t("allocationDetail.githubLogin")}
+                        </TableHead>
+                        <TableHead className="text-right">
+                          {t("allocationDetail.contributionScore")}
+                        </TableHead>
+                        <TableHead className="text-right">
+                          {t("allocationDetail.calculatedPoints")}
+                        </TableHead>
+                        <TableHead className="text-right">
+                          {t("allocationDetail.adjustedPoints")}
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {registeredPageItems.map((item) => (
+                        <TableRow key={`${item.github_id}-${item.user_id}`}>
+                          <TableCell>
+                            <span className="text-sm">
+                              {item.github_login || "-"}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right text-sm">
+                            {item.contribution_score != null
+                              ? Number(item.contribution_score).toLocaleString(
+                                  undefined,
+                                  { maximumFractionDigits: 2 },
+                                )
+                              : "-"}
+                          </TableCell>
+                          <TableCell className="text-right text-sm text-muted-foreground">
+                            {item.calculated_points != null
+                              ? item.calculated_points.toLocaleString()
+                              : "-"}
+                          </TableCell>
+                          <TableCell className="text-right font-medium text-emerald-600">
+                            {item.adjusted_points != null
+                              ? `+${item.adjusted_points.toLocaleString()}`
+                              : "-"}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+                </div>
+                <DataPagination
+                  currentPage={registeredPage}
+                  totalPages={registeredTotalPages}
+                  onPageChange={setRegisteredPage}
+                  totalItems={registeredList.length}
+                  pageSize={DETAIL_PAGE_SIZE}
+                  previousLabel={t("allocationDetail.prevPage", {
+                    defaultValue: "上一页",
+                  })}
+                  nextLabel={t("allocationDetail.nextPage", {
+                    defaultValue: "下一页",
+                  })}
+                />
+              </TabsContent>
+
+              <TabsContent
+                value="pending"
+                className="flex flex-col gap-3 overflow-hidden"
+              >
+                <div className="overflow-auto border rounded-md">
+                {pendingList.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-10 text-sm">
+                    {t("allocationDetail.emptyPending")}
+                  </p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>
+                          {t("allocationDetail.githubLogin")}
+                        </TableHead>
+                        <TableHead>
+                          {t("allocationDetail.email")}
+                        </TableHead>
+                        <TableHead className="text-right">
+                          {t("allocationDetail.amount")}
+                        </TableHead>
+                        <TableHead>
+                          {t("allocationDetail.claimStatus")}
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {pendingPageItems.map((grant) => (
+                        <TableRow key={grant.id}>
+                          <TableCell>
+                            <span className="text-sm">
+                              {grant.github_login || "-"}
+                            </span>
+                          </TableCell>
+                          <TableCell className="max-w-[200px] truncate text-sm text-muted-foreground">
+                            {grant.email || "-"}
+                          </TableCell>
+                          <TableCell className="text-right font-medium text-emerald-600">
+                            +{grant.amount.toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            {grant.is_claimed ? (
+                              <Badge variant="default" className="text-xs">
+                                {t("allocationDetail.claimed")}
+                              </Badge>
+                            ) : (
+                              <Badge variant="secondary" className="text-xs">
+                                {t("allocationDetail.unclaimed")}
+                              </Badge>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+                </div>
+                <DataPagination
+                  currentPage={pendingPage}
+                  totalPages={pendingTotalPages}
+                  onPageChange={setPendingPage}
+                  totalItems={pendingList.length}
+                  pageSize={DETAIL_PAGE_SIZE}
+                  previousLabel={t("allocationDetail.prevPage", {
+                    defaultValue: "上一页",
+                  })}
+                  nextLabel={t("allocationDetail.nextPage", {
+                    defaultValue: "下一页",
+                  })}
+                />
+              </TabsContent>
+            </Tabs>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function InfoItem({
+  label,
+  value,
+}: {
+  label: string;
+  value: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-1 text-sm">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <div>{value}</div>
+    </div>
+  );
+}

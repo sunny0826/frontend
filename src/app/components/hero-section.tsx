@@ -46,7 +46,7 @@ export function HeroSection() {
                   <Github className="w-6 h-6 text-blue-600" />
                 </div>
               </div>
-              <div className="text-3xl font-bold text-gray-900 mb-1">7+</div>
+              <div className="text-3xl font-bold text-gray-900 mb-1">5+</div>
               <div className="text-sm text-gray-600">{t("hero.stats.platforms")}</div>
             </div>
 
@@ -56,7 +56,7 @@ export function HeroSection() {
                   <Users className="w-6 h-6 text-indigo-600" />
                 </div>
               </div>
-              <div className="text-3xl font-bold text-gray-900 mb-1">1000万+</div>
+              <div className="text-3xl font-bold text-gray-900 mb-1">{t("hero.stats.developers.count")}</div>
               <div className="text-sm text-gray-600">{t("hero.stats.developers")}</div>
             </div>
 
@@ -66,7 +66,7 @@ export function HeroSection() {
                   <GitBranch className="w-6 h-6 text-purple-600" />
                 </div>
               </div>
-              <div className="text-3xl font-bold text-gray-900 mb-1">500万+</div>
+              <div className="text-3xl font-bold text-gray-900 mb-1">{t("hero.stats.projects.count")}</div>
               <div className="text-sm text-gray-600">{t("hero.stats.projects")}</div>
             </div>
 

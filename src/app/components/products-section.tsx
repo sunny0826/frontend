@@ -3,9 +3,6 @@ import {
   Award,
   BarChart3,
   Zap,
-  Shield,
-  TrendingUp,
-  Activity,
 } from "lucide-react";
 import { Card } from "@/app/components/ui/card";
 import { useLanguage } from "@/app/contexts/language-context";
@@ -129,45 +126,6 @@ export function ProductsSection() {
               </Card>
             );
           })}
-        </div>
-
-        {/* Value props */}
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="flex items-start gap-4 p-6 bg-white rounded-xl border border-gray-200">
-            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Shield className="w-5 h-5 text-green-600" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-1">{t("products.value1.title")}</h4>
-              <p className="text-sm text-gray-600">
-                {t("products.value1.description")}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-4 p-6 bg-white rounded-xl border border-gray-200">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <TrendingUp className="w-5 h-5 text-blue-600" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-1">{t("products.value2.title")}</h4>
-              <p className="text-sm text-gray-600">
-                {t("products.value2.description")}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-4 p-6 bg-white rounded-xl border border-gray-200">
-            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Activity className="w-5 h-5 text-purple-600" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-1">{t("products.value3.title")}</h4>
-              <p className="text-sm text-gray-600">
-                {t("products.value3.description")}
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </section>

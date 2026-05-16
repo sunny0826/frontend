@@ -6,8 +6,11 @@
     "module": "ESNext",
     "skipLibCheck": true,
 
+    /* Types */
+    "types": ["vite/client"],
+
     /* Module resolution */
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
@@ -22,7 +25,6 @@
     "noFallthroughCasesInSwitch": true,
 
     /* Path aliases */
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }

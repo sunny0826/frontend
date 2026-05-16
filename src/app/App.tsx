@@ -1,4 +1,3 @@
-import { LanguageProvider } from "@/app/contexts/language-context";
 import { Header } from "@/app/components/header";
 import { HeroSection } from "@/app/components/hero-section";
 import { PlatformsSection } from "@/app/components/platforms-section";
@@ -10,19 +9,17 @@ import { Footer } from "@/app/components/footer";
 
 export default function App() {
   return (
-    <LanguageProvider>
-      <div className="min-h-screen bg-white">
-        <Header />
-        <main>
-          <HeroSection />
-          <PlatformsSection />
-          <ProductsSection />
-          <ReportsSection />
-          <EcosystemSection />
-          <CTASection />
-        </main>
-        <Footer />
-      </div>
-    </LanguageProvider>
+    <div className="min-h-screen bg-white">
+      <Header />
+      <main>
+        <HeroSection />
+        <PlatformsSection />
+        <ProductsSection />
+        <ReportsSection />
+        <EcosystemSection />
+        <CTASection />
+      </main>
+      <Footer />
+    </div>
   );
 }

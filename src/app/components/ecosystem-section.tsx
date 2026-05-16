@@ -2,7 +2,6 @@ import {
   Building2,
   Users,
   Layers,
-  ArrowRight,
   CheckCircle2,
 } from "lucide-react";
 import { Card } from "@/app/components/ui/card";
@@ -118,53 +117,6 @@ export function EcosystemSection() {
               </Card>
             );
           })}
-        </div>
-
-        {/* Value flow */}
-        <div className="bg-white rounded-2xl p-12 border-2 border-gray-200">
-          <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">
-            {t("ecosystem.flow.title")}
-          </h3>
-
-          <div className="grid md:grid-cols-3 gap-8 items-center">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-white">1</span>
-              </div>
-              <h4 className="font-semibold text-gray-900 mb-2">{t("ecosystem.flow.step1.title")}</h4>
-              <p className="text-sm text-gray-600">
-                {t("ecosystem.flow.step1.description")}
-              </p>
-            </div>
-
-            <div className="hidden md:flex justify-center">
-              <ArrowRight className="w-8 h-8 text-gray-400" />
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-white">2</span>
-              </div>
-              <h4 className="font-semibold text-gray-900 mb-2">{t("ecosystem.flow.step2.title")}</h4>
-              <p className="text-sm text-gray-600">
-                {t("ecosystem.flow.step2.description")}
-              </p>
-            </div>
-
-            <div className="hidden md:flex justify-center">
-              <ArrowRight className="w-8 h-8 text-gray-400" />
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-purple-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-white">3</span>
-              </div>
-              <h4 className="font-semibold text-gray-900 mb-2">{t("ecosystem.flow.step3.title")}</h4>
-              <p className="text-sm text-gray-600">
-                {t("ecosystem.flow.step3.description")}
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </section>

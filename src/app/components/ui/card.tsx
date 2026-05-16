@@ -7,7 +7,16 @@ function Card({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card"
       className={cn(
-        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border",
+        // Frosted glass effect
+        "relative flex flex-col gap-6 rounded-xl overflow-hidden",
+        "bg-white/55 dark:bg-white/[0.06]",
+        "backdrop-blur-xl backdrop-saturate-150",
+        "border border-white/40 dark:border-white/10",
+        "shadow-[0_8px_32px_rgba(31,38,135,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)]",
+        "ring-1 ring-black/[0.03] dark:ring-white/5",
+        "text-card-foreground",
+        // Subtle highlight gradient overlay at top
+        "before:content-[''] before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/70 before:to-transparent before:pointer-events-none dark:before:via-white/20",
         className,
       )}
       {...props}
@@ -32,7 +41,21 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <h4
       data-slot="card-title"
-      className={cn("leading-none", className)}
+      className={cn(
+        // Bigger, bolder, tighter with gradient text
+        "relative pl-3.5 text-lg font-bold tracking-tight leading-none",
+        "bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent",
+        "dark:from-indigo-300 dark:via-purple-300 dark:to-fuchsia-300",
+        // Keep child SVG icons visible (they would otherwise inherit text-transparent)
+        "[&_svg]:text-indigo-600 dark:[&_svg]:text-indigo-300",
+        "[&_svg]:[-webkit-text-fill-color:currentColor]",
+        // Decorative gradient bar on the left
+        "before:content-[''] before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2",
+        "before:h-5 before:w-1 before:rounded-full",
+        "before:bg-gradient-to-b before:from-indigo-500 before:to-fuchsia-500",
+        "before:shadow-[0_0_8px_rgba(168,85,247,0.5)]",
+        className,
+      )}
       {...props}
     />
   );

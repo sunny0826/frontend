@@ -1,16 +1,13 @@
-import { Github } from "lucide-react";
 import { useLanguage } from "@/app/contexts/language-context";
 
 export function PlatformsSection() {
   const { t } = useLanguage();
   const platforms = [
-    { name: "GitHub", logo: "github" },
-    { name: "GitLab", logo: "gitlab" },
-    { name: "Gitee", logo: "gitee" },
-    { name: "AtomGit", logo: "atomgit" },
-    { name: "HuggingFace", logo: "huggingface" },
-    { name: "ModelScope", logo: "modelscope" },
-    { name: "arXiv", logo: "arxiv" },
+    { name: "GitHub", logo: "github", url: "https://github.com" },
+    { name: "GitLab", logo: "gitlab", url: "https://gitlab.com" },
+    { name: "Gitee", logo: "gitee", url: "https://gitee.com" },
+    { name: "AtomGit", logo: "atomgit", url: "https://atomgit.com" },
+    { name: "HuggingFace", logo: "huggingface", url: "https://huggingface.co" },
   ];
 
   return (
@@ -25,19 +22,31 @@ export function PlatformsSection() {
           </h3>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-8 items-center">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 items-center">
           {platforms.map((platform) => (
-            <div
+            <a
               key={platform.name}
-              className="flex flex-col items-center justify-center gap-3 opacity-60 hover:opacity-100 transition-opacity"
+              href={platform.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={t("platforms.visitWebsite", { name: platform.name })}
+              className="group flex flex-col items-center justify-center gap-3 transition-transform duration-200 hover:scale-110"
             >
-              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                <Github className="w-6 h-6 text-gray-600" />
+              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                <img
+                  src={`https://oss.open-digger.cn/logos/${platform.logo}.png`}
+                  alt={platform.name}
+                  className="w-8 h-8 object-contain"
+                  loading="lazy"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).style.display = "none";
+                  }}
+                />
               </div>
-              <span className="text-sm text-gray-600 font-medium">
+              <span className="text-sm text-gray-600 font-medium group-hover:text-gray-900">
                 {platform.name}
               </span>
-            </div>
+            </a>
           ))}
         </div>
       </div>
