@@ -31,44 +31,44 @@ export function Footer() {
   };
 
   return (
-    <footer className="bg-gray-900 text-gray-300 pt-16 pb-8 px-6">
+    <footer className="bg-[#0F172A] text-[#94A3B8] pt-16 pb-8 px-6 border-t border-[#475569]">
       <div className="max-w-7xl mx-auto">
         <div className="grid md:grid-cols-5 gap-12 mb-12">
           {/* Brand */}
           <div className="md:col-span-1">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-[#22C55E] to-[#3B82F6] rounded-lg flex items-center justify-center">
                 <Github className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-semibold text-white">
+              <span className="text-xl font-semibold text-[#E2E8F0]">
                 OpenTalent
               </span>
             </div>
-            <p className="text-sm text-gray-400 mb-6">
+            <p className="text-sm text-[#64748B] mb-6">
               {t("footer.description")}
             </p>
             <div className="flex gap-4">
               <a
                 href="#"
-                className="w-9 h-9 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-gray-700 transition-colors"
+                className="w-9 h-9 bg-[#1E293B] rounded-lg flex items-center justify-center hover:bg-[#334155] transition-colors"
               >
                 <Github className="w-4 h-4" />
               </a>
               <a
                 href="#"
-                className="w-9 h-9 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-gray-700 transition-colors"
+                className="w-9 h-9 bg-[#1E293B] rounded-lg flex items-center justify-center hover:bg-[#334155] transition-colors"
               >
                 <Twitter className="w-4 h-4" />
               </a>
               <a
                 href="#"
-                className="w-9 h-9 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-gray-700 transition-colors"
+                className="w-9 h-9 bg-[#1E293B] rounded-lg flex items-center justify-center hover:bg-[#334155] transition-colors"
               >
                 <Linkedin className="w-4 h-4" />
               </a>
               <a
                 href="#"
-                className="w-9 h-9 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-gray-700 transition-colors"
+                className="w-9 h-9 bg-[#1E293B] rounded-lg flex items-center justify-center hover:bg-[#334155] transition-colors"
               >
                 <Mail className="w-4 h-4" />
               </a>
@@ -77,13 +77,13 @@ export function Footer() {
 
           {/* Links */}
           <div>
-            <h4 className="text-white font-semibold mb-4">{t("footer.products")}</h4>
+            <h4 className="text-[#E2E8F0] font-semibold mb-4">{t("footer.products")}</h4>
             <ul className="space-y-3">
               {footerLinks.products.map((link) => (
                 <li key={link}>
                   <a
                     href="#"
-                    className="text-sm text-gray-400 hover:text-white transition-colors"
+                    className="text-sm text-[#64748B] hover:text-[#22C55E] transition-colors"
                   >
                     {link}
                   </a>
@@ -92,13 +92,13 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h4 className="text-white font-semibold mb-4">{t("footer.resources")}</h4>
+            <h4 className="text-[#E2E8F0] font-semibold mb-4">{t("footer.resources")}</h4>
             <ul className="space-y-3">
               {footerLinks.resources.map((link) => (
                 <li key={link}>
                   <a
                     href="#"
-                    className="text-sm text-gray-400 hover:text-white transition-colors"
+                    className="text-sm text-[#64748B] hover:text-[#22C55E] transition-colors"
                   >
                     {link}
                   </a>
@@ -107,13 +107,13 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h4 className="text-white font-semibold mb-4">{t("footer.company")}</h4>
+            <h4 className="text-[#E2E8F0] font-semibold mb-4">{t("footer.company")}</h4>
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link}>
                   <a
                     href="#"
-                    className="text-sm text-gray-400 hover:text-white transition-colors"
+                    className="text-sm text-[#64748B] hover:text-[#22C55E] transition-colors"
                   >
                     {link}
                   </a>
@@ -122,13 +122,13 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h4 className="text-white font-semibold mb-4">{t("footer.legal")}</h4>
+            <h4 className="text-[#E2E8F0] font-semibold mb-4">{t("footer.legal")}</h4>
             <ul className="space-y-3">
               {footerLinks.legal.map((link) => (
                 <li key={link}>
                   <a
                     href="#"
-                    className="text-sm text-gray-400 hover:text-white transition-colors"
+                    className="text-sm text-[#64748B] hover:text-[#22C55E] transition-colors"
                   >
                     {link}
                   </a>
@@ -138,12 +138,12 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="pt-8 border-t border-gray-800">
+        <div className="pt-8 border-t border-[#475569]">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-[#64748B]">
               {t("footer.copyright")}
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-[#64748B]">
               {t("footer.slogan")}
             </p>
           </div>

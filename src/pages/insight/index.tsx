@@ -10,11 +10,11 @@ import { formatUpdateTime } from './domain/format';
 import { getLabelDetailPath, getRepoDetailPath, getDeveloperDetailPath } from './domain/routes';
 import type { LeaderboardItem, LeaderboardMeta } from './types/api';
 import { FilterPanel } from './components/FilterPanel';
-import { LeaderboardSection } from './components/LeaderboardSection';
+import { LeaderboardHeader, LeaderboardSection } from './components/LeaderboardSection';
 import { PaginationControl } from './components/PaginationControl';
 
 function ContentMessage({ type, message }: { type: 'error' | 'loading' | 'plain'; message: string }) {
-  const boxClass = 'bg-white rounded-xl border border-gray-200 shadow-sm';
+  const boxClass = 'bg-[#1E293B] rounded-xl border border-[#475569] shadow-sm';
   const padding = type === 'loading' ? 'p-8' : 'p-6';
   if (type === 'error') {
     return (
@@ -29,7 +29,7 @@ function ContentMessage({ type, message }: { type: 'error' | 'loading' | 'plain'
   if (type === 'loading') {
     return (
       <div className={`${boxClass} ${padding}`}>
-        <div className="text-center text-gray-500">
+        <div className="text-center text-[#94A3B8]">
           <Icon icon="mdi:loading" className="text-3xl mb-2 animate-spin" aria-hidden />
           <p>{message}</p>
         </div>
@@ -38,7 +38,7 @@ function ContentMessage({ type, message }: { type: 'error' | 'loading' | 'plain'
   }
   return (
     <div className={`${boxClass} ${padding}`}>
-      <div className="text-center text-gray-500">
+      <div className="text-center text-[#94A3B8]">
         <p>{message}</p>
       </div>
     </div>
@@ -147,13 +147,22 @@ export default function InsightPage() {
 
   const handleRowClick = (item: LeaderboardItem) => {
     const itemType = getItemTypeFromUnit(unitValue);
-    if (itemType === 'label') {
-      navigate(getLabelDetailPath(item.id || ''));
+    const rawId = item.id || '';
+    // Labels are identified by a leading ':' (or '#') prefix in their id.
+    // Repos use a numeric id, and their `owner/repo` full name lives in `name`.
+    const isLabelId = rawId.startsWith(':') || rawId.startsWith('#');
+    if (itemType === 'label' || isLabelId) {
+      navigate(getLabelDetailPath(rawId));
     } else if (itemType === 'repo') {
-      const [owner, repo] = (item.id || '').split('/');
+      // Prefer `name` (e.g. "owner/repo") over the numeric `id`.
+      const fullName = item.name && item.name.includes('/') ? item.name : rawId;
+      const [owner, repo] = fullName.split('/');
+      if (!owner || !repo) {
+        return;
+      }
       navigate(getRepoDetailPath(item.platform || 'github', owner, repo));
     } else {
-      navigate(getDeveloperDetailPath(item.platform || 'github', item.id || ''));
+      navigate(getDeveloperDetailPath(item.platform || 'github', item.login || item.name || rawId));
     }
   };
 
@@ -161,10 +170,42 @@ export default function InsightPage() {
 
   return (
     <div className="mx-auto space-y-6">
-      {updateTimeLabel && (
-        <p className="text-sm text-gray-500">{updateTimeLabel}</p>
-      )}
-      <div className="flex gap-6">
+      {filtersReady && meta && !metaError ? (
+        <div
+          className="transition-all duration-300"
+          style={{ paddingRight: filterCollapsed ? 'calc(60px + 1.5rem)' : 'calc(16.666667% + 1.5rem)' }}
+        >
+          <LeaderboardHeader meta={meta} scopeName={scopeValue} unitName={unitValue} />
+        </div>
+      ) : null}
+      <div className="flex gap-6 items-start">
+        {metaError ? (
+          <div className="flex-1 min-w-0">
+            <ContentMessage type="error" message={`${t('insight.error')}: ${metaError}`} />
+          </div>
+        ) : !filtersReady ? (
+          <div className="flex-1 min-w-0">
+            <ContentMessage type="loading" message={t('insight.loading')} />
+          </div>
+        ) : boardLoading ? (
+          <div className="flex-1 min-w-0">
+            <ContentMessage type="loading" message={t('insight.loading')} />
+          </div>
+        ) : boardError ? (
+          <div className="flex-1 min-w-0">
+            <ContentMessage type="error" message={`${t('insight.error')}: ${boardError}`} />
+          </div>
+        ) : (
+          <LeaderboardSection
+            ref={leaderboardRowsRef}
+            meta={meta}
+            data={leaderboardData}
+            unitName={unitValue}
+            searchKeyword={searchKeyword}
+            currentPage={currentPage}
+            onRowClick={handleRowClick}
+          />
+        )}
         <FilterPanel
           meta={meta}
           scopeValue={scopeValue}
@@ -201,37 +242,10 @@ export default function InsightPage() {
             />
           }
         />
-        {metaError ? (
-          <div className="flex-1 min-w-0">
-            <ContentMessage type="error" message={`${t('insight.error')}: ${metaError}`} />
-          </div>
-        ) : !filtersReady ? (
-          <div className="flex-1 min-w-0">
-            <ContentMessage type="loading" message={t('insight.loading')} />
-          </div>
-        ) : boardLoading ? (
-          <div className="flex-1 min-w-0">
-            <ContentMessage type="loading" message={t('insight.loading')} />
-          </div>
-        ) : boardError ? (
-          <div className="flex-1 min-w-0">
-            <ContentMessage type="error" message={`${t('insight.error')}: ${boardError}`} />
-          </div>
-        ) : (
-          <LeaderboardSection
-            ref={leaderboardRowsRef}
-            meta={meta}
-            data={leaderboardData}
-            scopeName={scopeValue}
-            unitName={unitValue}
-            timeType={timeType}
-            timeValue={timeValue}
-            searchKeyword={searchKeyword}
-            currentPage={currentPage}
-            onRowClick={handleRowClick}
-          />
-        )}
       </div>
+      {updateTimeLabel && (
+        <p className="text-sm text-[#94A3B8] text-center">{updateTimeLabel}</p>
+      )}
     </div>
   );
 }

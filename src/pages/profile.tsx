@@ -23,8 +23,9 @@ import {
   Loader2,
 } from 'lucide-react';
 import api, { getApiError } from '@/lib/api';
+import { inferDeveloperAvatarUrl } from '@/pages/insight/domain/repoPlatform';
 import { Card, CardHeader, CardTitle, CardContent } from '@/app/components/ui/card';
-import { Avatar, AvatarFallback } from '@/app/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/app/components/ui/avatar';
 import { Button } from '@/app/components/ui/button';
 import { Badge } from '@/app/components/ui/badge';
 import { Separator } from '@/app/components/ui/separator';
@@ -199,6 +200,25 @@ export default function ProfilePage() {
     );
   }
 
+  // 已绑定社交账号的头像 URL（复用数据洞察开发者详情页的构造逻辑）
+  // 仅支持 github / gitee / gitlab / atomgit；按此优先级取首个可用项
+  const socialAvatarUrl = (() => {
+    const priority = ['github', 'gitee', 'gitlab', 'atomgit'];
+    for (const provider of priority) {
+      const conn = socialConnections.find(
+        (c) => c.is_connected && c.provider === provider && (c.username || c.uid),
+      );
+      if (!conn) continue;
+      const url = inferDeveloperAvatarUrl(
+        conn.provider,
+        conn.username || conn.uid || '',
+        conn.uid,
+      );
+      if (url) return url;
+    }
+    return '';
+  })();
+
   async function handleDisconnectProvider(provider: string, associationId: number) {
     setDisconnectingId(associationId);
     try {
@@ -235,6 +255,9 @@ export default function ProfilePage() {
           <CardContent className="space-y-4">
             <div className="flex items-center gap-4">
               <Avatar className="size-16">
+                {socialAvatarUrl && (
+                  <AvatarImage src={socialAvatarUrl} alt={user.username || ''} />
+                )}
                 <AvatarFallback className="text-lg">
                   {(user.username?.charAt(0) || '?').toUpperCase()}
                 </AvatarFallback>

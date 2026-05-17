@@ -14,7 +14,7 @@ export function DeltaDisplay({
   const iconCls = compact ? 'text-sm' : 'text-base';
   if (value == null || Number.isNaN(value)) {
     return (
-      <span className={`inline-flex items-center ${textCls} font-semibold text-gray-400`}>
+      <span className={`inline-flex items-center ${textCls} font-semibold text-[#64748B]`}>
         <span>-</span>
       </span>
     );
@@ -37,7 +37,7 @@ export function DeltaDisplay({
     );
   }
   return (
-    <span className={`inline-flex items-center ${textCls} font-semibold text-gray-400`}>
+    <span className={`inline-flex items-center ${textCls} font-semibold text-[#64748B]`}>
       <span>-</span>
     </span>
   );

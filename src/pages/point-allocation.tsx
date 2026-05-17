@@ -1,5 +1,5 @@
-import { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   Coins,
@@ -11,8 +11,15 @@ import {
   X,
   Search,
   Send,
+  HelpCircle,
 } from "lucide-react";
 import api, { getApiError } from "@/lib/api";
+import {
+  inferLabelAvatarUrl,
+  normalizeRepoPlatform,
+  getDeveloperProfileUrlByPlatform,
+} from "@/pages/insight/domain/repoPlatform";
+import { OPEN_DIGGER_PLATFORM_LOGO_BASE } from "@/pages/insight/api/constants";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
@@ -48,20 +55,33 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/app/components/ui/alert-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/app/components/ui/tooltip";
 import { toast } from "sonner";
 
 const PREVIEW_PAGE_SIZE = 10;
 
 // --- Types ---
 
+interface SourceSelector {
+  owner_type: "user" | "organization";
+  owner_slug: string | null;
+  point_type: "cash" | "gift";
+  tag_slug: string | null;
+}
+
 interface PoolItem {
   owner_type: "user" | "organization";
   owner_name: string;
   owner_slug: string;
   point_type: "cash" | "gift";
-  tag_slug: string | null;
-  tag_name: string | null;
+  tag: { slug: string; name: string } | null;
   available_balance: number;
+  source_selector: SourceSelector;
 }
 
 interface TagItem {
@@ -73,12 +93,26 @@ interface TagItem {
 }
 
 interface PreviewRecipient {
-  github_login: string;
+  // 平台无关的通用键（后端已提供）
+  user_id?: number | null;
+  actor_id: string;
+  actor_login: string;
+
+  // 兼容老数据
+  github_login?: string;
+
   email: string;
   is_registered: boolean;
   contribution_score: number;
   calculated_points: number;
   adjusted_points: number;
+  // 后端按平台动态返回 `{platform}_login` 字段（github_login / gitee_login 等），
+  // 同时附带 `platform` 字段（如 "GitHub" / "Gitee"）。这里收口为可选字段，
+  // 渲染时优先取与 platform 对应的 login，缺失时回退到 actor_login。
+  platform?: string;
+  gitee_login?: string;
+  gitlab_login?: string;
+  atomgit_login?: string;
 }
 
 interface PreviewResponse {
@@ -111,9 +145,28 @@ function getMaxMonth() {
   return `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, "0")}`;
 }
 
+// 取贡献者在对应平台上的登录名：优先匹配 `{platform}_login`，回退 actor_login。
+function getRecipientLogin(r: PreviewRecipient): string {
+  if (r.platform) {
+    const p = normalizeRepoPlatform(r.platform);
+    const key = `${p}_login` as keyof PreviewRecipient;
+    const v = r[key];
+    if (typeof v === "string" && v) return v;
+  }
+  return r.github_login ?? r.actor_login ?? "";
+}
+
+/** 获取贡献者的唯一键，与后端 _build_preview_item 的 user_key 逻辑对齐 */
+function getRecipientKey(r: PreviewRecipient): string {
+  if (typeof r.user_id === "number") return String(r.user_id);
+  if (r.actor_login) return r.actor_login;
+  return r.github_login ?? "";
+}
+
 export default function PointAllocationPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Step 1 - Pool selection
   const [pools, setPools] = useState<PoolItem[]>([]);
@@ -121,12 +174,43 @@ export default function PointAllocationPage() {
   const [selectedPoolIndex, setSelectedPoolIndex] = useState<number | null>(null);
   const [totalAmount, setTotalAmount] = useState<number>(0);
 
-  // Step 2 - Project scope
+  // Step 2 - Project scope. Initial value may be populated from URL params
+  // (e.g. when the user clicks "Allocate Points" on a label detail page).
   const [tagSearchQuery, setTagSearchQuery] = useState("");
   const [tagSearchResults, setTagSearchResults] = useState<TagItem[]>([]);
   const [tagSearching, setTagSearching] = useState(false);
-  const [selectedTags, setSelectedTags] = useState<TagItem[]>([]);
+  const [selectedTags, setSelectedTags] = useState<TagItem[]>(() => {
+    const id = searchParams.get("tag_id");
+    if (!id) return [];
+    const name = searchParams.get("tag_name") || id;
+    const type = searchParams.get("tag_type") || "";
+    const openrankRaw = searchParams.get("tag_openrank");
+    const platformsRaw = searchParams.get("tag_platforms");
+    return [
+      {
+        id,
+        name,
+        type,
+        platforms: platformsRaw ? platformsRaw.split(",").filter(Boolean) : [],
+        openrank: openrankRaw ? Number(openrankRaw) || 0 : 0,
+      },
+    ];
+  });
   const [projectOperation, setProjectOperation] = useState<string>("AND");
+
+  // Strip preload params from the URL once consumed, so that refreshing or
+  // navigating back does not re-add the same tag.
+  useEffect(() => {
+    if (searchParams.has("tag_id")) {
+      const next = new URLSearchParams(searchParams);
+      ["tag_id", "tag_name", "tag_type", "tag_openrank", "tag_platforms"].forEach((k) =>
+        next.delete(k),
+      );
+      setSearchParams(next, { replace: true });
+    }
+    // Run only on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Step 3 - Time range
   const defaults = getDefaultMonths();
@@ -194,23 +278,86 @@ export default function PointAllocationPage() {
     startMonth &&
     endMonth;
 
-  const getAdjustedPoints = useCallback(
-    (r: PreviewRecipient) => {
-      if (individualAdjustments[r.github_login] !== undefined) {
-        return individualAdjustments[r.github_login];
-      }
-      return Math.round(r.calculated_points * adjustmentRatio);
-    },
-    [individualAdjustments, adjustmentRatio]
-  );
-
   const basePoints = previewData
     ? previewData.preview.reduce((sum, r) => sum + r.calculated_points, 0)
     : 0;
 
-  const totalAdjustedPoints = previewData
-    ? previewData.preview.reduce((sum, r) => sum + getAdjustedPoints(r), 0)
-    : 0;
+  // 与 buildRequestBody 中发往后端的 total_amount 保持一致：始终为积分池可用余额。
+  // 这是后端 AllocationService._scale_results_to_total_amount 触发缩放的上限。
+  const availableBalance = selectedPool?.available_balance ?? 0;
+
+  // 在前端精确复现后端的分配结果，使总积分框中展示的金额与最终执行分配后
+  // 从积分池扣减的金额完全一致：
+  //   1. 单人 adjusted = floor(calculated_points * ratio)（对应后端 int(...) 截断）。
+  //   2. 若用户对某账号给出 individual_adjustments，则覆盖第 1 步的结果。
+  //   3. 若所有账号合计 > total_amount(=available_balance)，按最大余数法缩放，
+  //      使最终合计严格等于 total_amount，与后端 _scale_results_to_total_amount 对齐。
+  const effectiveAdjustments = useMemo(() => {
+    if (!previewData) {
+      return {
+        byKey: {} as Record<string, number>,
+        total: 0,
+        naturalTotal: 0,
+        scaled: false,
+      };
+    }
+    const items = previewData.preview.map((r) => {
+      const key = getRecipientKey(r);
+      const hasOverride =
+        key !== "" && individualAdjustments[key] !== undefined;
+      const adjusted = hasOverride
+        ? individualAdjustments[key]
+        : Math.floor(r.calculated_points * adjustmentRatio);
+      return { key, adjusted };
+    });
+    const naturalTotal = items.reduce(
+      (sum, it) => sum + (it.adjusted > 0 ? it.adjusted : 0),
+      0,
+    );
+    let scaled = false;
+    if (naturalTotal > availableBalance && availableBalance > 0) {
+      scaled = true;
+      const scale = availableBalance / naturalTotal;
+      const remainders: Array<[number, number]> = [];
+      let scaledTotal = 0;
+      items.forEach((it, idx) => {
+        const rawScaled = it.adjusted * scale;
+        const sp = Math.floor(rawScaled);
+        it.adjusted = sp;
+        scaledTotal += sp;
+        remainders.push([rawScaled - sp, idx]);
+      });
+      const remainder = availableBalance - scaledTotal;
+      if (remainder > 0) {
+        remainders.sort((a, b) => b[0] - a[0] || a[1] - b[1]);
+        for (let i = 0; i < remainder; i += 1) {
+          items[remainders[i][1]].adjusted += 1;
+        }
+      }
+    }
+    const total = items.reduce((sum, it) => sum + it.adjusted, 0);
+    const byKey: Record<string, number> = {};
+    items.forEach((it) => {
+      if (it.key) byKey[it.key] = it.adjusted;
+    });
+    return { byKey, total, naturalTotal, scaled };
+  }, [previewData, adjustmentRatio, individualAdjustments, availableBalance]);
+
+  const getAdjustedPoints = useCallback(
+    (r: PreviewRecipient) => {
+      const key = getRecipientKey(r);
+      if (key && effectiveAdjustments.byKey[key] !== undefined) {
+        return effectiveAdjustments.byKey[key];
+      }
+      if (key && individualAdjustments[key] !== undefined) {
+        return individualAdjustments[key];
+      }
+      return Math.floor(r.calculated_points * adjustmentRatio);
+    },
+    [effectiveAdjustments, individualAdjustments, adjustmentRatio]
+  );
+
+  const totalAdjustedPoints = effectiveAdjustments.total;
 
   const registeredCount = previewData
     ? previewData.preview.filter((r) => r.is_registered).length
@@ -219,10 +366,9 @@ export default function PointAllocationPage() {
     ? previewData.preview.filter((r) => !r.is_registered).length
     : 0;
 
-  const canExecute =
-    previewData !== null &&
-    totalAmount > 0 &&
-    totalAdjustedPoints <= totalAmount;
+  // 总积分（effectiveAdjustments.total）在缩放后必然 <= availableBalance，
+  // 因此 canExecute 只需判断有受益人即可。
+  const canExecute = previewData !== null && totalAdjustedPoints > 0;
 
   const handleRatioChange = useCallback(
     (raw: number) => {
@@ -260,12 +406,7 @@ export default function PointAllocationPage() {
     // total_amount is always the pool's full available balance; user's intent
     // is carried via adjustment_ratio so preview/execute stay consistent.
     return {
-      source_selector: {
-        owner_type: selectedPool!.owner_type,
-        owner_slug: selectedPool!.owner_type === "organization" ? selectedPool!.owner_slug : null,
-        point_type: selectedPool!.point_type,
-        tag_slug: selectedPool!.tag_slug,
-      },
+      source_selector: selectedPool!.source_selector,
       project_scope: {
         tags: selectedTags.map((t) => t.id),
         operation: selectedTags.length >= 2 ? projectOperation : "AND",
@@ -387,7 +528,7 @@ export default function PointAllocationPage() {
                       return (
                         <SelectItem key={idx} value={String(idx)}>
                           {p.owner_name} - {p.point_type === "cash" ? t('pointAllocation.cashPoints') : t('pointAllocation.giftPoints')}
-                          {p.tag_name ? ` (${p.tag_name})` : ""} - {t('pointAllocation.balance')}: {p.available_balance}
+                          {p.tag?.name ? ` (${p.tag.name})` : ""} - {t('pointAllocation.balance')}: {p.available_balance}
                         </SelectItem>
                       );
                     })}
@@ -401,7 +542,7 @@ export default function PointAllocationPage() {
                       return (
                         <SelectItem key={idx} value={String(idx)}>
                           {p.owner_name} - {p.point_type === "cash" ? t('pointAllocation.cashPoints') : t('pointAllocation.giftPoints')}
-                          {p.tag_name ? ` (${p.tag_name})` : ""} - {t('pointAllocation.balance')}: {p.available_balance}
+                          {p.tag?.name ? ` (${p.tag.name})` : ""} - {t('pointAllocation.balance')}: {p.available_balance}
                         </SelectItem>
                       );
                     })}
@@ -422,8 +563,8 @@ export default function PointAllocationPage() {
               >
                 {selectedPool.point_type === "cash" ? t('pointAllocation.cashPointsType') : t('pointAllocation.giftPointsType')}
               </Badge>
-              {selectedPool.tag_name && (
-                <Badge variant="outline">{selectedPool.tag_name}</Badge>
+              {selectedPool.tag?.name && (
+                <Badge variant="outline">{selectedPool.tag.name}</Badge>
               )}
               <span className="text-sm text-muted-foreground">
                 {t('pointAllocation.availableBalance')}: {selectedPool.available_balance.toLocaleString()}
@@ -442,6 +583,51 @@ export default function PointAllocationPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {selectedTags.length > 0 && (
+            <div className="space-y-2">
+              <Label>{t('pointAllocation.selectedTags')}</Label>
+              <div className="flex flex-wrap gap-2">
+                {selectedTags.map((tag) => {
+                  const labelLogo = inferLabelAvatarUrl(tag.id);
+                  return (
+                    <div
+                      key={tag.id}
+                      className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 shadow-sm"
+                    >
+                      {labelLogo && (
+                        <img
+                          src={labelLogo}
+                          alt={tag.name}
+                          className="size-6 rounded-full object-cover shrink-0"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      )}
+                      <span className="text-base font-semibold leading-none">{tag.name}</span>
+                      {tag.type && (
+                        <Badge variant="outline" className="text-xs">
+                          {tag.type}
+                        </Badge>
+                      )}
+                      <button
+                        type="button"
+                        aria-label="remove"
+                        className="ml-1 inline-flex size-5 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                        onClick={() => {
+                          setSelectedTags((prev) => prev.filter((t) => t.id !== tag.id));
+                          setPreviewData(null);
+                        }}
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label>{t('pointAllocation.searchTagLabel')}</Label>
             <div className="relative">
@@ -505,28 +691,8 @@ export default function PointAllocationPage() {
             </div>
           )}
 
-          {selectedTags.length > 0 && (
-            <div className="space-y-2">
-              <Label>{t('pointAllocation.selectedTags')}</Label>
-              <div className="flex flex-wrap gap-2">
-                {selectedTags.map((tag) => (
-                  <Badge key={tag.id} variant="secondary" className="gap-1">
-                    {tag.name}
-                    <button
-                      onClick={() => {
-                        setSelectedTags((prev) => prev.filter((t) => t.id !== tag.id));
-                        setPreviewData(null);
-                      }}
-                    >
-                      <X className="size-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {selectedTags.length >= 2 && (
+          {/* 暂时隐藏多标签运算符选择，多标签默认按 AND（同时生效）处理 */}
+          {false && selectedTags.length >= 2 && (
             <div className="space-y-2">
               <Label>{t('pointAllocation.operation')}</Label>
               <Select value={projectOperation} onValueChange={(v) => { setProjectOperation(v); setPreviewData(null); }}>
@@ -620,12 +786,34 @@ export default function PointAllocationPage() {
             </Card>
             <Card>
               <CardContent className="pt-4 text-center">
-                <p className="text-sm text-muted-foreground">{t('pointAllocation.totalPoints')}</p>
-                <p className={`text-2xl font-bold ${totalAdjustedPoints > totalAmount ? "text-red-600" : ""}`}>
+                <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground">
+                  <span>{t('pointAllocation.totalPoints')}</span>
+                  <TooltipProvider delayDuration={150}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          aria-label={t('pointAllocation.totalPointsRoundingTip')}
+                          className="inline-flex text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          <HelpCircle className="size-3.5" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-xs">
+                        {t('pointAllocation.totalPointsRoundingTip')}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <p className={`text-2xl font-bold ${effectiveAdjustments.scaled ? "text-amber-600" : ""}`}>
                   {totalAdjustedPoints.toLocaleString()}
                 </p>
-                {totalAdjustedPoints > totalAmount && (
-                  <p className="text-xs text-red-500 mt-1">{t('pointAllocation.exceedTotal')}</p>
+                {effectiveAdjustments.scaled && (
+                  <p className="text-xs text-amber-600 mt-1">
+                    {t('pointAllocation.scaledHint', {
+                      defaultValue: '已按比例缩减至积分池可用上限',
+                    })}
+                  </p>
                 )}
               </CardContent>
             </Card>
@@ -690,9 +878,46 @@ export default function PointAllocationPage() {
                         (previewPage - 1) * PREVIEW_PAGE_SIZE,
                         previewPage * PREVIEW_PAGE_SIZE,
                       )
-                      .map((r) => (
-                      <TableRow key={r.github_login}>
-                        <TableCell className="font-medium">{r.github_login}</TableCell>
+                      .map((r) => {
+                      const login = getRecipientLogin(r);
+                      const normalizedPlatform = r.platform
+                        ? normalizeRepoPlatform(r.platform)
+                        : "";
+                      const profileUrl = r.platform
+                        ? getDeveloperProfileUrlByPlatform(r.platform, login)
+                        : "";
+                      const platformLogo = normalizedPlatform
+                        ? `${OPEN_DIGGER_PLATFORM_LOGO_BASE}${normalizedPlatform}.png`
+                        : "";
+                      return (
+                      <TableRow key={getRecipientKey(r) || r.email || String(r.contribution_score)}>
+                        <TableCell className="font-medium">
+                          <span className="inline-flex items-center gap-1.5">
+                            {platformLogo && (
+                              <img
+                                src={platformLogo}
+                                alt={r.platform}
+                                title={r.platform}
+                                className="size-4 rounded-full object-cover shrink-0"
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                }}
+                              />
+                            )}
+                            {profileUrl ? (
+                              <a
+                                href={profileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:underline"
+                              >
+                                {login}
+                              </a>
+                            ) : (
+                              <span>{login}</span>
+                            )}
+                          </span>
+                        </TableCell>
                         <TableCell>
                           {r.is_registered ? (
                             <Badge className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
@@ -715,9 +940,11 @@ export default function PointAllocationPage() {
                             className="w-24 ml-auto text-right"
                             value={getAdjustedPoints(r)}
                             onChange={(e) => {
+                              const key = getRecipientKey(r);
+                              if (!key) return;
                               setIndividualAdjustments((prev) => ({
                                 ...prev,
-                                [r.github_login]: Number(e.target.value),
+                                [key]: Number(e.target.value),
                               }));
                             }}
                           />
@@ -727,9 +954,11 @@ export default function PointAllocationPage() {
                             size="sm"
                             variant="ghost"
                             onClick={() => {
+                              const key = getRecipientKey(r);
+                              if (!key) return;
                               setIndividualAdjustments((prev) => {
                                 const next = { ...prev };
-                                delete next[r.github_login];
+                                delete next[key];
                                 return next;
                               });
                             }}
@@ -738,7 +967,8 @@ export default function PointAllocationPage() {
                           </Button>
                         </TableCell>
                       </TableRow>
-                    ))}
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>
@@ -760,19 +990,13 @@ export default function PointAllocationPage() {
                       defaultValue: '下一页',
                     })}
                     infoText={t('pointAllocation.paginationInfo', {
-                      defaultValue:
-                        '第 {{start}}-{{end}} 位 / 共 {{total}} 位贡献者（第 {{page}}/{{pages}} 页）',
+                      defaultValue: '第 {{start}}-{{end}} 位 / 共 {{total}} 位',
                       start: (previewPage - 1) * PREVIEW_PAGE_SIZE + 1,
                       end: Math.min(
                         previewPage * PREVIEW_PAGE_SIZE,
                         previewData.preview.length,
                       ),
                       total: previewData.preview.length,
-                      page: previewPage,
-                      pages: Math.max(
-                        1,
-                        Math.ceil(previewData.preview.length / PREVIEW_PAGE_SIZE),
-                      ),
                     })}
                   />
                 </div>

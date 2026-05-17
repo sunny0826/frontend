@@ -133,7 +133,7 @@ export function PaginationControl({
   const bar = (
     <div
       id={compact ? undefined : 'paginationContainer'}
-      className={`flex items-center bg-gray-100 border border-gray-200 overflow-hidden ${compact ? (dense ? 'h-7 rounded-md' : 'h-10 rounded-lg') : 'rounded-lg'}`}
+      className={`flex items-center bg-[#0F172A] border border-[#475569] overflow-hidden ${compact ? (dense ? 'h-7 rounded-md' : 'h-10 rounded-lg') : 'rounded-lg'}`}
     >
           <button
             type="button"
@@ -143,7 +143,7 @@ export function PaginationControl({
               if (open && menuRef.current) pendingRestore.current = { scrollTop: menuRef.current.scrollTop };
               onPageChange(currentPage - 1);
             }}
-            className={`time-picker-arrow flex items-center justify-center flex-shrink-0 text-gray-500 hover:text-primary hover:bg-gray-200 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none ${dense && compact ? 'w-7 h-7' : 'w-9 h-10'}`}
+            className={`time-picker-arrow flex items-center justify-center flex-shrink-0 text-[#94A3B8] hover:text-primary hover:bg-[#334155] transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none ${dense && compact ? 'w-7 h-7' : 'w-9 h-10'}`}
           >
             <Icon icon="mdi:chevron-left" className={dense && compact ? 'text-sm' : 'text-lg'} aria-hidden />
           </button>
@@ -156,7 +156,7 @@ export function PaginationControl({
                 e.stopPropagation();
                 setOpen((o) => !o);
               }}
-              className={`flex-1 flex items-center justify-center min-w-0 text-gray-700 hover:bg-gray-200/50 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset w-full ${dense && compact ? 'px-2 py-1 text-xs' : 'px-3 py-2.5 text-sm'}`}
+              className={`flex-1 flex items-center justify-center min-w-0 text-[#E2E8F0] hover:bg-[#334155]/50 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset w-full ${dense && compact ? 'px-2 py-1 text-xs' : 'px-3 py-2.5 text-sm'}`}
               aria-haspopup="listbox"
               aria-expanded={open}
               aria-label={selectPageLabel}
@@ -195,7 +195,7 @@ export function PaginationControl({
               if (open && menuRef.current) pendingRestore.current = { scrollTop: menuRef.current.scrollTop };
               onPageChange(currentPage + 1);
             }}
-            className={`time-picker-arrow flex items-center justify-center flex-shrink-0 text-gray-500 hover:text-primary hover:bg-gray-200 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none ${dense && compact ? 'w-7 h-7' : 'w-9 h-10'}`}
+            className={`time-picker-arrow flex items-center justify-center flex-shrink-0 text-[#94A3B8] hover:text-primary hover:bg-[#334155] transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none ${dense && compact ? 'w-7 h-7' : 'w-9 h-10'}`}
           >
             <Icon icon="mdi:chevron-right" className={dense && compact ? 'text-sm' : 'text-lg'} aria-hidden />
           </button>
@@ -208,7 +208,7 @@ export function PaginationControl({
 
   return (
     <>
-      <label className="flex items-center gap-2 text-sm font-medium mb-2 text-gray-500">
+      <label className="flex items-center gap-2 text-sm font-medium mb-2 text-[#94A3B8]">
         <Icon icon="mdi:page-next" />
         <span>{t('insight.pagination')}</span>
       </label>

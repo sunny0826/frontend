@@ -3,37 +3,17 @@ import { forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { LeaderboardItem, LeaderboardMeta, MetaGroupType } from '../types/api';
 import { getFilteredLeaderboardData, ITEMS_PER_PAGE, joinZhLeaderboardScopeUnit } from '../domain/leaderboard';
-import { formatTimeDisplay } from '../domain/timeRange';
 import { leaderboardAvatarForItem } from '../domain/geography';
 import { LeaderboardAvatar } from './LeaderboardAvatar';
 import { DeltaDisplay } from './DeltaDisplay';
 
-type Props = {
+type HeaderProps = {
   meta: LeaderboardMeta | null;
-  data: LeaderboardItem[];
   scopeName: string;
   unitName: string;
-  timeType: 'month' | 'year';
-  timeValue: string;
-  searchKeyword: string;
-  currentPage: number;
-  onRowClick: (item: LeaderboardItem) => void;
 };
 
-export const LeaderboardSection = forwardRef<HTMLDivElement, Props>(function LeaderboardSection(
-  {
-    meta,
-    data,
-    scopeName,
-    unitName,
-    timeType,
-    timeValue,
-    searchKeyword,
-    currentPage,
-    onRowClick,
-  }: Props,
-  ref,
-) {
+export function LeaderboardHeader({ meta, scopeName, unitName }: HeaderProps) {
   const { t, i18n } = useTranslation();
   const lang = i18n.language as 'zh' | 'en';
 
@@ -49,12 +29,52 @@ export const LeaderboardSection = forwardRef<HTMLDivElement, Props>(function Lea
       ? (currentGroupType?.name_zh || currentGroupType?.name || unitName)
       : (currentGroupType?.name || unitName);
 
-  const timeRange = timeType === 'year' ? formatTimeDisplay(timeValue, 'year', lang) : timeValue;
-
   const leaderboardTitle =
     lang === 'zh'
       ? t('insight.leaderboardTitleTemplate').replace('{{scopeUnit}}', joinZhLeaderboardScopeUnit(title, unitDisplay))
       : t('insight.leaderboardTitleTemplate').replace('{{scope}}', title).replace('{{unit}}', unitDisplay);
+
+  return (
+    <div id="leaderboardTitle" className="bg-[#1E293B] rounded-xl border border-[#475569] p-6 shadow-sm">
+      <div className="flex flex-col items-center justify-center text-center">
+        <h2 className="text-xl sm:text-2xl font-mono font-bold mb-2 flex items-center justify-center gap-2 text-[#E2E8F0]">
+          <img
+            src="https://open-digger.cn/open_leaderboard/images/earth-animation.gif"
+            alt=""
+            className="w-8 h-8 object-contain flex-shrink-0"
+            aria-hidden
+          />
+          <span className="truncate">{leaderboardTitle}</span>
+        </h2>
+      </div>
+    </div>
+  );
+}
+
+type Props = {
+  meta: LeaderboardMeta | null;
+  data: LeaderboardItem[];
+  unitName: string;
+  searchKeyword: string;
+  currentPage: number;
+  onRowClick: (item: LeaderboardItem) => void;
+};
+
+export const LeaderboardSection = forwardRef<HTMLDivElement, Props>(function LeaderboardSection(
+  {
+    meta,
+    data,
+    unitName,
+    searchKeyword,
+    currentPage,
+    onRowClick,
+  }: Props,
+  ref,
+) {
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language as 'zh' | 'en';
+
+  const currentGroupType = meta?.groupTypes?.find((g) => g.name === unitName);
 
   const filtered = getFilteredLeaderboardData(data, searchKeyword);
   const totalItems = filtered.length;
@@ -63,52 +83,33 @@ export const LeaderboardSection = forwardRef<HTMLDivElement, Props>(function Lea
   const currentPageData = filtered.slice(startIndex, endIndex);
 
   return (
-    <div id="leaderboardContent" className="flex-1 space-y-4 min-w-0">
-      <div id="leaderboardTitle" className="bg-white rounded-xl border border-gray-200 p-6 mb-4 shadow-sm">
-        <div className="flex flex-col items-center justify-center text-center">
-          <h2 className="text-xl sm:text-2xl font-mono font-bold mb-2 flex items-center justify-center gap-2 text-gray-900">
-            <img
-              src="https://open-digger.cn/open_leaderboard/images/earth-animation.gif"
-              alt=""
-              className="w-8 h-8 object-contain flex-shrink-0"
-              aria-hidden
-            />
-            <span className="truncate">{leaderboardTitle}</span>
-          </h2>
-          <p className="text-gray-500 text-sm flex items-center justify-center gap-1">
-            <Icon icon="mdi:calendar-range" className="text-base" aria-hidden />
-            {timeRange}
-          </p>
-        </div>
-      </div>
-
-      <div id="leaderboardTable" className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+    <div id="leaderboardContent" className="flex-1 min-w-0">
+      <div id="leaderboardTable" className="bg-[#1E293B] rounded-xl border border-[#475569] pt-3 px-6 pb-6 shadow-sm">
         <div
-          className="flex items-center gap-3 px-3 mb-0.5 border-b border-gray-200 pb-3"
-          style={{ paddingTop: '0.125rem' }}
+          className="flex items-center gap-3 px-3 border-b border-[#475569] pb-2"
         >
           <div className="flex-shrink-0 flex items-center gap-2 w-24">
             <div className="flex-shrink-0 w-12 text-center">
-              <span className="text-sm font-mono font-semibold text-gray-500 leading-tight">{t('insight.headerRank')}</span>
+              <span className="text-sm font-mono font-semibold text-[#94A3B8] leading-tight">{t('insight.headerRank')}</span>
             </div>
             <div className="flex-shrink-0 w-12" />
           </div>
           <div className="w-9 h-9 flex-shrink-0" />
           <div className="flex-1 min-w-0">
-            <span className="text-sm font-mono font-semibold text-gray-500 leading-tight">{t('insight.headerName')}</span>
+            <span className="text-sm font-mono font-semibold text-[#94A3B8] leading-tight">{t('insight.headerName')}</span>
           </div>
           <div className="flex-shrink-0 text-right w-32">
-            <span className="text-sm font-mono font-semibold text-gray-500 leading-tight">{t('insight.headerOpenRank')}</span>
+            <span className="text-sm font-mono font-semibold text-[#94A3B8] leading-tight">{t('insight.headerOpenRank')}</span>
           </div>
           <div className="flex-shrink-0 text-right w-48">
-            <span className="text-sm font-mono font-semibold text-gray-500 leading-tight whitespace-nowrap">
+            <span className="text-sm font-mono font-semibold text-[#94A3B8] leading-tight whitespace-nowrap">
               {t('insight.headerCommunityParticipants')}
             </span>
           </div>
         </div>
-        <div id="leaderboardDataRows" ref={ref} className="space-y-1.5">
+        <div id="leaderboardDataRows" ref={ref} className="space-y-1.5 pt-2">
           {!data || data.length === 0 ? (
-            <div className="text-center text-gray-400 py-10 font-mono text-sm">
+            <div className="text-center text-[#64748B] py-10 font-mono text-sm">
               <p>{t('insight.noData')}</p>
             </div>
           ) : (
@@ -118,7 +119,7 @@ export const LeaderboardSection = forwardRef<HTMLDivElement, Props>(function Lea
               );
               const rank = originalIndex >= 0 ? originalIndex + 1 : startIndex + index + 1;
               const medalClass =
-                rank === 1 ? 'text-yellow-500' : rank === 2 ? 'text-gray-400' : rank === 3 ? 'text-orange-400' : 'text-gray-500';
+                rank === 1 ? 'text-yellow-500' : rank === 2 ? 'text-[#94A3B8]' : rank === 3 ? 'text-orange-400' : 'text-[#94A3B8]';
               const medalIcon =
                 rank === 1
                   ? 'mdi:trophy'
@@ -151,7 +152,7 @@ export const LeaderboardSection = forwardRef<HTMLDivElement, Props>(function Lea
                   key={`${item.id ?? item.name}-${startIndex + index}`}
                   role="button"
                   tabIndex={0}
-                  className="leaderboard-row flex items-center gap-3 py-2 px-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 hover:border-primary/40 transition-colors duration-200 cursor-pointer"
+                  className="leaderboard-row flex items-center gap-3 py-2 px-3 bg-[#0F172A] rounded-lg border border-[#475569] hover:bg-[#334155] hover:border-primary/40 transition-colors duration-200 cursor-pointer"
                   onClick={() => onRowClick({ ...item })}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -176,19 +177,19 @@ export const LeaderboardSection = forwardRef<HTMLDivElement, Props>(function Lea
                     <LeaderboardAvatar avatar={avatar} displayName={displayName} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-sm mb-0.5 truncate text-gray-900">{displayName}</div>
+                    <div className="font-semibold text-sm mb-0.5 truncate text-[#E2E8F0]">{displayName}</div>
                     {displayDesc ? (
-                      <div className="text-xs text-gray-500 truncate">{displayDesc}</div>
+                      <div className="text-xs text-[#94A3B8] truncate">{displayDesc}</div>
                     ) : null}
                   </div>
                   <div className="flex-shrink-0 text-right w-32">
-                    <div className="text-lg font-mono font-bold text-gray-700">{score.toFixed(1)}</div>
+                    <div className="text-lg font-mono font-bold text-[#E2E8F0]">{score.toFixed(1)}</div>
                     <div className="flex items-center justify-end mt-0.5">
                       <DeltaDisplay value={openrankDelta} />
                     </div>
                   </div>
                   <div className="flex-shrink-0 text-right w-48">
-                    <div className="text-lg font-mono font-bold text-gray-700">{Math.round(participants)}</div>
+                    <div className="text-lg font-mono font-bold text-[#E2E8F0]">{Math.round(participants)}</div>
                     <div className="flex items-center justify-end mt-0.5">
                       <DeltaDisplay value={participantsDelta} isInt />
                     </div>

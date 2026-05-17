@@ -11,13 +11,13 @@ export function PlatformsSection() {
   ];
 
   return (
-    <section className="py-16 px-6 bg-white border-y border-gray-100">
+    <section className="py-16 px-6 bg-[#1E293B] border-y border-[#475569]">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <p className="text-sm text-gray-500 uppercase tracking-wider font-medium mb-4">
+          <p className="text-sm text-[#64748B] uppercase tracking-wider font-medium mb-4">
             {t("platforms.subtitle")}
           </p>
-          <h3 className="text-2xl font-semibold text-gray-900">
+          <h3 className="text-2xl font-semibold text-[#E2E8F0]">
             {t("platforms.title")}
           </h3>
         </div>
@@ -32,7 +32,7 @@ export function PlatformsSection() {
               title={t("platforms.visitWebsite", { name: platform.name })}
               className="group flex flex-col items-center justify-center gap-3 transition-transform duration-200 hover:scale-110"
             >
-              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+              <div className="w-12 h-12 bg-[#334155] rounded-lg flex items-center justify-center overflow-hidden">
                 <img
                   src={`https://oss.open-digger.cn/logos/${platform.logo}.png`}
                   alt={platform.name}
@@ -43,7 +43,7 @@ export function PlatformsSection() {
                   }}
                 />
               </div>
-              <span className="text-sm text-gray-600 font-medium group-hover:text-gray-900">
+              <span className="text-sm text-[#94A3B8] font-medium group-hover:text-[#22C55E]">
                 {platform.name}
               </span>
             </a>

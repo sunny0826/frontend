@@ -313,7 +313,9 @@
     "loadFailed": "Failed to load transactions",
     "transactionType": "Transaction Type",
     "pointTypeLabel": "Point Type",
-    "viewAllocation": "View details"
+    "viewAllocation": "View details",
+    "mergedFromSources": "{{count}} sources combined",
+    "mergedFromSourcesTitle": "This allocation was deducted from {{count}} point sources (FIFO). The ledger keeps {{count}} entries; this row merges them for display."
   },
   "allocationDetail": {
     "title": "Allocation Details",
@@ -332,6 +334,7 @@
     "emptyRegistered": "No registered recipients in this allocation",
     "emptyPending": "No pending grants in this allocation",
     "githubLogin": "GitHub Login",
+    "accountLogin": "Account",
     "contributionScore": "Contribution",
     "calculatedPoints": "Calculated",
     "adjustedPoints": "Actual",
@@ -655,7 +658,7 @@
     "searchTagPlaceholder": "Enter keywords to search projects...",
     "selectedTags": "Selected Tags",
     "operation": "Operation",
-    "step3Title": "Step 3 - Time Range",
+    "step3Title": "Step 3 - Select Time Range",
     "startMonth": "Start Month",
     "endMonth": "End Month",
     "previewButton": "Preview Allocation Results",
@@ -663,7 +666,10 @@
     "registered": "Registered",
     "unregistered": "Unregistered",
     "totalPoints": "Total Points",
+    "totalPointsRoundingTip": "Total points is the exact sum of each account's final distribution, equal to the actual amount deducted from the pool after execution.",
+    "scaledHint": "Scaled down to fit the pool's available cap",
     "exceedTotal": "Exceeds total amount!",
+    "exceedBalance": "Exceeds pool available balance!",
     "globalRatio": "Global Adjustment Ratio",
     "contributorList": "Contributor List",
     "username": "Username",
@@ -687,7 +693,10 @@
     "executeSuccessDesc": "Success: {{success}}, Pending: {{pending}}, Failed: {{failed}}, Total Points: {{totalPoints}}",
     "previewFailed": "Preview failed",
     "executeFailed": "Execution failed",
-    "loadPoolFailed": "Failed to load point pools"
+    "loadPoolFailed": "Failed to load point pools",
+    "prevPage": "Previous",
+    "nextPage": "Next",
+    "paginationInfo": "{{start}}-{{end}} of {{total}}"
   },
   "profileEdit": {
     "title": "Edit Profile",
@@ -943,6 +952,7 @@
     "developerDetailBackToInsight": "Back to Insight",
     "developerDetailBreadcrumbHome": "Insight",
     "repoVisitExternal": "Visit Repository",
-    "repoRelatedLabels": "Related Labels"
+    "repoRelatedLabels": "Related Labels",
+    "detailLabelAllocate": "Allocate Points"
   }
 }

@@ -1,5 +1,5 @@
 import type { LeaderboardMeta } from '../types/api';
-import { normalizeRepoPlatform } from './repoPlatform';
+import { inferDeveloperAvatarUrl } from './repoPlatform';
 import { getTimeBounds, type TimeBounds } from './timeRange';
 
 /** Raw JSON: period key -> [platform, id, login, score][] */
@@ -34,21 +34,7 @@ export function parseOpenRankDetailTuple(entry: unknown): CommunityOpenRankRow |
 }
 
 export function communityOpenRankAvatarUrl(row: CommunityOpenRankRow): string {
-  const login = row.login.split('/')[0] || row.login;
-  const p = row.platform.trim();
-  if (p === 'GitHub' || p.toLowerCase() === 'github') {
-    return `https://github.com/${login}.png`;
-  }
-  if (p === 'Gitee' || p.toLowerCase() === 'gitee') {
-    return `https://gitee.com/${login}.png`;
-  }
-  if (p === 'GitLab' || p.toLowerCase() === 'gitlab') {
-    return `https://gitlab.com/uploads/-/system/user/avatar/${row.id}/avatar.png`;
-  }
-  if (p === 'AtomGit' || p.toLowerCase() === 'atomgit') {
-    return `https://atomgit.com/${login}.png`;
-  }
-  return '';
+  return inferDeveloperAvatarUrl(row.platform, row.login, row.id);
 }
 
 /**
@@ -60,19 +46,7 @@ export function inferredDeveloperAvatarUrl(
   login: string,
   ossNumericUserId?: string | null,
 ): string {
-  const handle = (login || '').split('/')[0]?.trim() || '';
-  if (!handle) return '';
-  const slug = normalizeRepoPlatform(platform);
-  if (slug === 'gitlab') {
-    const id = String(ossNumericUserId ?? '').trim();
-    if (!id) return '';
-  }
-  return communityOpenRankAvatarUrl({
-    platform: slug,
-    id: String(ossNumericUserId ?? '').trim(),
-    login: handle,
-    score: 0,
-  });
+  return inferDeveloperAvatarUrl(platform, login, ossNumericUserId);
 }
 
 export function communityOpenRankPeriodKey(timeType: 'month' | 'year', timeValue: string): string {

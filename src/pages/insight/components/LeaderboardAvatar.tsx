@@ -23,9 +23,9 @@ export function LeaderboardAvatar({
   const initial = getInitial(displayName);
   const avatarColor = getAvatarColor(displayName);
   const isFlagCdn = typeof avatar === 'string' && avatar.includes('flagcdn.com');
-  const imgFitClass = isFlagCdn ? 'object-contain bg-gray-100' : 'object-cover';
+  const imgFitClass = isFlagCdn ? 'object-contain bg-[#334155]' : 'object-cover';
   const radiusClass = circular ? 'rounded-full' : 'rounded';
-  const borderClass = bordered ? 'border-2 border-gray-200' : '';
+  const borderClass = bordered ? 'border-2 border-[#475569]' : '';
 
   if (avatar && !failed) {
     return (

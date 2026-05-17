@@ -38,6 +38,9 @@ import AccountMergePage from '@/pages/account-merge';
 import PointAllocationPage from '@/pages/point-allocation';
 import InsightPage from '../pages/insight/index';
 import InsightDispatcher from '../pages/insight/insight-dispatcher';
+// Register MDI offline icon collection used across insight pages.
+// This import has side effects only (calls addCollection on @iconify/react/offline).
+import '../pages/insight/icons/registerMdiOffline';
 
 // Root layout with AuthProvider
 function RootLayout() {

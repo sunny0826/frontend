@@ -1,0 +1,98 @@
+/* 深色科技风格通用工具类 */
+/* 使用 @layer components 确保优先级正确 */
+
+@layer components {
+  /* === 卡片系列 === */
+  .dark-card {
+    @apply bg-[#1E293B] rounded-xl border border-[#475569] shadow-lg;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+
+  .dark-card-hover {
+    @apply transition-colors duration-200;
+  }
+  .dark-card-hover:hover {
+    @apply border-[rgba(34,197,94,0.4)] bg-[#253349];
+  }
+
+  /* === 磨砂玻璃效果 === */
+  .dark-glass {
+    @apply bg-[#1E293B]/80 backdrop-blur-sm border border-[#475569];
+  }
+
+  .dark-glass-strong {
+    @apply bg-[#1E293B]/95 backdrop-blur-md border border-[#475569];
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  }
+
+  /* === 输入框 === */
+  .dark-input {
+    @apply bg-[#1E293B] border border-[#475569] rounded-lg text-[#E2E8F0] placeholder-[#64748B];
+    @apply focus:border-[#22C55E] focus:ring-1 focus:ring-[rgba(34,197,94,0.4)];
+    @apply transition-colors duration-200;
+  }
+
+  /* === 下拉菜单 === */
+  .dark-dropdown {
+    @apply bg-[#1E293B] border border-[#475569] rounded-lg shadow-xl;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+  }
+
+  /* === 行项/列表项 === */
+  .dark-row {
+    @apply flex items-center gap-3 py-2 px-3 bg-[#334155]/40 rounded-lg border border-[#475569];
+    @apply transition-colors duration-200 cursor-pointer;
+  }
+
+  .dark-row:hover {
+    @apply bg-[#334155]/60 border-[rgba(34,197,94,0.4)];
+  }
+
+  /* === 渐变文字 === */
+  .gradient-text-green {
+    background: linear-gradient(135deg, #22C55E 0%, #4ade80 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gradient-text-brand {
+    background: linear-gradient(135deg, #22C55E 0%, #3B82F6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* === 分割线 === */
+  .dark-divider {
+    @apply border-t border-[#475569];
+  }
+
+  /* === 标签/徽章 === */
+  .dark-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    @apply bg-[rgba(34,197,94,0.15)] text-[#22C55E];
+  }
+
+  /* === 页面区块 === */
+  .dark-section {
+    @apply py-16 md:py-24;
+  }
+
+  /* === 深色滚动条 === */
+  .dark-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .dark-scrollbar::-webkit-scrollbar-track {
+    background: #1E293B;
+    border-radius: 3px;
+  }
+  .dark-scrollbar::-webkit-scrollbar-thumb {
+    background: #475569;
+    border-radius: 3px;
+  }
+  .dark-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #64748B;
+  }
+}

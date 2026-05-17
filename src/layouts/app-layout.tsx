@@ -133,20 +133,18 @@ export function AppLayout() {
   const SidebarContent = () => (
     <div className="flex h-full flex-col">
       {/* Logo */}
-      <div className="flex h-16 items-center justify-between border-b px-6">
+      <div className="flex h-16 items-center justify-between border-b border-[#475569] pl-6 pr-3">
         <Link
           to="/"
           onClick={() => setSidebarOpen(false)}
           className="flex items-center gap-2 transition-colors hover:opacity-80"
         >
           <Logo className="h-8 w-8" />
-          <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
+          <span className="text-lg font-bold gradient-text-green">
             OpenTalent
           </span>
         </Link>
-        <div className="scale-[0.82] origin-right">
-          <LanguageToggle />
-        </div>
+        <LanguageToggle iconOnly />
       </div>
 
       {/* Navigation */}
@@ -160,8 +158,8 @@ export function AppLayout() {
                     onClick={() => setSettingsOpen(!settingsOpen)}
                     className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
                       isActive(item.path)
-                        ? 'bg-primary/10 text-primary shadow-sm'
-                        : 'text-gray-700 hover:bg-gradient-to-r hover:from-blue-50/80 hover:to-indigo-50/50'
+                        ? 'bg-[rgba(34,197,94,0.15)] text-[#22C55E] shadow-sm'
+                        : 'text-[#94A3B8] hover:bg-[#334155]'
                     }`}
                   >
                     <span className="flex items-center gap-3">
@@ -183,8 +181,8 @@ export function AppLayout() {
                             onClick={() => setSidebarOpen(false)}
                             className={`block rounded-lg px-3 py-2 text-sm transition-all ${
                               location.pathname === child.path
-                                ? 'bg-primary/10 text-primary font-medium shadow-sm'
-                                : 'text-gray-600 hover:bg-gradient-to-r hover:from-blue-50/80 hover:to-indigo-50/50'
+                                ? 'bg-[rgba(34,197,94,0.15)] text-[#22C55E] font-medium shadow-sm'
+                                : 'text-[#94A3B8] hover:bg-[#334155]'
                             }`}
                           >
                             {t(child.labelKey)}
@@ -201,8 +199,8 @@ export function AppLayout() {
                   onClick={() => setSidebarOpen(false)}
                   className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
                     isActive(item.path)
-                      ? 'bg-primary/10 text-primary shadow-sm'
-                      : 'text-gray-700 hover:bg-gradient-to-r hover:from-blue-50/80 hover:to-indigo-50/50'
+                      ? 'bg-[rgba(34,197,94,0.15)] text-[#22C55E] shadow-sm'
+                      : 'text-[#94A3B8] hover:bg-[#334155]'
                   }`}
                 >
                   {item.icon}
@@ -220,10 +218,10 @@ export function AppLayout() {
       </nav>
 
       {/* Logout */}
-      <div className="border-t px-3 py-4">
+      <div className="border-t border-[#475569] px-3 py-4">
         <button
           onClick={handleLogout}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 transition-all hover:bg-red-50"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-400 transition-all hover:bg-red-500/10"
         >
           <LogOut className="h-5 w-5" />
           {t('nav.logout')}
@@ -233,9 +231,9 @@ export function AppLayout() {
   );
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
+    <div className="flex h-screen bg-[#0F172A]">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:border-r lg:bg-white/80 lg:backdrop-blur-xl">
+      <aside className="hidden lg:flex lg:w-56 lg:flex-col lg:border-r lg:border-[#475569] lg:bg-[#1E293B]">
         <SidebarContent />
       </aside>
 
@@ -246,7 +244,7 @@ export function AppLayout() {
             className="fixed inset-0 bg-black/50"
             onClick={() => setSidebarOpen(false)}
           />
-          <aside className="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl">
+          <aside className="fixed inset-y-0 left-0 z-50 w-56 bg-[#1E293B] shadow-xl">
             <SidebarContent />
           </aside>
         </div>
@@ -255,10 +253,10 @@ export function AppLayout() {
       {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Top Bar (mobile only - menu trigger) */}
-        <header className="flex h-16 items-center border-b bg-white/80 backdrop-blur-xl px-4 lg:hidden">
+        <header className="flex h-16 items-center border-b border-[#475569] bg-[#1E293B]/95 backdrop-blur-sm px-4 lg:hidden">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="rounded-lg p-2 hover:bg-gray-100"
+            className="rounded-lg p-2 text-[#E2E8F0] hover:bg-[#334155]"
           >
             <Menu className="h-5 w-5" />
           </button>

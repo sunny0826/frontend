@@ -134,7 +134,7 @@ export function DataPagination({
       )}
 
       <Pagination className="mx-0 w-auto justify-end">
-        <PaginationContent>
+        <PaginationContent className="gap-1.5">
           <PaginationItem>
             <PaginationLink
               href="#"
@@ -160,13 +160,14 @@ export function DataPagination({
                   href="#"
                   isActive={token === safePage}
                   onClick={(e) => goTo(e, token)}
+                  className="h-9 w-auto min-w-9 px-2 tabular-nums"
                 >
                   {token}
                 </PaginationLink>
               </PaginationItem>
             ) : (
               <PaginationItem key={`${token}-${idx}`}>
-                <PaginationEllipsis />
+                <PaginationEllipsis className="h-9 w-auto min-w-9 px-1" />
               </PaginationItem>
             ),
           )}

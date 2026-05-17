@@ -313,7 +313,9 @@
     "loadFailed": "获取交易记录失败",
     "transactionType": "交易类型",
     "pointTypeLabel": "积分类型",
-    "viewAllocation": "查看详情"
+    "viewAllocation": "查看详情",
+    "mergedFromSources": "合计 {{count}} 笔来源",
+    "mergedFromSourcesTitle": "该次分配跨越 {{count}} 个积分来源扣减，按账本记账生成 {{count}} 条明细，此处已合并展示"
   },
   "allocationDetail": {
     "title": "分配详情",
@@ -332,6 +334,7 @@
     "emptyRegistered": "本次分配没有已注册受益人",
     "emptyPending": "本次分配没有待领取记录",
     "githubLogin": "GitHub 用户",
+    "accountLogin": "账号",
     "contributionScore": "贡献度",
     "calculatedPoints": "计算积分",
     "adjustedPoints": "实际积分",
@@ -655,7 +658,7 @@
     "searchTagPlaceholder": "输入关键词搜索项目...",
     "selectedTags": "已选标签",
     "operation": "运算方式",
-    "step3Title": "步骤 3 - 时间区间",
+    "step3Title": "步骤 3 - 选择时间区间",
     "startMonth": "开始月份",
     "endMonth": "结束月份",
     "previewButton": "预览分配结果",
@@ -663,7 +666,10 @@
     "registered": "已注册",
     "unregistered": "未注册",
     "totalPoints": "总积分",
+    "totalPointsRoundingTip": "总积分为每个账号最终分发金额的精确合计，与本次分配执行后从积分池扣减的金额完全一致。",
+    "scaledHint": "已按比例缩减至积分池可用上限",
     "exceedTotal": "超过发放总量!",
+    "exceedBalance": "超过积分池可用余额!",
     "globalRatio": "全局调整比例",
     "contributorList": "贡献者列表",
     "username": "用户名",
@@ -687,7 +693,10 @@
     "executeSuccessDesc": "成功: {{success}}, 待处理: {{pending}}, 失败: {{failed}}, 总积分: {{totalPoints}}",
     "previewFailed": "预览失败",
     "executeFailed": "执行分配失败",
-    "loadPoolFailed": "获取积分池失败"
+    "loadPoolFailed": "获取积分池失败",
+    "prevPage": "上一页",
+    "nextPage": "下一页",
+    "paginationInfo": "第 {{start}}-{{end}} 位 / 共 {{total}} 位"
   },
   "profileEdit": {
     "title": "编辑资料",
@@ -942,6 +951,7 @@
     "relatedLabels": "相关标签",
     "repoVisitExternal": "访问仓库",
     "repoRelatedLabels": "相关标签",
+    "detailLabelAllocate": "发放积分",
     "developerDetailBackToInsight": "返回数据洞察",
     "developerDetailBreadcrumbHome": "数据洞察"
   }

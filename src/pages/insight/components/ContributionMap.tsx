@@ -57,10 +57,10 @@ export function ContributionMap({ contributions }: Props) {
           backgroundColor: 'transparent',
           tooltip: {
             trigger: 'item',
-            backgroundColor: 'rgba(255, 255, 255, 0.96)',
-            borderColor: '#e5e7eb',
+            backgroundColor: 'rgba(30, 41, 59, 0.96)',
+            borderColor: '#475569',
             borderWidth: 1,
-            textStyle: { color: '#374151', fontSize: 12 },
+            textStyle: { color: '#E2E8F0', fontSize: 12 },
             formatter(params: unknown) {
               const p = params as {
                 name?: string;
@@ -96,7 +96,7 @@ export function ContributionMap({ contributions }: Props) {
             bottom: '10',
             text: [t('insight.mapVisualHigh'), t('insight.mapVisualLow')],
             formatter: () => '',
-            textStyle: { color: '#6b7280' },
+            textStyle: { color: '#94A3B8' },
             calculable: true,
             inRange: { color: ['#dcfce7', '#86efac', '#4ade80', '#22c55e', '#16a34a'] },
           },
@@ -107,12 +107,12 @@ export function ContributionMap({ contributions }: Props) {
               map: 'world',
               roam: true,
               emphasis: {
-                label: { show: true, color: '#111827' },
-                itemStyle: { areaColor: '#bbf7d0' },
+                label: { show: true, color: '#E2E8F0' },
+                itemStyle: { areaColor: '#22c55e' },
               },
               itemStyle: {
-                areaColor: '#f3f4f6',
-                borderColor: '#d1d5db',
+                areaColor: '#334155',
+                borderColor: '#475569',
                 borderWidth: 0.5,
               },
               label: { show: false },
@@ -151,18 +151,18 @@ export function ContributionMap({ contributions }: Props) {
       {!hasData && (
         <div
           id="contributionMapContainer"
-          className="bg-white rounded-lg p-4 border border-gray-200"
+          className="bg-[#1E293B] rounded-lg p-4 border border-[#475569]"
           style={{ height: 320 }}
         >
-          <p className="text-gray-400 text-sm py-4 text-center">{t('insight.noData')}</p>
+          <p className="text-[#64748B] text-sm py-4 text-center">{t('insight.noData')}</p>
         </div>
       )}
       {hasData && loadError && (
         <div
-          className="bg-white rounded-lg p-4 border border-gray-200"
+          className="bg-[#1E293B] rounded-lg p-4 border border-[#475569]"
           style={{ height: 320 }}
         >
-          <p className="text-gray-400 text-sm py-4 text-center">{t('insight.mapLoadFailed')}</p>
+          <p className="text-[#64748B] text-sm py-4 text-center">{t('insight.mapLoadFailed')}</p>
         </div>
       )}
       {hasData && !loadError && (
@@ -170,14 +170,14 @@ export function ContributionMap({ contributions }: Props) {
           <div
             ref={containerRef}
             id="contributionMapContainer"
-            className="bg-white rounded-lg p-4 border border-gray-200"
+            className="bg-[#1E293B] rounded-lg p-4 border border-[#475569]"
             style={{ height: 320 }}
           />
           {mapReady && (
             <button
               id="contributionMapResetBtn"
               type="button"
-              className="absolute top-6 right-6 px-2 py-1 text-xs rounded bg-gray-100 border border-gray-200 text-gray-600 hover:bg-gray-200 hover:text-gray-900 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
+              className="absolute top-6 right-6 px-2 py-1 text-xs rounded bg-[#334155] border border-[#475569] text-[#94A3B8] hover:bg-[#475569] hover:text-[#E2E8F0] transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
               title={t('insight.mapResetTitle')}
               onClick={resetMap}
             >

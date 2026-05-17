@@ -92,9 +92,9 @@ export default function ShopPage() {
           <Skeleton className="h-8 w-48" />
           <Skeleton className="h-6 w-32" />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-56 rounded-xl" />
+            <Skeleton key={i} className="h-48 rounded-xl" />
           ))}
         </div>
       </div>
@@ -125,7 +125,7 @@ export default function ShopPage() {
           <p>{t('shop.noItems')}</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {items.map((item) => {
             const stockInfo = getStockLabel(item.stock, t);
             const affordable = canAfford(item, user_balance);
@@ -134,7 +134,7 @@ export default function ShopPage() {
             return (
               <Card key={item.id} className="overflow-hidden flex flex-col">
                 {/* 商品图片 */}
-                <div className="aspect-video bg-muted flex items-center justify-center overflow-hidden">
+                <div className="aspect-[2/1] bg-muted flex items-center justify-center overflow-hidden">
                   {item.image_url ? (
                     <img
                       src={item.image_url}
@@ -142,15 +142,15 @@ export default function ShopPage() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <Package className="size-12 text-muted-foreground/50" />
+                    <Package className="size-10 text-muted-foreground/50" />
                   )}
                 </div>
 
-                <CardHeader className="pb-2">
+                <CardHeader className="pb-1 pt-3">
                   <CardTitle className="text-base font-semibold">{item.name}</CardTitle>
                 </CardHeader>
 
-                <CardContent className="flex-1 space-y-3">
+                <CardContent className="flex-1 space-y-2 pb-3">
                   {/* 描述 */}
                   <p className="text-sm text-muted-foreground line-clamp-2">
                     {item.description}

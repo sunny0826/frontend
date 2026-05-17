@@ -27,9 +27,19 @@ import {
   TableRow,
 } from "@/app/components/ui/table";
 import { DataPagination } from "@/app/components/ui/data-pagination";
+import {
+  getDeveloperProfileUrlByPlatform,
+  normalizeRepoPlatform,
+} from "@/pages/insight/domain/repoPlatform";
+import { OPEN_DIGGER_PLATFORM_LOGO_BASE } from "@/pages/insight/api/constants";
 
 interface ContributionItem {
-  github_login: string;
+  // 平台无关的通用键（后端已提供）
+  platform?: string;
+  actor_id?: string;
+  actor_login?: string;
+  // 兼容老数据 / GitHub 专用键
+  github_login?: string;
   github_id?: string;
   email?: string;
   is_registered: boolean;
@@ -37,17 +47,81 @@ interface ContributionItem {
   contribution_score?: number;
   calculated_points?: number;
   adjusted_points?: number;
+  // 后端按平台动态返回 `{platform}_login` 字段
+  [key: string]: unknown;
 }
 
 interface PendingGrantItem {
   id: number;
-  github_login: string;
+  platform?: string;
+  actor_id?: string;
+  actor_login?: string;
+  // 兼容老数据
+  github_login?: string;
   email: string;
   amount: number;
   point_type: "cash" | "gift";
   is_claimed: boolean;
   claimed_at: string | null;
   expires_at: string | null;
+}
+
+/** 提取贡献者/待领取项的登录名：优先 `{platform}_login`，回退 actor_login / github_login */
+function getItemLogin(item: {
+  platform?: string;
+  actor_login?: string;
+  github_login?: string;
+}): string {
+  if (item.platform) {
+    const p = normalizeRepoPlatform(item.platform);
+    const v = (item as Record<string, unknown>)[`${p}_login`];
+    if (typeof v === "string" && v) return v;
+  }
+  return item.actor_login || item.github_login || "";
+}
+
+/** 渲染带平台 logo + profile 链接的登录名单元格 */
+function RecipientLoginCell({
+  platform,
+  login,
+}: {
+  platform?: string;
+  login: string;
+}) {
+  const normalizedPlatform = platform ? normalizeRepoPlatform(platform) : "";
+  const profileUrl =
+    platform && login ? getDeveloperProfileUrlByPlatform(platform, login) : "";
+  const platformLogo = normalizedPlatform
+    ? `${OPEN_DIGGER_PLATFORM_LOGO_BASE}${normalizedPlatform}.png`
+    : "";
+  if (!login) return <span className="text-sm">-</span>;
+  return (
+    <span className="inline-flex items-center gap-1.5 text-sm">
+      {platformLogo && (
+        <img
+          src={platformLogo}
+          alt={platform}
+          title={platform}
+          className="size-4 rounded-full object-cover shrink-0"
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).style.display = "none";
+          }}
+        />
+      )}
+      {profileUrl ? (
+        <a
+          href={profileUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary hover:underline"
+        >
+          {login}
+        </a>
+      ) : (
+        <span>{login}</span>
+      )}
+    </span>
+  );
 }
 
 interface AllocationDetail {
@@ -145,15 +219,28 @@ export default function AllocationDetailDialog({
     }
   }, [open, allocationId, fetchDetail]);
 
+  // 已注册账号列表：按 adjusted_points 倒序，金额最大的在前
   const registeredList = useMemo(
     () =>
-      (detail?.contribution_data || []).filter(
-        (item) => item.is_registered && (item.adjusted_points ?? 0) > 0,
-      ),
+      (detail?.contribution_data || [])
+        .filter(
+          (item) => item.is_registered && (item.adjusted_points ?? 0) > 0,
+        )
+        .slice()
+        .sort(
+          (a, b) => (b.adjusted_points ?? 0) - (a.adjusted_points ?? 0),
+        ),
     [detail],
   );
 
-  const pendingList = detail?.pending_grants || [];
+  // 待领取账号列表：按 amount 倒序，金额最大的在前
+  const pendingList = useMemo(
+    () =>
+      (detail?.pending_grants || [])
+        .slice()
+        .sort((a, b) => (b.amount ?? 0) - (a.amount ?? 0)),
+    [detail],
+  );
 
   const registeredTotalPages = Math.max(
     1,
@@ -291,7 +378,9 @@ export default function AllocationDetailDialog({
                     <TableHeader>
                       <TableRow>
                         <TableHead>
-                          {t("allocationDetail.githubLogin")}
+                          {t("allocationDetail.accountLogin", {
+                            defaultValue: "账号",
+                          })}
                         </TableHead>
                         <TableHead className="text-right">
                           {t("allocationDetail.contributionScore")}
@@ -306,11 +395,14 @@ export default function AllocationDetailDialog({
                     </TableHeader>
                     <TableBody>
                       {registeredPageItems.map((item) => (
-                        <TableRow key={`${item.github_id}-${item.user_id}`}>
+                        <TableRow
+                          key={`${item.platform || ""}-${item.actor_id || item.github_id || ""}-${item.user_id ?? ""}`}
+                        >
                           <TableCell>
-                            <span className="text-sm">
-                              {item.github_login || "-"}
-                            </span>
+                            <RecipientLoginCell
+                              platform={item.platform}
+                              login={getItemLogin(item)}
+                            />
                           </TableCell>
                           <TableCell className="text-right text-sm">
                             {item.contribution_score != null
@@ -365,7 +457,9 @@ export default function AllocationDetailDialog({
                     <TableHeader>
                       <TableRow>
                         <TableHead>
-                          {t("allocationDetail.githubLogin")}
+                          {t("allocationDetail.accountLogin", {
+                            defaultValue: "账号",
+                          })}
                         </TableHead>
                         <TableHead>
                           {t("allocationDetail.email")}
@@ -382,9 +476,10 @@ export default function AllocationDetailDialog({
                       {pendingPageItems.map((grant) => (
                         <TableRow key={grant.id}>
                           <TableCell>
-                            <span className="text-sm">
-                              {grant.github_login || "-"}
-                            </span>
+                            <RecipientLoginCell
+                              platform={grant.platform}
+                              login={getItemLogin(grant)}
+                            />
                           </TableCell>
                           <TableCell className="max-w-[200px] truncate text-sm text-muted-foreground">
                             {grant.email || "-"}

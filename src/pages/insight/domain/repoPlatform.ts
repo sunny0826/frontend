@@ -48,6 +48,35 @@ export function getDeveloperProfileUrlByPlatform(platform: unknown, login: strin
   return `https://github.com/${handle}`;
 }
 
+/**
+ * 根据平台与登录名推断开发者头像 URL。
+ * 各平台规则：
+ *   - github:  https://github.com/{login}.png
+ *   - gitee:   https://gitee.com/{login}.png
+ *   - atomgit: https://atomgit.com/{login}.png
+ *   - gitlab:  https://gitlab.com/uploads/-/system/user/avatar/{numericUserId}/avatar.png
+ *              (gitlab 必须提供数字 id，否则返回空字符串)
+ * 与贡献者排行榜（CommunityDeveloperOpenRank）使用一致的构造逻辑。
+ */
+export function inferDeveloperAvatarUrl(
+  platform: unknown,
+  login: string,
+  numericUserId?: string | null,
+): string {
+  const handle = (login || '').split('/')[0]?.trim() || '';
+  if (!handle) return '';
+  const p = normalizeRepoPlatform(platform);
+  if (p === 'github') return `https://github.com/${handle}.png`;
+  if (p === 'gitee') return `https://gitee.com/${handle}.png`;
+  if (p === 'atomgit') return `https://atomgit.com/${handle}.png`;
+  if (p === 'gitlab') {
+    const id = String(numericUserId ?? '').trim();
+    if (!id) return '';
+    return `https://gitlab.com/uploads/-/system/user/avatar/${id}/avatar.png`;
+  }
+  return '';
+}
+
 export function inferLabelAvatarUrl(labelIdFull: string | null | undefined): string {
   if (!labelIdFull || typeof labelIdFull !== 'string') return '';
   // Strip a leading '#' or ':' prefix if present (label ids may come in as

@@ -72,8 +72,8 @@ export function TrendChart({ values, label, monthLabels, noDataText }: Props) {
   if (n === 0) {
     return (
       <div className="mb-4">
-        <div className="text-sm font-mono text-gray-500 mb-2">{label}</div>
-        <div className="flex gap-2 items-center h-20 text-gray-400 text-sm">{noDataText}</div>
+        <div className="text-sm font-mono text-[#94A3B8] mb-2">{label}</div>
+        <div className="flex gap-2 items-center h-20 text-[#64748B] text-sm">{noDataText}</div>
       </div>
     );
   }
@@ -93,9 +93,9 @@ export function TrendChart({ values, label, monthLabels, noDataText }: Props) {
 
   return (
     <div className="mb-4">
-      <div className="text-sm font-mono text-gray-500 mb-2">{label}</div>
+      <div className="text-sm font-mono text-[#94A3B8] mb-2">{label}</div>
       <div className="flex gap-2">
-        <div className="flex flex-col justify-between text-xs text-gray-400 font-mono h-20 py-0.5 flex-shrink-0">
+        <div className="flex flex-col justify-between text-xs text-[#64748B] font-mono h-20 py-0.5 flex-shrink-0">
           {yTicks
             .slice()
             .reverse()
@@ -121,7 +121,7 @@ export function TrendChart({ values, label, monthLabels, noDataText }: Props) {
             />
           </svg>
           <div className="trend-chart-tooltip" role="tooltip" />
-          <div className="flex justify-between text-xs text-gray-400 mt-1 flex-shrink-0">
+          <div className="flex justify-between text-xs text-[#64748B] mt-1 flex-shrink-0">
             <span>{labels[0] || ''}</span>
             <span>{labels[labels.length - 1] || ''}</span>
           </div>

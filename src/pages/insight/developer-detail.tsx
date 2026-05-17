@@ -3,12 +3,13 @@ import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Icon } from '@iconify/react/offline';
 import { fetchUserMeta, fetchUserTrendData } from './api/openDiggerTrend';
-import { getDeveloperProfileUrlByPlatform, normalizeRepoPlatform } from './domain/repoPlatform';
+import { getDeveloperProfileUrlByPlatform, inferDeveloperAvatarUrl } from './domain/repoPlatform';
 import { getInsightHomePath } from './domain/routes';
 import { EMPTY_TREND } from './domain/trends';
 import { TrendChart } from './components/TrendChart';
 import { RepoPlatformIcon } from './components/RepoPlatformIcon';
 import { DeltaDisplay } from './components/DeltaDisplay';
+import { LeaderboardAvatar } from './components/LeaderboardAvatar';
 import type { RepoTrendMap, TrendSeries, UserOssMeta } from './types/api';
 
 function getLatest(t: TrendSeries | null): number {
@@ -27,37 +28,35 @@ function getDelta(t: TrendSeries | null, latest: number, prev: number): number |
   return latest - prev;
 }
 
-function getAvatarUrl(platform: string, login: string): string {
-  const p = normalizeRepoPlatform(platform);
-  if (p === 'github') return `https://avatars.githubusercontent.com/${login}`;
-  if (p === 'gitee') return `https://gitee.com/${login}/avatar`;
-  return `https://avatars.githubusercontent.com/${login}`;
-}
-
 function StatCard({
   label,
   value,
   delta,
   icon,
   iconColor,
+  isInt,
 }: {
   label: string;
   value: number;
   delta: number | null;
   icon: string;
   iconColor: string;
+  isInt?: boolean;
 }) {
+  const displayValue = isInt
+    ? String(Math.round(value || 0))
+    : value ? value.toFixed(1) : '0';
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-4 flex flex-col gap-2">
-      <div className="flex items-center gap-2 text-sm text-gray-500">
+    <div className="bg-[#1E293B] rounded-xl border border-[#475569] p-4 flex flex-col gap-2">
+      <div className="flex items-center gap-2 text-sm text-[#94A3B8]">
         <Icon icon={icon} className={`w-4 h-4 ${iconColor}`} aria-hidden />
         <span>{label}</span>
       </div>
       <div className="flex items-end gap-2">
-        <span className="text-2xl font-bold text-gray-900">
-          {value ? value.toFixed(1) : '0'}
+        <span className="text-2xl font-bold text-[#E2E8F0]">
+          {displayValue}
         </span>
-        <DeltaDisplay value={delta} compact />
+        <DeltaDisplay value={delta} compact isInt={isInt} />
       </div>
     </div>
   );
@@ -130,7 +129,7 @@ export default function DeveloperDetailPage() {
     : '';
 
   const profileUrl = getDeveloperProfileUrlByPlatform(platform, login);
-  const avatarUrl = getAvatarUrl(platform, login);
+  const avatarUrl = inferDeveloperAvatarUrl(platform, login, ossMeta?.id);
 
   const profileLocation = ossMeta?.info?.location?.trim() ?? '';
   const profileCompany = ossMeta?.info?.company?.trim() ?? '';
@@ -140,7 +139,7 @@ export default function DeveloperDetailPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-5xl px-4 py-8">
-        <div className="flex flex-col items-center justify-center gap-4 py-16 text-gray-400">
+        <div className="flex flex-col items-center justify-center gap-4 py-16 text-[#64748B]">
           <Icon icon="mdi:loading" className="text-4xl animate-spin" aria-hidden />
           <p>{t('insight.loadingUser')}</p>
         </div>
@@ -151,10 +150,10 @@ export default function DeveloperDetailPage() {
   if (error || !ossMeta) {
     return (
       <div className="mx-auto max-w-5xl px-4 py-8">
-        <div className="flex flex-col items-center justify-center gap-4 py-16 text-gray-500">
+        <div className="flex flex-col items-center justify-center gap-4 py-16 text-[#94A3B8]">
           <Icon icon="mdi:database-off-outline" className="text-4xl" aria-hidden />
           <p className="text-center px-4">{t('insight.detailUserDataMissing')}</p>
-          <Link to={getInsightHomePath()} className="text-blue-600 hover:underline text-sm mt-2">
+          <Link to={getInsightHomePath()} className="text-[#22C55E] hover:underline text-sm mt-2">
             {t('insight.developerDetailBackToInsight')}
           </Link>
         </div>
@@ -164,52 +163,41 @@ export default function DeveloperDetailPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 space-y-6">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-sm text-gray-500">
-        <Link to={getInsightHomePath()} className="hover:text-gray-700 transition-colors">
-          {t('insight.developerDetailBreadcrumbHome')}
-        </Link>
-        <Icon icon="mdi:chevron-right" className="w-4 h-4" aria-hidden />
-        <span className="flex items-center gap-1">
-          <RepoPlatformIcon platform={platform} size="xs" />
-          <span>{normalizeRepoPlatform(platform)}</span>
-        </span>
-        <Icon icon="mdi:chevron-right" className="w-4 h-4" aria-hidden />
-        <span className="text-gray-900 font-medium">@{login}</span>
-      </nav>
-
       {/* Developer info card */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-[#1E293B] rounded-xl border border-[#475569] p-6">
         <div className="flex items-start gap-4">
-          <img
-            src={avatarUrl}
-            alt={displayName}
-            className="w-16 h-16 rounded-full border border-gray-200 object-cover flex-shrink-0"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-          />
+          <div className="w-32 h-32 flex-shrink-0">
+            <LeaderboardAvatar
+              avatar={avatarUrl}
+              displayName={displayName}
+              sizeClass="w-32 h-32"
+              circular
+              bordered={false}
+            />
+          </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-xl font-bold text-gray-900">{displayName}</h1>
-              <span className="text-gray-500 text-sm">@{login}</span>
+              <h1 className="text-xl font-bold text-[#E2E8F0]">{displayName}</h1>
+              <span className="text-[#94A3B8] text-sm">@{login}</span>
             </div>
 
             {(profileLocation || profileCompany || profileBio) && (
-              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600">
+              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#94A3B8]">
                 {profileLocation && (
                   <span className="flex items-center gap-1">
-                    <Icon icon="mdi:map-marker" className="w-4 h-4 text-gray-400" aria-hidden />
+                    <Icon icon="mdi:map-marker" className="w-4 h-4 text-[#64748B]" aria-hidden />
                     {profileLocation}
                   </span>
                 )}
                 {profileCompany && (
                   <span className="flex items-center gap-1">
-                    <Icon icon="mdi:domain" className="w-4 h-4 text-gray-400" aria-hidden />
+                    <Icon icon="mdi:domain" className="w-4 h-4 text-[#64748B]" aria-hidden />
                     {profileCompany}
                   </span>
                 )}
                 {profileBio && (
                   <span className="flex items-center gap-1">
-                    <Icon icon="mdi:card-text-outline" className="w-4 h-4 text-gray-400" aria-hidden />
+                    <Icon icon="mdi:card-text-outline" className="w-4 h-4 text-[#64748B]" aria-hidden />
                     {profileBio}
                   </span>
                 )}
@@ -222,7 +210,7 @@ export default function DeveloperDetailPage() {
             href={profileUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex-shrink-0"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-[#475569] rounded-lg text-[#E2E8F0] hover:bg-[#334155] transition-colors flex-shrink-0"
           >
             <RepoPlatformIcon platform={platform} size="sm" />
             <span>{t('insight.detailDeveloperProfile')}</span>
@@ -233,12 +221,12 @@ export default function DeveloperDetailPage() {
 
       {/* Mode toggle */}
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-700">
+        <h2 className="text-sm font-semibold text-[#E2E8F0]">
           {t('insight.detailBasicStatsHeading')}
-          {timeKey && <span className="text-gray-400 font-normal ml-2">({timeKey})</span>}
+          {timeKey && <span className="text-[#64748B] font-normal ml-2">({timeKey})</span>}
         </h2>
         <div
-          className="flex rounded-lg bg-gray-100 border border-gray-200 p-0.5"
+          className="flex rounded-lg bg-[#0F172A] border border-[#475569] p-0.5"
           role="group"
           aria-label={t('insight.detailTrendModeAria')}
         >
@@ -246,8 +234,8 @@ export default function DeveloperDetailPage() {
             type="button"
             className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
               trendMode === 'month'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-[#334155] text-[#E2E8F0] shadow-sm'
+                : 'text-[#94A3B8] hover:text-[#E2E8F0]'
             }`}
             onClick={() => setTrendMode('month')}
           >
@@ -257,8 +245,8 @@ export default function DeveloperDetailPage() {
             type="button"
             className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
               trendMode === 'year'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-[#334155] text-[#E2E8F0] shadow-sm'
+                : 'text-[#94A3B8] hover:text-[#E2E8F0]'
             }`}
             onClick={() => setTrendMode('year')}
           >
@@ -293,6 +281,7 @@ export default function DeveloperDetailPage() {
           label={t('insight.detailStatOpenIssue')}
           value={oiLatest}
           delta={getDelta(openIssueTrend, oiLatest, oiPrev)}
+          isInt
         />
         <StatCard
           icon="mdi:comment-outline"
@@ -300,6 +289,7 @@ export default function DeveloperDetailPage() {
           label={t('insight.detailStatIssueComment')}
           value={icLatest}
           delta={getDelta(issueCommentTrend, icLatest, icPrev)}
+          isInt
         />
         <StatCard
           icon="mdi:source-pull"
@@ -307,6 +297,7 @@ export default function DeveloperDetailPage() {
           label={t('insight.detailStatOpenPull')}
           value={opLatest}
           delta={getDelta(openPullTrend, opLatest, opPrev)}
+          isInt
         />
         <StatCard
           icon="mdi:comment-check-outline"
@@ -314,12 +305,13 @@ export default function DeveloperDetailPage() {
           label={t('insight.detailStatReviewComment')}
           value={rcLatest}
           delta={getDelta(reviewCommentTrend, rcLatest, rcPrev)}
+          isInt
         />
       </div>
 
       {/* Trend charts */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h3 className="text-sm font-semibold text-gray-700 mb-4">
+      <div className="bg-[#1E293B] rounded-xl border border-[#475569] p-6">
+        <h3 className="text-sm font-semibold text-[#E2E8F0] mb-4">
           {t('insight.detailHistoricalTrendHeading')}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

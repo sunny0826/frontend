@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { fetchItemMeta, fetchRepoTrendData } from './api/openDiggerTrend';
 import { getLabelDetailPath, getInsightHomePath } from './domain/routes';
@@ -7,6 +7,8 @@ import { getRepoUrlByPlatform, normalizeRepoPlatform } from './domain/repoPlatfo
 import { TrendChart } from './components/TrendChart';
 import { ContributionMap } from './components/ContributionMap';
 import { RepoPlatformIcon } from './components/RepoPlatformIcon';
+import { LeaderboardAvatar } from './components/LeaderboardAvatar';
+import { inferredDeveloperAvatarUrl } from './domain/communityOpenRankDetails';
 import { EMPTY_TREND, pickTrendMode } from './domain/trends';
 import { preprocessContributions } from './domain/geography';
 import type { RepoTrendMap, MetaLabelEntry, ContributionRow, TrendSeries } from './types/api';
@@ -102,7 +104,7 @@ export default function RepoDetailPage() {
     return (
       <div className="mx-auto max-w-6xl px-4 py-8">
         <div className="flex items-center justify-center h-64">
-          <div className="text-gray-500 text-sm">{t('insight.loadingRepository')}</div>
+          <div className="text-[#94A3B8] text-sm">{t('insight.loadingRepository')}</div>
         </div>
       </div>
     );
@@ -116,7 +118,7 @@ export default function RepoDetailPage() {
           <button
             type="button"
             onClick={() => navigate(getInsightHomePath())}
-            className="px-4 py-2 text-sm rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors"
+            className="px-4 py-2 text-sm rounded-lg bg-[#334155] hover:bg-[#475569] text-[#E2E8F0] transition-colors"
           >
             {t('insight.detailBack')}
           </button>
@@ -127,39 +129,33 @@ export default function RepoDetailPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 space-y-6">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-gray-500">
-        <Link to={getInsightHomePath()} className="hover:text-gray-900 transition-colors">
-          {t('nav.insight')}
-        </Link>
-        <span>/</span>
-        <span className="text-gray-400">{normalizedPlatform}</span>
-        <span>/</span>
-        <span className="text-gray-900 font-medium">{repoName}</span>
-      </nav>
-
       {/* Repo Info Card */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-[#1E293B] rounded-xl border border-[#475569] p-6">
         <div className="flex items-start gap-4">
-          <div className="flex-shrink-0 mt-1">
-            <RepoPlatformIcon platform={normalizedPlatform} size="md" />
+          <div className="flex-shrink-0 w-32 h-32 relative">
+            <LeaderboardAvatar
+              avatar={inferredDeveloperAvatarUrl(normalizedPlatform, owner || '')}
+              displayName={owner || repoName}
+              sizeClass="w-32 h-32"
+              bordered={false}
+            />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-xl font-semibold text-gray-900">{repoName}</h1>
-              <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+              <h1 className="text-xl font-semibold text-[#E2E8F0]">{repoName}</h1>
+              <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-900/30 text-blue-400 border border-blue-700/50">
                 {t('insight.detailSectionRepoSingular')}
               </span>
             </div>
             {description && (
-              <p className="mt-2 text-sm text-gray-600 line-clamp-2">{description}</p>
+              <p className="mt-2 text-sm text-[#94A3B8] line-clamp-2">{description}</p>
             )}
           </div>
           <a
             href={getRepoUrlByPlatform(normalizedPlatform, repoName)}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 text-sm text-gray-700 hover:bg-gray-100 hover:border-gray-300 transition-colors"
+            className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#334155] border border-[#475569] text-sm text-[#E2E8F0] hover:bg-[#475569] hover:border-[#64748B] transition-colors"
           >
             <RepoPlatformIcon platform={normalizedPlatform} size="sm" />
             <span>{t('insight.repoVisitExternal')}</span>
@@ -175,7 +171,7 @@ export default function RepoDetailPage() {
           pct={getChangePct(infLatest, infPrev)}
           delta={getStatDelta(infLatest, infPrev)}
           timeKey={timeKey}
-          colorClass="from-purple-50 to-white"
+          colorClass="from-purple-900/20 to-[#1E293B]"
         />
         <StatCard
           label={t('insight.detailStatActivity')}
@@ -183,7 +179,7 @@ export default function RepoDetailPage() {
           pct={getChangePct(actLatest, actPrev)}
           delta={getStatDelta(actLatest, actPrev)}
           timeKey={timeKey}
-          colorClass="from-emerald-50 to-white"
+          colorClass="from-emerald-900/20 to-[#1E293B]"
         />
         <StatCard
           label={t('insight.detailStatDeveloperCount')}
@@ -191,7 +187,7 @@ export default function RepoDetailPage() {
           pct={getChangePct(devLatest, devPrev)}
           delta={getStatDelta(devLatest, devPrev)}
           timeKey={timeKey}
-          colorClass="from-blue-50 to-white"
+          colorClass="from-blue-900/20 to-[#1E293B]"
         />
         <StatCard
           label={t('insight.detailChartIssuePrTrend')}
@@ -199,27 +195,27 @@ export default function RepoDetailPage() {
           pct={getChangePct(issuePrLatest, issuePrPrev)}
           delta={getStatDelta(issuePrLatest, issuePrPrev)}
           timeKey={timeKey}
-          colorClass="from-amber-50 to-white"
+          colorClass="from-amber-900/20 to-[#1E293B]"
         />
       </div>
 
       {/* Trend Charts */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-[#1E293B] rounded-xl border border-[#475569] p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-base font-semibold text-gray-900">
+          <h2 className="text-base font-semibold text-[#E2E8F0]">
             {t('insight.detailHistoricalTrendHeading')}
           </h2>
-          <div className="flex rounded-lg bg-gray-100 border border-gray-200 p-0.5" role="group" aria-label={t('insight.detailTrendModeAria')}>
+          <div className="flex rounded-lg bg-[#0F172A] border border-[#475569] p-0.5" role="group" aria-label={t('insight.detailTrendModeAria')}>
             <button
               type="button"
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${trendMode === 'month' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${trendMode === 'month' ? 'bg-[#334155] text-[#E2E8F0] shadow-sm' : 'text-[#94A3B8] hover:text-[#E2E8F0]'}`}
               onClick={() => setTrendMode('month')}
             >
               {t('insight.detailTrendModeMonth')}
             </button>
             <button
               type="button"
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${trendMode === 'year' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${trendMode === 'year' ? 'bg-[#334155] text-[#E2E8F0] shadow-sm' : 'text-[#94A3B8] hover:text-[#E2E8F0]'}`}
               onClick={() => setTrendMode('year')}
             >
               {t('insight.detailTrendModeYear')}
@@ -227,7 +223,7 @@ export default function RepoDetailPage() {
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+          <div className="bg-[#0F172A] rounded-lg p-4 border border-[#475569]">
             <TrendChart
               values={influenceTrend.values}
               label={t('insight.detailChartInfluenceTrend')}
@@ -235,7 +231,7 @@ export default function RepoDetailPage() {
               noDataText={t('insight.noData')}
             />
           </div>
-          <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+          <div className="bg-[#0F172A] rounded-lg p-4 border border-[#475569]">
             <TrendChart
               values={activityTrend.values}
               label={t('insight.detailChartActivityTrend')}
@@ -243,7 +239,7 @@ export default function RepoDetailPage() {
               noDataText={t('insight.noData')}
             />
           </div>
-          <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+          <div className="bg-[#0F172A] rounded-lg p-4 border border-[#475569]">
             <TrendChart
               values={participantsTrend.values}
               label={t('insight.detailChartParticipantsTrend')}
@@ -251,7 +247,7 @@ export default function RepoDetailPage() {
               noDataText={t('insight.noData')}
             />
           </div>
-          <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+          <div className="bg-[#0F172A] rounded-lg p-4 border border-[#475569]">
             <TrendChart
               values={issuePrTrend.values}
               label={t('insight.detailChartIssuePrTrend')}
@@ -264,8 +260,8 @@ export default function RepoDetailPage() {
 
       {/* Related Labels */}
       {metaLabels.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-base font-semibold text-gray-900 mb-4">
+        <div className="bg-[#1E293B] rounded-xl border border-[#475569] p-6">
+          <h2 className="text-base font-semibold text-[#E2E8F0] mb-4">
             {t('insight.repoRelatedLabels')}
           </h2>
           <div className="flex flex-wrap gap-2">
@@ -278,7 +274,7 @@ export default function RepoDetailPage() {
                   <button
                     key={idx}
                     type="button"
-                    className="inline-flex items-center px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200 text-sm text-gray-700 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 transition-colors cursor-pointer"
+                    className="inline-flex items-center px-3 py-1.5 rounded-lg bg-[#334155] border border-[#475569] text-sm text-[#E2E8F0] hover:bg-[#22C55E]/10 hover:border-[#22C55E]/50 hover:text-[#22C55E] transition-colors cursor-pointer"
                     onClick={() => navigate(getLabelDetailPath(label.id!))}
                   >
                     {text}
@@ -288,7 +284,7 @@ export default function RepoDetailPage() {
               return (
                 <span
                   key={idx}
-                  className="inline-flex items-center px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200 text-sm text-gray-600"
+                  className="inline-flex items-center px-3 py-1.5 rounded-lg bg-[#334155] border border-[#475569] text-sm text-[#94A3B8]"
                 >
                   {text}
                 </span>
@@ -300,8 +296,8 @@ export default function RepoDetailPage() {
 
       {/* Contribution Map */}
       {showContributionMap && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-base font-semibold text-gray-900 mb-4">
+        <div className="bg-[#1E293B] rounded-xl border border-[#475569] p-6">
+          <h2 className="text-base font-semibold text-[#E2E8F0] mb-4">
             {t('insight.detailContributionMapHeading')}
           </h2>
           <ContributionMap contributions={contributions} />
@@ -331,18 +327,18 @@ function StatCard({
   const isNegative = delta !== null && delta < 0;
 
   return (
-    <div className={`rounded-xl border border-gray-200 p-4 bg-gradient-to-br ${colorClass}`}>
-      <div className="text-xs text-gray-500 mb-1">{label}</div>
-      <div className="text-2xl font-bold text-gray-900">
+    <div className={`rounded-xl border border-[#475569] p-4 bg-gradient-to-br ${colorClass}`}>
+      <div className="text-xs text-[#94A3B8] mb-1">{label}</div>
+      <div className="text-2xl font-bold text-[#E2E8F0]">
         {value ? value.toLocaleString(undefined, { maximumFractionDigits: 1 }) : '0'}
       </div>
       <div className="flex items-center gap-2 mt-1">
         {delta !== null && (
-          <span className={`text-xs font-medium ${isPositive ? 'text-green-600' : isNegative ? 'text-red-500' : 'text-gray-400'}`}>
+          <span className={`text-xs font-medium ${isPositive ? 'text-green-600' : isNegative ? 'text-red-500' : 'text-[#64748B]'}`}>
             {isPositive ? '↑' : isNegative ? '↓' : ''} {pct}%
           </span>
         )}
-        {timeKey && <span className="text-xs text-gray-400">{timeKey}</span>}
+        {timeKey && <span className="text-xs text-[#64748B]">{timeKey}</span>}
       </div>
     </div>
   );

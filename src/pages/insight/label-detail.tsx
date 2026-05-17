@@ -68,7 +68,7 @@ function StatCard({
 }) {
   const up = parseFloat(pct) >= 0;
   return (
-    <div className="bg-white rounded-xl px-5 pt-5 pb-4 border border-gray-200 shadow-sm">
+    <div className="bg-[#1E293B] rounded-xl px-5 pt-5 pb-4 border border-[#475569] shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className={`w-9 h-9 flex items-center justify-center flex-shrink-0 ${iconBg} rounded-lg`}>
@@ -78,7 +78,7 @@ function StatCard({
               {icon === 'account-group' && <path d="M12 5.5A3.5 3.5 0 0 1 15.5 9a3.5 3.5 0 0 1-3.5 3.5A3.5 3.5 0 0 1 8.5 9 3.5 3.5 0 0 1 12 5.5M5 8c.56 0 1.08.15 1.53.42-.15 1.43.27 2.85 1.13 3.96C7.16 13.34 6.16 14 5 14a3 3 0 0 1-3-3 3 3 0 0 1 3-3m14 0a3 3 0 0 1 3 3 3 3 0 0 1-3 3c-1.16 0-2.16-.66-2.66-1.62a5.54 5.54 0 0 0 1.13-3.96c.45-.27.97-.42 1.53-.42M5.5 18.25c0-2.07 2.91-3.75 6.5-3.75s6.5 1.68 6.5 3.75V20h-13v-1.75M0 20v-1.5c0-1.39 1.89-2.56 4.45-2.9-.59.68-.95 1.62-.95 2.65V20H0m24 0h-3.5v-1.75c0-1.03-.36-1.97-.95-2.65 2.56.34 4.45 1.51 4.45 2.9V20z" />}
             </svg>
           </div>
-          <div className="text-3xl font-bold text-gray-900">{value.toLocaleString()}</div>
+          <div className="text-3xl font-bold text-[#E2E8F0]">{value.toLocaleString()}</div>
         </div>
         <div className={`flex items-center gap-1.5 text-sm font-medium ${up ? 'text-emerald-600' : 'text-red-500'}`}>
           <svg className="w-4 h-4 flex-shrink-0 self-center" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
@@ -90,7 +90,7 @@ function StatCard({
           </div>
         </div>
       </div>
-      <div className="text-sm text-gray-500 mt-1">{subtitle}</div>
+      <div className="text-sm text-[#94A3B8] mt-1">{subtitle}</div>
     </div>
   );
 }
@@ -183,7 +183,7 @@ export default function LabelDetailPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-5xl px-4 py-8">
-        <div className="flex flex-col items-center justify-center gap-4 py-16 text-gray-400">
+        <div className="flex flex-col items-center justify-center gap-4 py-16 text-[#64748B]">
           <svg className="w-10 h-10 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden>
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -197,7 +197,7 @@ export default function LabelDetailPage() {
   if (error || !item) {
     return (
       <div className="mx-auto max-w-5xl px-4 py-8">
-        <div className="flex flex-col items-center justify-center gap-4 py-16 text-gray-500">
+        <div className="flex flex-col items-center justify-center gap-4 py-16 text-[#94A3B8]">
           <p className="font-mono">{error || t('insight.noData')}</p>
           <Link to={getInsightHomePath()} className="text-primary hover:underline text-sm">
             {t('insight.detailBack')}
@@ -265,26 +265,36 @@ export default function LabelDetailPage() {
   const showContributionMap = contributionDetailRows.length > 0;
   const showCommunityRank = Boolean(communityOpenRankDetails);
 
+  // Build navigation params for the "Allocate Points" entry; carry the tag's
+  // identity so the allocation page can preload it into step 2.
+  const handleAllocatePoints = () => {
+    // Backend tag operations match against `opensource.labels.id` whose
+    // canonical form is prefixed with ':' (e.g. ':companies/huawei/ascend').
+    // The page's `labelId` has the ':' / '#' / 'labels/' prefixes stripped
+    // for routing, so re-prepend ':' when carrying the id to the allocation
+    // page; otherwise downstream queries will return no matches.
+    const canonicalTagId = labelId.startsWith(':') ? labelId : ':' + labelId;
+    const params = new URLSearchParams();
+    params.set('tag_id', canonicalTagId);
+    params.set('tag_name', displayName);
+    if (resolvedLabelType) params.set('tag_type', resolvedLabelType);
+    if (typeof item.openrank === 'number') {
+      params.set('tag_openrank', String(item.openrank));
+    }
+    navigate(`/points/allocate?${params.toString()}`);
+  };
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 space-y-6">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-gray-500">
-        <Link to={getInsightHomePath()} className="hover:text-primary transition-colors">
-          {t('nav.insight')}
-        </Link>
-        <span>/</span>
-        <span className="text-gray-900 font-medium">{displayName}</span>
-      </nav>
-
       {/* Label Info Card */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-[#1E293B] rounded-xl border border-[#475569] p-6">
         <div className="flex items-start gap-4">
-          <div className="flex-shrink-0 w-16 h-16 relative">
-            <LeaderboardAvatar avatar={headerAvatar} displayName={displayName} sizeClass="w-16 h-16" bordered={false} />
+          <div className="flex-shrink-0 w-32 h-32 relative">
+            <LeaderboardAvatar avatar={headerAvatar} displayName={displayName} sizeClass="w-32 h-32" bordered={false} />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center flex-wrap gap-2 mb-1">
-              <h1 className="text-xl font-mono font-bold text-gray-900">{displayName}</h1>
+              <h1 className="text-xl font-mono font-bold text-[#E2E8F0]">{displayName}</h1>
               {labelTypeDesc ? (
                 <span className="inline-block px-2 py-0.5 rounded text-[11px] font-mono leading-tight bg-primary/10 text-primary border border-primary/30">
                   {labelTypeDesc}
@@ -300,7 +310,7 @@ export default function LabelDetailPage() {
                     <button
                       key={idx}
                       type="button"
-                      className="inline-block px-2 py-0.5 rounded text-[11px] font-mono leading-tight bg-gray-100 text-gray-700 border border-gray-200 hover:border-primary/50 hover:text-primary transition-colors cursor-pointer"
+                      className="inline-block px-2 py-0.5 rounded text-[11px] font-mono leading-tight bg-[#334155] text-[#E2E8F0] border border-[#475569] hover:border-primary/50 hover:text-primary transition-colors cursor-pointer"
                       title={t('insight.detailMetaLabelViewDetails')}
                       onClick={() => navigate(getLabelDetailPath(l.id || ''))}
                     >
@@ -311,52 +321,62 @@ export default function LabelDetailPage() {
                 return (
                   <span
                     key={idx}
-                    className="inline-block px-2 py-0.5 rounded text-[11px] font-mono leading-tight bg-gray-100 text-gray-600 border border-gray-200"
+                    className="inline-block px-2 py-0.5 rounded text-[11px] font-mono leading-tight bg-[#334155] text-[#94A3B8] border border-[#475569]"
                   >
                     {text}
                   </span>
                 );
               })}
             </div>
-            {desc ? <p className="text-gray-500 text-sm mt-1">{desc}</p> : null}
+            {desc ? <p className="text-[#94A3B8] text-sm mt-1">{desc}</p> : null}
+            {repos.length > 0 && (
+              <div className="mt-4">
+                <h2 className="text-sm font-mono font-semibold text-[#E2E8F0] mb-2">
+                  {t('insight.detailSectionRepoList')}
+                </h2>
+                <div className="flex flex-wrap gap-1.5">
+                  {repos.map((r, idx) => {
+                    const row = r as Record<string, unknown>;
+                    const name = String(row.name || '');
+                    const href = getRepoHref(row);
+                    return (
+                      <a
+                        key={idx}
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded bg-[#334155] border border-[#475569] text-[#E2E8F0] hover:border-primary/50 hover:text-primary text-xs font-mono transition-colors"
+                      >
+                        <RepoPlatformIcon platform={row.platform || row.Platform || 'github'} size="xs" />
+                        <span className="truncate max-w-[10rem]">{name}</span>
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
+          {/* Allocate Points entry, mirrors the position of the
+              external-link button in repo/developer detail pages. */}
+          <button
+            type="button"
+            onClick={handleAllocatePoints}
+            className="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-[#475569] rounded-lg text-[#E2E8F0] hover:bg-[#334155] transition-colors"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+              <path d="M5,16L3,5L8.5,11L12,4L15.5,11L21,5L19,16H5M19,19A1,1 0 0,1 18,20H6A1,1 0 0,1 5,19V18H19V19Z" />
+            </svg>
+            <span>{t('insight.detailLabelAllocate')}</span>
+          </button>
         </div>
       </div>
-
-      {/* Related Repos */}
-      {repos.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-sm font-mono font-semibold text-gray-700 mb-3">
-            {t('insight.detailSectionRepoList')}
-          </h2>
-          <div className="flex flex-wrap gap-1.5">
-            {repos.map((r, idx) => {
-              const row = r as Record<string, unknown>;
-              const name = String(row.name || '');
-              const href = getRepoHref(row);
-              return (
-                <a
-                  key={idx}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 px-2 py-1 rounded bg-gray-50 border border-gray-200 text-gray-700 hover:border-primary/50 hover:text-primary text-xs font-mono transition-colors"
-                >
-                  <RepoPlatformIcon platform={row.platform || row.Platform || 'github'} size="xs" />
-                  <span className="truncate max-w-[10rem]">{name}</span>
-                </a>
-              );
-            })}
-          </div>
-        </div>
-      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
           icon="lightning-bolt"
-          iconBg="bg-purple-100"
-          iconColor="text-purple-600"
+          iconBg="bg-purple-900/30"
+          iconColor="text-purple-400"
           value={infLatest}
           pct={infPct}
           delta={getStatDelta(influenceTrend, infLatest, infPrev)}
@@ -364,8 +384,8 @@ export default function LabelDetailPage() {
         />
         <StatCard
           icon="chart-line"
-          iconBg="bg-emerald-100"
-          iconColor="text-emerald-600"
+          iconBg="bg-emerald-900/30"
+          iconColor="text-emerald-400"
           value={actLatest}
           pct={actPct}
           delta={getStatDelta(activityTrend, actLatest, actPrev)}
@@ -373,8 +393,8 @@ export default function LabelDetailPage() {
         />
         <StatCard
           icon="account-group"
-          iconBg="bg-blue-100"
-          iconColor="text-blue-600"
+          iconBg="bg-blue-900/30"
+          iconColor="text-blue-400"
           value={devLatest}
           pct={devPct}
           delta={getStatDelta(devCountTrend, devLatest, devPrev)}
@@ -383,26 +403,26 @@ export default function LabelDetailPage() {
       </div>
 
       {/* Trend Mode Toggle + Charts */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-[#1E293B] rounded-xl border border-[#475569] p-6">
         <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
-          <h2 className="text-sm font-mono font-semibold text-gray-700">
+          <h2 className="text-sm font-mono font-semibold text-[#E2E8F0]">
             {t('insight.detailHistoricalTrendHeading')}
           </h2>
           <div
-            className="flex rounded-lg bg-gray-100 border border-gray-200 p-0.5"
+            className="flex rounded-lg bg-[#0F172A] border border-[#475569] p-0.5"
             role="group"
             aria-label={t('insight.detailTrendModeAria')}
           >
             <button
               type="button"
-              className={`px-3 py-1.5 text-xs font-mono rounded-md transition-colors ${trendMode === 'month' ? 'bg-white text-gray-900 shadow-sm border border-gray-200' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`px-3 py-1.5 text-xs font-mono rounded-md transition-colors ${trendMode === 'month' ? 'bg-[#334155] text-[#E2E8F0] shadow-sm border border-[#475569]' : 'text-[#94A3B8] hover:text-[#E2E8F0]'}`}
               onClick={() => handleTrendModeChange('month')}
             >
               {t('insight.detailTrendModeMonth')}
             </button>
             <button
               type="button"
-              className={`px-3 py-1.5 text-xs font-mono rounded-md transition-colors ${trendMode === 'year' ? 'bg-white text-gray-900 shadow-sm border border-gray-200' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`px-3 py-1.5 text-xs font-mono rounded-md transition-colors ${trendMode === 'year' ? 'bg-[#334155] text-[#E2E8F0] shadow-sm border border-[#475569]' : 'text-[#94A3B8] hover:text-[#E2E8F0]'}`}
               onClick={() => handleTrendModeChange('year')}
             >
               {t('insight.detailTrendModeYear')}
@@ -410,7 +430,7 @@ export default function LabelDetailPage() {
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+          <div className="bg-[#0F172A] rounded-lg p-4 border border-[#475569]">
             <TrendChart
               values={influenceTrend.values}
               label={t('insight.detailChartInfluenceTrend')}
@@ -418,7 +438,7 @@ export default function LabelDetailPage() {
               noDataText={t('insight.noData')}
             />
           </div>
-          <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+          <div className="bg-[#0F172A] rounded-lg p-4 border border-[#475569]">
             <TrendChart
               values={activityTrend.values}
               label={t('insight.detailChartActivityTrend')}
@@ -426,7 +446,7 @@ export default function LabelDetailPage() {
               noDataText={t('insight.noData')}
             />
           </div>
-          <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+          <div className="bg-[#0F172A] rounded-lg p-4 border border-[#475569]">
             <TrendChart
               values={devCountTrend.values}
               label={t('insight.detailChartParticipantsTrend')}
@@ -434,7 +454,7 @@ export default function LabelDetailPage() {
               noDataText={t('insight.noData')}
             />
           </div>
-          <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+          <div className="bg-[#0F172A] rounded-lg p-4 border border-[#475569]">
             <TrendChart
               values={issuePrTrend.values}
               label={t('insight.detailChartIssuePrTrend')}
@@ -447,13 +467,13 @@ export default function LabelDetailPage() {
 
       {/* Contribution Map */}
       {showContributionMap && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-sm font-mono font-semibold text-gray-700 mb-3">
+        <div className="bg-[#1E293B] rounded-xl border border-[#475569] p-6">
+          <h2 className="text-sm font-mono font-semibold text-[#E2E8F0] mb-3">
             {t('insight.detailContributionMapHeading')}
           </h2>
           <div className="flex gap-4">
             <div className="flex-shrink-0" style={{ width: '40%' }}>
-              <div className="bg-gray-50 rounded-lg p-4 border border-gray-100" style={{ height: 320, overflowY: 'auto' }}>
+              <div className="bg-[#0F172A] rounded-lg p-4 border border-[#475569]" style={{ height: 320, overflowY: 'auto' }}>
                 <ContributionTable contributions={contributions} lang={lang} t={t} />
               </div>
             </div>
@@ -464,7 +484,7 @@ export default function LabelDetailPage() {
 
       {/* Community Developer OpenRank */}
       {showCommunityRank && communityOpenRankDetails && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-[#1E293B] rounded-xl border border-[#475569] p-6">
           <CommunityDeveloperOpenRank
             details={communityOpenRankDetails}
             meta={null}
@@ -499,14 +519,14 @@ function ContributionTable({
   const processed = preprocessContributions(contributions);
   const rowsSorted = processed.slice().sort((a, b) => b.openrank - a.openrank);
   if (rowsSorted.length === 0) {
-    return <p className="text-gray-400 text-sm py-4 text-center">{t('insight.noData')}</p>;
+    return <p className="text-[#64748B] text-sm py-4 text-center">{t('insight.noData')}</p>;
   }
   const colName = t('insight.contributionTableCountry');
   const colDevelopers = t('insight.mapTooltipDevelopers');
   return (
     <table className="w-full text-xs">
       <thead>
-        <tr className="border-b border-gray-200 text-gray-500">
+        <tr className="border-b border-[#475569] text-[#94A3B8]">
           <th className="text-left py-2 pr-3 font-mono">#</th>
           <th className="text-left py-2 pr-3 font-mono">{colName}</th>
           <th className="text-right py-2 pr-3 font-mono">{colDevelopers}</th>
@@ -525,14 +545,14 @@ function ContributionTable({
             />
           ) : null;
           return (
-            <tr key={i} className="border-b border-gray-100">
-              <td className="py-2 pr-3 text-gray-400 font-mono">{i + 1}</td>
-              <td className="py-2 pr-3 text-gray-700">
+            <tr key={i} className="border-b border-[#475569]/50">
+              <td className="py-2 pr-3 text-[#64748B] font-mono">{i + 1}</td>
+              <td className="py-2 pr-3 text-[#E2E8F0]">
                 {flagHtml}
                 {countryDisplay}
               </td>
-              <td className="py-2 pr-3 text-right font-mono text-gray-600">{(c.developers ?? 0).toLocaleString()}</td>
-              <td className="py-2 text-right font-mono text-gray-600">{c.openrank.toLocaleString()}</td>
+              <td className="py-2 pr-3 text-right font-mono text-[#94A3B8]">{(c.developers ?? 0).toLocaleString()}</td>
+              <td className="py-2 text-right font-mono text-[#94A3B8]">{c.openrank.toLocaleString()}</td>
             </tr>
           );
         })}
