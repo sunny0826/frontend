@@ -1,0 +1,241 @@
+/* Insight module custom styles - dark theme */
+
+:root {
+  --insight-accent: #22C55E;
+  --insight-accent-light: rgba(34, 197, 94, 0.15);
+}
+
+/* ===== Utility ===== */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .transition-all,
+  .animate-spin {
+    animation: none !important;
+  }
+}
+
+/* ===== Page Dropdown ===== */
+.page-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.page-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 0.25rem;
+  background: #1E293B;
+  border: 1px solid #475569;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
+  z-index: 50;
+  max-height: 200px;
+  overflow-y: auto;
+  min-width: 80px;
+  display: none;
+  scrollbar-width: thin;
+  scrollbar-color: #475569 #1E293B;
+}
+
+.page-dropdown-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.page-dropdown-menu::-webkit-scrollbar-track {
+  background: #1E293B;
+  border-radius: 0.5rem;
+}
+
+.page-dropdown-menu::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 3px;
+}
+
+.page-dropdown-menu::-webkit-scrollbar-thumb:hover {
+  background: #64748B;
+}
+
+.page-dropdown-menu.show {
+  display: block;
+}
+
+.page-dropdown-menu--dense {
+  max-height: 160px;
+}
+.page-dropdown-menu--dense .page-dropdown-item {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+.page-dropdown-item {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  color: #E2E8F0;
+  transition: background-color 0.2s;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.page-dropdown-item:hover {
+  background-color: #334155;
+}
+
+.page-dropdown-item.active {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: #22C55E;
+}
+
+/* ===== Filter Select Trigger ===== */
+.filter-select-trigger {
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  padding-right: 2.25rem;
+}
+.filter-select-trigger:hover {
+  border-color: #64748B;
+  background-color: #334155;
+}
+
+/* ===== Filter Dropdown Menu ===== */
+.filter-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 0.25rem;
+  background: #1E293B;
+  border: 1px solid #475569;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
+  z-index: 50;
+  max-height: 200px;
+  overflow-y: auto;
+  overscroll-behavior: none;
+  display: none;
+  scrollbar-width: thin;
+  scrollbar-color: #475569 #1E293B;
+}
+.filter-dropdown-menu::-webkit-scrollbar {
+  width: 6px;
+}
+.filter-dropdown-menu::-webkit-scrollbar-track {
+  background: #1E293B;
+  border-radius: 0.5rem;
+}
+.filter-dropdown-menu::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 3px;
+}
+.filter-dropdown-menu::-webkit-scrollbar-thumb:hover {
+  background: #64748B;
+}
+.filter-dropdown-menu.show {
+  display: block;
+}
+.filter-dropdown-item {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  color: #E2E8F0;
+  transition: background-color 0.2s;
+  font-size: 0.875rem;
+}
+.filter-dropdown-item:hover {
+  background-color: #334155;
+}
+.filter-dropdown-item.active {
+  background-color: var(--insight-accent-light);
+  color: var(--insight-accent);
+}
+
+/* ===== Time Picker Dropdown ===== */
+.time-picker-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 0.25rem;
+  background: #1E293B;
+  border: 1px solid #475569;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
+  z-index: 50;
+  padding: 0.75rem;
+  display: none;
+}
+.time-picker-dropdown.show {
+  display: block;
+}
+.time-picker-dropdown--dense {
+  padding: 0.5rem;
+}
+.time-picker-dropdown--dense .time-picker-month-btn {
+  padding: 0.25rem 0.125rem;
+  font-size: 0.6875rem;
+}
+.time-picker-month-btn {
+  width: calc(33.333% - 0.25rem);
+  padding: 0.375rem 0.25rem;
+  font-size: 0.75rem;
+  border-radius: 0.375rem;
+}
+.time-picker-month-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+button.time-picker-arrow:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ===== Trend Chart ===== */
+.trend-chart-wrap {
+  position: relative;
+  cursor: crosshair;
+}
+.trend-chart-tooltip {
+  position: absolute;
+  pointer-events: none;
+  z-index: 10;
+  padding: 6px 10px;
+  background: rgba(30, 41, 59, 0.97);
+  border: 1px solid #475569;
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: ui-monospace, monospace;
+  color: #E2E8F0;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.15s,
+    visibility 0.15s;
+}
+.trend-chart-tooltip.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ===== Detail Trend Toggle ===== */
+.detail-trend-toggle.active {
+  background: var(--insight-accent);
+  color: #ffffff;
+}
+.detail-trend-toggle:not(.active):hover {
+  color: #E2E8F0;
+}

@@ -1,0 +1,118 @@
+/* 科技感动画效果 */
+
+@layer components {
+  /* === 星闪动画 === */
+  .star {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle 3s infinite;
+  }
+
+  @keyframes twinkle {
+    0%, 100% {
+      opacity: 0.2;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.8;
+      transform: scale(1.3);
+    }
+  }
+
+  /* === 粒子浮动 === */
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(34, 197, 94, 0.4) 0%, transparent 70%);
+    animation: float 15s infinite ease-in-out;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+      opacity: 0.3;
+    }
+    25% {
+      transform: translate(30px, -30px) scale(1.2);
+      opacity: 0.6;
+    }
+    50% {
+      transform: translate(-20px, -50px) scale(0.8);
+      opacity: 0.4;
+    }
+    75% {
+      transform: translate(20px, -20px) scale(1.1);
+      opacity: 0.5;
+    }
+  }
+
+  /* === 渐变光条 === */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(34, 197, 94, 0.1),
+      transparent
+    );
+    animation: shimmer 3s infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      left: -100%;
+    }
+    100% {
+      left: 100%;
+    }
+  }
+
+  /* === 脉冲光效 === */
+  .pulse-glow {
+    animation: pulse-glow 2s infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 5px rgba(34, 197, 94, 0.2);
+    }
+    50% {
+      box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+    }
+  }
+
+  /* === 网络背景容器 === */
+  .network-background {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .network-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+/* === 辅助功能：减少动画偏好支持 === */
+@media (prefers-reduced-motion: reduce) {
+  .star,
+  .particle,
+  .shimmer::after,
+  .pulse-glow {
+    animation: none !important;
+  }
+}

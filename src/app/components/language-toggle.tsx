@@ -2,20 +2,44 @@ import { Languages } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { useLanguage } from "@/app/contexts/language-context";
 
-export function LanguageToggle() {
+interface LanguageToggleProps {
+  iconOnly?: boolean;
+}
+
+export function LanguageToggle({ iconOnly = false }: LanguageToggleProps) {
   const { language, setLanguage } = useLanguage();
 
   const toggleLanguage = () => {
     setLanguage(language === "zh" ? "en" : "zh");
   };
 
+  const nextLabel = language === "zh" ? "EN" : "中文";
+  const ariaLabel = language === "zh" ? "Switch to English" : "切换到中文";
+
+  if (iconOnly) {
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={toggleLanguage}
+        className="size-8 rounded-md border border-[#475569] bg-transparent text-[#E2E8F0] hover:bg-[#22C55E]/10 hover:text-[#22C55E] hover:border-[#22C55E]/40"
+        title={ariaLabel}
+        aria-label={ariaLabel}
+      >
+        <Languages className="w-4 h-4" />
+      </Button>
+    );
+  }
+
   return (
     <Button
+      variant="ghost"
       onClick={toggleLanguage}
-      className="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 gap-2"
+      className="gap-2 border border-[#475569] bg-transparent text-[#E2E8F0] hover:bg-[#22C55E]/10 hover:text-[#22C55E] hover:border-[#22C55E]/40"
+      aria-label={ariaLabel}
     >
       <Languages className="w-4 h-4" />
-      <span>{language === "zh" ? "EN" : "中文"}</span>
+      <span>{nextLabel}</span>
     </Button>
   );
 }

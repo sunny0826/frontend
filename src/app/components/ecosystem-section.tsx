@@ -2,7 +2,6 @@ import {
   Building2,
   Users,
   Layers,
-  ArrowRight,
   CheckCircle2,
 } from "lucide-react";
 import { Card } from "@/app/components/ui/card";
@@ -51,34 +50,34 @@ export function EcosystemSection() {
 
   const colorMap = {
     blue: {
-      bg: "bg-blue-50",
-      icon: "text-blue-600",
-      check: "text-blue-600",
+      bg: "bg-blue-500/20",
+      icon: "text-blue-400",
+      check: "text-[#22C55E]",
     },
     indigo: {
-      bg: "bg-indigo-50",
-      icon: "text-indigo-600",
-      check: "text-indigo-600",
+      bg: "bg-indigo-500/20",
+      icon: "text-indigo-400",
+      check: "text-[#22C55E]",
     },
     purple: {
-      bg: "bg-purple-50",
-      icon: "text-purple-600",
-      check: "text-purple-600",
+      bg: "bg-purple-500/20",
+      icon: "text-purple-400",
+      check: "text-[#22C55E]",
     },
   };
 
   return (
-    <section id="ecosystem" className="py-24 px-6 bg-gradient-to-b from-gray-50 to-white">
+    <section id="ecosystem" className="py-24 px-6 bg-[#0F172A]">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 rounded-full mb-6">
-            <Layers className="w-4 h-4 text-green-600" />
-            <span className="text-sm text-green-700 font-medium">{t("ecosystem.badge")}</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-[rgba(34,197,94,0.15)] rounded-full mb-6">
+            <Layers className="w-4 h-4 text-[#22C55E]" />
+            <span className="text-sm text-[#22C55E] font-medium">{t("ecosystem.badge")}</span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+          <h2 className="text-4xl md:text-5xl font-bold text-[#E2E8F0] mb-6">
             {t("ecosystem.title")}
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg text-[#94A3B8] max-w-2xl mx-auto">
             {t("ecosystem.description")}
           </p>
         </div>
@@ -92,7 +91,7 @@ export function EcosystemSection() {
             return (
               <Card
                 key={participant.title}
-                className="p-8 hover:shadow-xl transition-all duration-300"
+                className="dark-card dark-card-hover p-8"
               >
                 <div
                   className={`w-14 h-14 ${colors.bg} rounded-2xl flex items-center justify-center mb-6`}
@@ -100,10 +99,10 @@ export function EcosystemSection() {
                   <Icon className={`w-7 h-7 ${colors.icon}`} />
                 </div>
 
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                <h3 className="text-2xl font-bold text-[#E2E8F0] mb-2">
                   {participant.title}
                 </h3>
-                <p className="text-gray-600 mb-6">{participant.description}</p>
+                <p className="text-[#94A3B8] mb-6">{participant.description}</p>
 
                 <ul className="space-y-3">
                   {participant.benefits.map((benefit) => (
@@ -111,60 +110,13 @@ export function EcosystemSection() {
                       <CheckCircle2
                         className={`w-5 h-5 ${colors.check} flex-shrink-0 mt-0.5`}
                       />
-                      <span className="text-sm text-gray-700">{benefit}</span>
+                      <span className="text-sm text-[#94A3B8]">{benefit}</span>
                     </li>
                   ))}
                 </ul>
               </Card>
             );
           })}
-        </div>
-
-        {/* Value flow */}
-        <div className="bg-white rounded-2xl p-12 border-2 border-gray-200">
-          <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">
-            {t("ecosystem.flow.title")}
-          </h3>
-
-          <div className="grid md:grid-cols-3 gap-8 items-center">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-white">1</span>
-              </div>
-              <h4 className="font-semibold text-gray-900 mb-2">{t("ecosystem.flow.step1.title")}</h4>
-              <p className="text-sm text-gray-600">
-                {t("ecosystem.flow.step1.description")}
-              </p>
-            </div>
-
-            <div className="hidden md:flex justify-center">
-              <ArrowRight className="w-8 h-8 text-gray-400" />
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-white">2</span>
-              </div>
-              <h4 className="font-semibold text-gray-900 mb-2">{t("ecosystem.flow.step2.title")}</h4>
-              <p className="text-sm text-gray-600">
-                {t("ecosystem.flow.step2.description")}
-              </p>
-            </div>
-
-            <div className="hidden md:flex justify-center">
-              <ArrowRight className="w-8 h-8 text-gray-400" />
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-purple-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-white">3</span>
-              </div>
-              <h4 className="font-semibold text-gray-900 mb-2">{t("ecosystem.flow.step3.title")}</h4>
-              <p className="text-sm text-gray-600">
-                {t("ecosystem.flow.step3.description")}
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </section>
