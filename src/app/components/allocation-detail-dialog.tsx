@@ -47,6 +47,8 @@ interface ContributionItem {
   contribution_score?: number;
   calculated_points?: number;
   adjusted_points?: number;
+  // contribution_data 快照中持久化的最终分配金额
+  amount?: number;
   // 后端按平台动态返回 `{platform}_login` 字段
   [key: string]: unknown;
 }
@@ -219,16 +221,20 @@ export default function AllocationDetailDialog({
     }
   }, [open, allocationId, fetchDetail]);
 
-  // 已注册账号列表：按 adjusted_points 倒序，金额最大的在前
+  // 已注册账号列表：按金额倒序（优先 adjusted_points，回退 amount）
   const registeredList = useMemo(
     () =>
       (detail?.contribution_data || [])
         .filter(
-          (item) => item.is_registered && (item.adjusted_points ?? 0) > 0,
+          (item) =>
+            item.is_registered &&
+            ((item.adjusted_points ?? item.amount) ?? 0) > 0,
         )
         .slice()
         .sort(
-          (a, b) => (b.adjusted_points ?? 0) - (a.adjusted_points ?? 0),
+          (a, b) =>
+            ((b.adjusted_points ?? b.amount) ?? 0) -
+            ((a.adjusted_points ?? a.amount) ?? 0),
         ),
     [detail],
   );
@@ -418,8 +424,8 @@ export default function AllocationDetailDialog({
                               : "-"}
                           </TableCell>
                           <TableCell className="text-right font-medium text-emerald-600">
-                            {item.adjusted_points != null
-                              ? `+${item.adjusted_points.toLocaleString()}`
+                            {(item.adjusted_points ?? item.amount) != null
+                              ? `+${(item.adjusted_points ?? item.amount)!.toLocaleString()}`
                               : "-"}
                           </TableCell>
                         </TableRow>

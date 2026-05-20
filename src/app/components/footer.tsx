@@ -1,39 +1,18 @@
-import { Github, Twitter, Linkedin, Mail } from "lucide-react";
+import { Github, Mail } from "lucide-react";
 import { useLanguage } from "@/app/contexts/language-context";
 
 export function Footer() {
   const { t } = useLanguage();
-  const footerLinks = {
-    products: [
-      t("footer.products.insight"),
-      t("footer.products.ads"),
-      t("footer.products.credit"),
-      t("footer.products.pricing"),
-    ],
-    resources: [
-      t("footer.resources.reports"),
-      t("footer.resources.docs"),
-      t("footer.resources.api"),
-      t("footer.resources.cases"),
-    ],
-    company: [
-      t("footer.company.about"),
-      t("footer.company.careers"),
-      t("footer.company.news"),
-      t("footer.company.contact"),
-    ],
-    legal: [
-      t("footer.legal.privacy"),
-      t("footer.legal.terms"),
-      t("footer.legal.security"),
-      t("footer.legal.compliance"),
-    ],
-  };
+  const productLinks = [
+    { label: t("footer.products.insight"), href: "/insight" },
+    { label: t("footer.products.ads"), href: "/talent-reach" },
+    { label: t("footer.products.credit"), href: "/points" },
+  ];
 
   return (
     <footer className="bg-[#0F172A] text-[#94A3B8] pt-16 pb-8 px-6 border-t border-[#475569]">
       <div className="max-w-7xl mx-auto">
-        <div className="grid md:grid-cols-5 gap-12 mb-12">
+        <div className="grid md:grid-cols-3 gap-12 mb-12">
           {/* Brand */}
           <div className="md:col-span-1">
             <div className="flex items-center gap-2 mb-4">
@@ -50,25 +29,15 @@ export function Footer() {
             </p>
             <div className="flex gap-4">
               <a
-                href="#"
+                href="https://github.com/opensharehq"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-9 h-9 bg-[#1E293B] rounded-lg flex items-center justify-center hover:bg-[#334155] transition-colors"
               >
                 <Github className="w-4 h-4" />
               </a>
               <a
-                href="#"
-                className="w-9 h-9 bg-[#1E293B] rounded-lg flex items-center justify-center hover:bg-[#334155] transition-colors"
-              >
-                <Twitter className="w-4 h-4" />
-              </a>
-              <a
-                href="#"
-                className="w-9 h-9 bg-[#1E293B] rounded-lg flex items-center justify-center hover:bg-[#334155] transition-colors"
-              >
-                <Linkedin className="w-4 h-4" />
-              </a>
-              <a
-                href="#"
+                href="mailto:contact@open-share.cn"
                 className="w-9 h-9 bg-[#1E293B] rounded-lg flex items-center justify-center hover:bg-[#334155] transition-colors"
               >
                 <Mail className="w-4 h-4" />
@@ -76,65 +45,35 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Links */}
+          {/* Products */}
           <div>
             <h4 className="text-[#E2E8F0] font-semibold mb-4">{t("footer.products")}</h4>
             <ul className="space-y-3">
-              {footerLinks.products.map((link) => (
-                <li key={link}>
+              {productLinks.map((link) => (
+                <li key={link.href}>
                   <a
-                    href="#"
+                    href={link.href}
                     className="text-sm text-[#64748B] hover:text-[#22C55E] transition-colors"
                   >
-                    {link}
+                    {link.label}
                   </a>
                 </li>
               ))}
             </ul>
           </div>
-          <div>
-            <h4 className="text-[#E2E8F0] font-semibold mb-4">{t("footer.resources")}</h4>
-            <ul className="space-y-3">
-              {footerLinks.resources.map((link) => (
-                <li key={link}>
-                  <a
-                    href="#"
-                    className="text-sm text-[#64748B] hover:text-[#22C55E] transition-colors"
-                  >
-                    {link}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
+
+          {/* Company */}
           <div>
             <h4 className="text-[#E2E8F0] font-semibold mb-4">{t("footer.company")}</h4>
             <ul className="space-y-3">
-              {footerLinks.company.map((link) => (
-                <li key={link}>
-                  <a
-                    href="#"
-                    className="text-sm text-[#64748B] hover:text-[#22C55E] transition-colors"
-                  >
-                    {link}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-[#E2E8F0] font-semibold mb-4">{t("footer.legal")}</h4>
-            <ul className="space-y-3">
-              {footerLinks.legal.map((link) => (
-                <li key={link}>
-                  <a
-                    href="#"
-                    className="text-sm text-[#64748B] hover:text-[#22C55E] transition-colors"
-                  >
-                    {link}
-                  </a>
-                </li>
-              ))}
+              <li>
+                <a
+                  href="mailto:contact@open-share.cn"
+                  className="text-sm text-[#64748B] hover:text-[#22C55E] transition-colors"
+                >
+                  {t("footer.company.contact")}
+                </a>
+              </li>
             </ul>
           </div>
         </div>
@@ -144,6 +83,14 @@ export function Footer() {
             <p className="text-sm text-[#64748B]">
               {t("footer.copyright")}
             </p>
+            <a
+              href="https://beian.miit.gov.cn/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-[#64748B] hover:text-[#94A3B8] transition-colors"
+            >
+              浙ICP备2025189350号
+            </a>
             <p className="text-sm text-[#64748B]">
               {t("footer.slogan")}
             </p>

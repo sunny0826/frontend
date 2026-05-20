@@ -12,6 +12,7 @@ import {
   Search,
   Send,
   HelpCircle,
+  RotateCcw,
 } from "lucide-react";
 import api, { getApiError } from "@/lib/api";
 import {
@@ -26,6 +27,7 @@ import { Badge } from "@/app/components/ui/badge";
 import { Input } from "@/app/components/ui/input";
 import { MonthPicker } from "@/app/components/ui/month-picker";
 import { Label } from "@/app/components/ui/label";
+import { Slider } from "@/app/components/ui/slider";
 import {
   Select,
   SelectContent,
@@ -240,7 +242,6 @@ export default function PointAllocationPage() {
   // Preview
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewData, setPreviewData] = useState<PreviewResponse | null>(null);
-  const [adjustmentRatio, setAdjustmentRatio] = useState(1.0);
   const [individualAdjustments, setIndividualAdjustments] = useState<Record<string, number>>({});
   const [previewPage, setPreviewPage] = useState(1);
 
@@ -301,35 +302,33 @@ export default function PointAllocationPage() {
   // 前端接管积分计算：base_points = contribution_score * contribution_to_points_ratio
   const contributionToPointsRatio = previewData?.contribution_to_points_ratio ?? 300;
 
+  /** 理论积分总量：所有贡献者的 floor(contribution_score * ratio) 之和 */
+  const theoreticalTotal = useMemo(() => {
+    if (!previewData) return 0;
+    return previewData.preview.reduce(
+      (sum, r) => sum + Math.floor(r.contribution_score * contributionToPointsRatio),
+      0,
+    );
+  }, [previewData, contributionToPointsRatio]);
+
   /** 每个贡献者的基础积分（前端计算） */
   const computedBasePoints = useMemo(() => {
     if (!previewData) return new Map<string, number>();
     const map = new Map<string, number>();
     previewData.preview.forEach((r) => {
       const key = getRecipientKey(r);
-      map.set(key, r.contribution_score * contributionToPointsRatio);
+      map.set(key, Math.floor(r.contribution_score * contributionToPointsRatio));
     });
     return map;
   }, [previewData, contributionToPointsRatio]);
 
-  /** 所有贡献者基础积分总和 */
-  const basePoints = previewData
-    ? previewData.preview.reduce(
-        (sum, r) => sum + (r.contribution_score * contributionToPointsRatio),
-        0,
-      )
-    : 0;
-
-  // 与 buildRequestBody 中发往后端的 total_amount 保持一致：始终为积分池可用余额。
-  // 这是后端 AllocationService._scale_results_to_total_amount 触发缩放的上限。
+  // 积分池可用余额
   const availableBalance = selectedPool?.available_balance ?? 0;
 
-  // 在前端精确复现后端的分配结果，使总积分框中展示的金额与最终执行分配后
-  // 从积分池扣减的金额完全一致：
-  //   1. 单人 adjusted = floor(calculated_points * ratio)（对应后端 int(...) 截断）。
-  //   2. 若用户对某账号给出 individual_adjustments，则覆盖第 1 步的结果。
-  //   3. 若所有账号合计 > total_amount(=available_balance)，按最大余数法缩放，
-  //      使最终合计严格等于 total_amount，与后端 _scale_results_to_total_amount 对齐。
+  // 全局比例（派生自滑块值）
+  const globalRatio = theoreticalTotal > 0 ? totalAmount / theoreticalTotal : 1;
+
+  // 使用最大余数法确保非手动调整用户的积分总和 + 手动调整用户的积分总和 = totalAmount
   const effectiveAdjustments = useMemo(() => {
     if (!previewData) {
       return {
@@ -339,48 +338,61 @@ export default function PointAllocationPage() {
         scaled: false,
       };
     }
-    const items = previewData.preview.map((r) => {
+
+    // 1. 计算手动调整用户的积分总和
+    let manualTotal = 0;
+    const manualKeys = new Set<string>();
+    previewData.preview.forEach((r) => {
       const key = getRecipientKey(r);
-      const hasOverride =
-        key !== "" && individualAdjustments[key] !== undefined;
-      const bp = computedBasePoints.get(key) ?? 0;
-      const adjusted = hasOverride
-        ? individualAdjustments[key]
-        : Math.floor(bp * adjustmentRatio);
-      return { key, adjusted };
+      if (key && individualAdjustments[key] !== undefined) {
+        manualTotal += individualAdjustments[key];
+        manualKeys.add(key);
+      }
     });
-    const naturalTotal = items.reduce(
-      (sum, it) => sum + (it.adjusted > 0 ? it.adjusted : 0),
-      0,
-    );
-    let scaled = false;
-    if (naturalTotal > availableBalance && availableBalance > 0) {
-      scaled = true;
-      const scale = availableBalance / naturalTotal;
-      const remainders: Array<[number, number]> = [];
-      let scaledTotal = 0;
-      items.forEach((it, idx) => {
-        const rawScaled = it.adjusted * scale;
-        const sp = Math.floor(rawScaled);
-        it.adjusted = sp;
-        scaledTotal += sp;
-        remainders.push([rawScaled - sp, idx]);
-      });
-      const remainder = availableBalance - scaledTotal;
-      if (remainder > 0) {
-        remainders.sort((a, b) => b[0] - a[0] || a[1] - b[1]);
-        for (let i = 0; i < remainder; i += 1) {
-          items[remainders[i][1]].adjusted += 1;
-        }
+
+    // 2. 剩余可分配 = totalAmount - manualTotal
+    const remaining = Math.max(0, totalAmount - manualTotal);
+
+    // 3. 对非手动调整用户按 floor(contribution_score * contributionToPointsRatio * globalRatio) 分配
+    //    并使用最大余数法将余数分配，确保总和精确等于 remaining
+    const nonManualItems: Array<{ key: string; floored: number; remainder: number; idx: number }> = [];
+    let flooredSum = 0;
+
+    previewData.preview.forEach((r, idx) => {
+      const key = getRecipientKey(r);
+      if (manualKeys.has(key)) return;
+      const raw = r.contribution_score * contributionToPointsRatio * globalRatio;
+      const floored = Math.floor(raw);
+      flooredSum += floored;
+      nonManualItems.push({ key, floored, remainder: raw - floored, idx });
+    });
+
+    // 最大余数法分配余数
+    const gap = remaining - flooredSum;
+    if (gap > 0 && nonManualItems.length > 0) {
+      nonManualItems.sort((a, b) => b.remainder - a.remainder || a.idx - b.idx);
+      for (let i = 0; i < gap && i < nonManualItems.length; i++) {
+        nonManualItems[i].floored += 1;
       }
     }
-    const total = items.reduce((sum, it) => sum + it.adjusted, 0);
+
+    // 4. 构建结果
     const byKey: Record<string, number> = {};
-    items.forEach((it) => {
-      if (it.key) byKey[it.key] = it.adjusted;
+    nonManualItems.forEach((it) => {
+      if (it.key) byKey[it.key] = it.floored;
     });
+    previewData.preview.forEach((r) => {
+      const key = getRecipientKey(r);
+      if (key && manualKeys.has(key)) {
+        byKey[key] = individualAdjustments[key];
+      }
+    });
+
+    const total = Object.values(byKey).reduce((sum, v) => sum + v, 0);
+    const naturalTotal = total;
+    const scaled = false;
     return { byKey, total, naturalTotal, scaled };
-  }, [previewData, adjustmentRatio, individualAdjustments, availableBalance, computedBasePoints]);
+  }, [previewData, totalAmount, globalRatio, individualAdjustments, contributionToPointsRatio]);
 
   const getAdjustedPoints = useCallback(
     (r: PreviewRecipient) => {
@@ -388,16 +400,18 @@ export default function PointAllocationPage() {
       if (key && effectiveAdjustments.byKey[key] !== undefined) {
         return effectiveAdjustments.byKey[key];
       }
-      if (key && individualAdjustments[key] !== undefined) {
-        return individualAdjustments[key];
-      }
       const bp = computedBasePoints.get(key) ?? 0;
-      return Math.floor(bp * adjustmentRatio);
+      return Math.floor(bp * globalRatio);
     },
-    [effectiveAdjustments, individualAdjustments, adjustmentRatio, computedBasePoints]
+    [effectiveAdjustments, computedBasePoints, globalRatio]
   );
 
   const totalAdjustedPoints = effectiveAdjustments.total;
+
+  // 实际发放倍率：实际发放积分总额 / 所有开发者计算积分（理论积分）总和。
+  // 与滑块设定的 globalRatio 不同——当用户手动调整特定开发者的发放数量时，
+  // 实际发放总额会偏离滑块设定值，发放倍率也应随之反映真实结果。
+  const actualRatio = theoreticalTotal > 0 ? totalAdjustedPoints / theoreticalTotal : 1;
 
   const registeredCount = previewData
     ? previewData.preview.filter((r) => r.is_registered).length
@@ -410,36 +424,26 @@ export default function PointAllocationPage() {
   // 因此 canExecute 只需判断有受益人即可。
   const canExecute = previewData !== null && totalAdjustedPoints > 0;
 
-  const handleRatioChange = useCallback(
-    (raw: number) => {
-      if (!selectedPool || basePoints <= 0) return;
-      let newRatio = Number.isFinite(raw) && raw >= 0 ? raw : 0;
-      let newTotal = Math.round(basePoints * newRatio);
-      if (newTotal > selectedPool.available_balance) {
-        newTotal = selectedPool.available_balance;
-        newRatio = selectedPool.available_balance / basePoints;
-      }
-      setAdjustmentRatio(newRatio);
-      setTotalAmount(newTotal);
+  /** 滑块变化处理 */
+  const handleSliderChange = useCallback(
+    (values: number[]) => {
+      const val = values[0] ?? 0;
+      setTotalAmount(val);
       setIndividualAdjustments({});
     },
-    [selectedPool, basePoints]
+    []
   );
 
-  const handleTotalChange = useCallback(
-    (raw: number) => {
-      if (!selectedPool || basePoints <= 0) return;
-      let newTotal = Number.isFinite(raw) && raw >= 0 ? raw : 0;
-      if (newTotal > selectedPool.available_balance) {
-        newTotal = selectedPool.available_balance;
-      }
-      const newRatio = newTotal / basePoints;
-      setTotalAmount(newTotal);
-      setAdjustmentRatio(newRatio);
-      setIndividualAdjustments({});
-    },
-    [selectedPool, basePoints]
-  );
+  /**
+   * 重置为比例 1：将总量设为 min(理论积分总和, 可用余额)，并清除所有手动调整。
+   * “尽可能接近比例 1” —— 在积分池余额充足时为 1.0，不足时为可达到的最大比例。
+   */
+  const handleResetToRatioOne = useCallback(() => {
+    if (!previewData || theoreticalTotal <= 0) return;
+    const target = Math.min(theoreticalTotal, availableBalance);
+    setTotalAmount(target);
+    setIndividualAdjustments({});
+  }, [previewData, theoreticalTotal, availableBalance]);
 
   // --- Actions ---
   /** Preview 请求体：仅包含范围参数，不再发送计算参数 */
@@ -481,7 +485,7 @@ export default function PointAllocationPage() {
       user_scope: null,
       start_month: startMonth + "-01",
       end_month: endMonth + "-01",
-      adjustment_ratio: adjustmentRatio,
+      adjustment_ratio: theoreticalTotal > 0 ? totalAdjustedPoints / theoreticalTotal : 1,
       total_amount: effectiveAdjustments.total,
       allocations,
     };
@@ -492,7 +496,6 @@ export default function PointAllocationPage() {
     setPreviewLoading(true);
     setPreviewData(null);
     setIndividualAdjustments({});
-    setAdjustmentRatio(1.0);
     setPreviewPage(1);
     try {
       const { data } = await api.post<PreviewResponse>(
@@ -500,20 +503,15 @@ export default function PointAllocationPage() {
         buildPreviewBody()
       );
       setPreviewData(data);
-      // 前端自动倍率计算
+      // 设置滑块默认值
       const ratio = data.contribution_to_points_ratio ?? 300;
-      const totalBase = data.preview.reduce(
-        (sum, r) => sum + r.contribution_score * ratio,
+      const computedTheoreticalTotal = data.preview.reduce(
+        (sum, r) => sum + Math.floor(r.contribution_score * ratio),
         0,
       );
       const ab = selectedPool!.available_balance;
-      if (totalBase > ab && totalBase > 0) {
-        setAdjustmentRatio(ab / totalBase);
-        setTotalAmount(ab);
-      } else {
-        setAdjustmentRatio(1.0);
-        setTotalAmount(Math.round(totalBase));
-      }
+      const defaultTotal = Math.min(computedTheoreticalTotal, ab);
+      setTotalAmount(defaultTotal);
     } catch (err) {
       const apiErr = getApiError(err);
       toast.error(t('pointAllocation.previewFailed'), { description: apiErr.message });
@@ -891,37 +889,76 @@ export default function PointAllocationPage() {
             </Card>
           </div>
 
-          {/* Adjustment ratio & total amount */}
+          {/* 联动滑块控件 */}
           <Card>
-            <CardContent className="pt-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>{t('pointAllocation.totalAmount')}</Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      min={0}
-                      max={selectedPool?.available_balance}
-                      value={totalAmount}
-                      onChange={(e) => handleTotalChange(Number(e.target.value))}
-                    />
-                    {selectedPool && (
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        / {selectedPool.available_balance.toLocaleString()}
-                      </span>
-                    )}
+            <CardContent className="pt-4 pb-4">
+              <div className="space-y-2">
+                {/* 积分总量 + 比例 + 问号提示（同一行） */}
+                <div className="flex items-center justify-center gap-2">
+                  <div className="flex items-baseline gap-1 text-lg">
+                    <span className="font-bold text-2xl">{totalAmount.toLocaleString()}</span>
+                    <span className="text-muted-foreground">/</span>
+                    <span className="text-muted-foreground">{availableBalance.toLocaleString()}</span>
                   </div>
+                  <TooltipProvider delayDuration={200}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          className="size-7"
+                          onClick={handleResetToRatioOne}
+                          disabled={!previewData || theoreticalTotal <= 0}
+                          aria-label={t('pointAllocation.resetToRatioOne')}
+                        >
+                          <RotateCcw className="size-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-xs text-sm">
+                        {t('pointAllocation.resetToRatioOneTip')}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <span className="text-muted-foreground mx-1">·</span>
+                  <span className="text-sm text-muted-foreground">
+                    {t('pointAllocation.globalRatio')}: <span className="font-semibold text-foreground">{(actualRatio * 100).toFixed(1)}%</span>
+                  </span>
+                  <TooltipProvider delayDuration={200}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="size-4 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-xs text-sm">
+                        通过滑块调整全局发放比例，后续可对特定开发者发放数量进行精调
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
-                <div className="space-y-2">
-                  <Label>{t('pointAllocation.globalRatio')}</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={Number(adjustmentRatio.toFixed(4))}
-                    onChange={(e) => handleRatioChange(Number(e.target.value))}
+
+                {/* Slider with border */}
+                <div className="border border-border rounded-lg px-4 py-3">
+                  <Slider
+                    min={0}
+                    max={availableBalance}
+                    step={1}
+                    value={[totalAmount]}
+                    onValueChange={handleSliderChange}
+                    className="w-full"
                   />
                 </div>
+
+                {/* UI 提示 */}
+                {theoreticalTotal > 0 && theoreticalTotal <= availableBalance && (
+                  <p className="text-center text-xs text-green-600">
+                    积分池余额充足
+                  </p>
+                )}
+                {theoreticalTotal > 0 && theoreticalTotal > availableBalance && (
+                  <p className="text-center text-xs text-amber-600">
+                    积分池余额不足以覆盖理论全额，已按最大比例分配
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -1119,7 +1156,7 @@ export default function PointAllocationPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t('pointAllocation.confirmRatio')}</span>
-                  <span className="font-semibold text-foreground">{adjustmentRatio.toFixed(4)}</span>
+                  <span className="font-semibold text-foreground">{actualRatio.toFixed(4)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t('pointAllocation.confirmRemainingPoints')}</span>

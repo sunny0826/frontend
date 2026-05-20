@@ -35,6 +35,7 @@ import { toast } from "sonner";
 import AllocationDetailDialog, {
   parseAllocationIdFromReference,
 } from "@/app/components/allocation-detail-dialog";
+import AllocationSummaryDialog from "@/app/components/allocation-summary-dialog";
 import { DataPagination } from "@/app/components/ui/data-pagination";
 
 interface TxTag {
@@ -162,6 +163,10 @@ export default function OrganizationTransactionsPage() {
     null,
   );
   const [detailOpen, setDetailOpen] = useState(false);
+  const [summaryAllocationId, setSummaryAllocationId] = useState<
+    number | null
+  >(null);
+  const [summaryOpen, setSummaryOpen] = useState(false);
 
   const TRANSACTION_TYPE_OPTIONS = TRANSACTION_TYPE_VALUES.map((v) => ({
     value: v,
@@ -308,8 +313,12 @@ export default function OrganizationTransactionsPage() {
               </TableHeader>
               <TableBody>
                 {aggregateSpendByAllocation(transactions).map((tx) => {
-                  const allocationId =
+                  const spendAllocationId =
                     tx.transaction_type === "spend"
+                      ? parseAllocationIdFromReference(tx.reference_id)
+                      : null;
+                  const earnAllocationId =
+                    tx.transaction_type === "earn"
                       ? parseAllocationIdFromReference(tx.reference_id)
                       : null;
                   const mergedCount = tx._merged_count ?? 1;
@@ -342,18 +351,32 @@ export default function OrganizationTransactionsPage() {
                             })}
                           </Badge>
                         )}
-                        {allocationId != null && (
+                        {spendAllocationId != null && (
                           <Button
                             variant="link"
                             size="sm"
                             className="h-auto p-0 text-xs shrink-0"
                             onClick={() => {
-                              setDetailAllocationId(allocationId);
+                              setDetailAllocationId(spendAllocationId);
                               setDetailOpen(true);
                             }}
                           >
                             <Eye className="size-3.5" />
                             {t("transactions.viewAllocation")}
+                          </Button>
+                        )}
+                        {earnAllocationId != null && (
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="h-auto p-0 text-xs shrink-0"
+                            onClick={() => {
+                              setSummaryAllocationId(earnAllocationId);
+                              setSummaryOpen(true);
+                            }}
+                          >
+                            <Eye className="size-3.5" />
+                            {t("transactions.viewAllocationSummary")}
                           </Button>
                         )}
                       </div>
@@ -434,6 +457,12 @@ export default function OrganizationTransactionsPage() {
         allocationId={detailAllocationId}
         open={detailOpen}
         onOpenChange={setDetailOpen}
+      />
+
+      <AllocationSummaryDialog
+        allocationId={summaryAllocationId}
+        open={summaryOpen}
+        onOpenChange={setSummaryOpen}
       />
     </div>
   );
