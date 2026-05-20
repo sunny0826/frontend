@@ -104,8 +104,6 @@ interface PreviewRecipient {
   email: string;
   is_registered: boolean;
   contribution_score: number;
-  calculated_points: number;
-  adjusted_points: number;
   // 后端按平台动态返回 `{platform}_login` 字段（github_login / gitee_login 等），
   // 同时附带 `platform` 字段（如 "GitHub" / "Gitee"）。这里收口为可选字段，
   // 渲染时优先取与 platform 对应的 login，缺失时回退到 actor_login。
@@ -118,9 +116,31 @@ interface PreviewRecipient {
 interface PreviewResponse {
   source_selector: Record<string, unknown>;
   available_balance: number;
-  total_points: number;
+  contribution_to_points_ratio: number;
   total_recipients: number;
   preview: PreviewRecipient[];
+}
+
+interface AllocationItem {
+  actor_id: string;
+  actor_login: string;
+  platform?: string;
+  email: string;
+  is_registered: boolean;
+  user_id?: number | null;
+  contribution_score: number;
+  amount: number;
+}
+
+interface ExecuteRequestBody {
+  source_selector: SourceSelector;
+  project_scope: { tags: string[]; operation: string };
+  user_scope: null;
+  start_month: string;
+  end_month: string;
+  adjustment_ratio: number;
+  total_amount: number;
+  allocations: AllocationItem[];
 }
 
 interface AllocationResult {
@@ -278,8 +298,26 @@ export default function PointAllocationPage() {
     startMonth &&
     endMonth;
 
+  // 前端接管积分计算：base_points = contribution_score * contribution_to_points_ratio
+  const contributionToPointsRatio = previewData?.contribution_to_points_ratio ?? 300;
+
+  /** 每个贡献者的基础积分（前端计算） */
+  const computedBasePoints = useMemo(() => {
+    if (!previewData) return new Map<string, number>();
+    const map = new Map<string, number>();
+    previewData.preview.forEach((r) => {
+      const key = getRecipientKey(r);
+      map.set(key, r.contribution_score * contributionToPointsRatio);
+    });
+    return map;
+  }, [previewData, contributionToPointsRatio]);
+
+  /** 所有贡献者基础积分总和 */
   const basePoints = previewData
-    ? previewData.preview.reduce((sum, r) => sum + r.calculated_points, 0)
+    ? previewData.preview.reduce(
+        (sum, r) => sum + (r.contribution_score * contributionToPointsRatio),
+        0,
+      )
     : 0;
 
   // 与 buildRequestBody 中发往后端的 total_amount 保持一致：始终为积分池可用余额。
@@ -305,9 +343,10 @@ export default function PointAllocationPage() {
       const key = getRecipientKey(r);
       const hasOverride =
         key !== "" && individualAdjustments[key] !== undefined;
+      const bp = computedBasePoints.get(key) ?? 0;
       const adjusted = hasOverride
         ? individualAdjustments[key]
-        : Math.floor(r.calculated_points * adjustmentRatio);
+        : Math.floor(bp * adjustmentRatio);
       return { key, adjusted };
     });
     const naturalTotal = items.reduce(
@@ -341,7 +380,7 @@ export default function PointAllocationPage() {
       if (it.key) byKey[it.key] = it.adjusted;
     });
     return { byKey, total, naturalTotal, scaled };
-  }, [previewData, adjustmentRatio, individualAdjustments, availableBalance]);
+  }, [previewData, adjustmentRatio, individualAdjustments, availableBalance, computedBasePoints]);
 
   const getAdjustedPoints = useCallback(
     (r: PreviewRecipient) => {
@@ -352,9 +391,10 @@ export default function PointAllocationPage() {
       if (key && individualAdjustments[key] !== undefined) {
         return individualAdjustments[key];
       }
-      return Math.floor(r.calculated_points * adjustmentRatio);
+      const bp = computedBasePoints.get(key) ?? 0;
+      return Math.floor(bp * adjustmentRatio);
     },
-    [effectiveAdjustments, individualAdjustments, adjustmentRatio]
+    [effectiveAdjustments, individualAdjustments, adjustmentRatio, computedBasePoints]
   );
 
   const totalAdjustedPoints = effectiveAdjustments.total;
@@ -402,9 +442,8 @@ export default function PointAllocationPage() {
   );
 
   // --- Actions ---
-  function buildRequestBody() {
-    // total_amount is always the pool's full available balance; user's intent
-    // is carried via adjustment_ratio so preview/execute stay consistent.
+  /** Preview 请求体：仅包含范围参数，不再发送计算参数 */
+  function buildPreviewBody() {
     return {
       source_selector: selectedPool!.source_selector,
       project_scope: {
@@ -414,9 +453,37 @@ export default function PointAllocationPage() {
       user_scope: null,
       start_month: startMonth + "-01",
       end_month: endMonth + "-01",
-      total_amount: selectedPool!.available_balance,
+    };
+  }
+
+  /** Execute 请求体：包含计算结果 allocations 数组 */
+  function buildExecuteBody(): ExecuteRequestBody {
+    const allocations: AllocationItem[] = previewData!.preview.map((r) => {
+      const key = getRecipientKey(r);
+      const amount = effectiveAdjustments.byKey[key] ?? 0;
+      return {
+        actor_id: r.actor_id,
+        actor_login: r.actor_login,
+        platform: r.platform,
+        email: r.email,
+        is_registered: r.is_registered,
+        user_id: r.user_id,
+        contribution_score: r.contribution_score,
+        amount,
+      };
+    });
+    return {
+      source_selector: selectedPool!.source_selector,
+      project_scope: {
+        tags: selectedTags.map((t) => t.id),
+        operation: selectedTags.length >= 2 ? projectOperation : "AND",
+      },
+      user_scope: null,
+      start_month: startMonth + "-01",
+      end_month: endMonth + "-01",
       adjustment_ratio: adjustmentRatio,
-      individual_adjustments: individualAdjustments,
+      total_amount: effectiveAdjustments.total,
+      allocations,
     };
   }
 
@@ -430,17 +497,22 @@ export default function PointAllocationPage() {
     try {
       const { data } = await api.post<PreviewResponse>(
         "/points/allocations/preview",
-        buildRequestBody()
+        buildPreviewBody()
       );
       setPreviewData(data);
-      const bp = data.preview.reduce((sum, r) => sum + r.calculated_points, 0);
+      // 前端自动倍率计算
+      const ratio = data.contribution_to_points_ratio ?? 300;
+      const totalBase = data.preview.reduce(
+        (sum, r) => sum + r.contribution_score * ratio,
+        0,
+      );
       const ab = selectedPool!.available_balance;
-      if (bp > ab && bp > 0) {
-        setAdjustmentRatio(ab / bp);
+      if (totalBase > ab && totalBase > 0) {
+        setAdjustmentRatio(ab / totalBase);
         setTotalAmount(ab);
       } else {
         setAdjustmentRatio(1.0);
-        setTotalAmount(Math.round(bp));
+        setTotalAmount(Math.round(totalBase));
       }
     } catch (err) {
       const apiErr = getApiError(err);
@@ -461,7 +533,7 @@ export default function PointAllocationPage() {
     try {
       const { data } = await api.post<AllocationResult>(
         "/points/allocations",
-        buildRequestBody()
+        buildExecuteBody()
       );
       toast.success(t('pointAllocation.executeSuccess'), {
         description: t('pointAllocation.executeSuccessDesc', {
@@ -931,7 +1003,7 @@ export default function PointAllocationPage() {
                           {r.contribution_score.toFixed(2)}
                         </TableCell>
                         <TableCell className="text-right">
-                          {r.calculated_points.toLocaleString()}
+                          {(computedBasePoints.get(getRecipientKey(r)) ?? 0).toLocaleString()}
                         </TableCell>
                         <TableCell className="text-right">
                           <Input

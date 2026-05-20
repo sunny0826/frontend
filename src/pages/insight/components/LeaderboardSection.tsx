@@ -35,9 +35,9 @@ export function LeaderboardHeader({ meta, scopeName, unitName }: HeaderProps) {
       : t('insight.leaderboardTitleTemplate').replace('{{scope}}', title).replace('{{unit}}', unitDisplay);
 
   return (
-    <div id="leaderboardTitle" className="bg-[#1E293B] rounded-xl border border-[#475569] p-6 shadow-sm">
+    <div id="leaderboardTitle" className="px-6 pt-5 pb-3">
       <div className="flex flex-col items-center justify-center text-center">
-        <h2 className="text-xl sm:text-2xl font-mono font-bold mb-2 flex items-center justify-center gap-2 text-[#E2E8F0]">
+        <h2 className="text-xl sm:text-2xl font-mono font-bold flex items-center justify-center gap-2 text-[#E2E8F0]">
           <img
             src="https://open-digger.cn/open_leaderboard/images/earth-animation.gif"
             alt=""
@@ -55,6 +55,7 @@ type Props = {
   meta: LeaderboardMeta | null;
   data: LeaderboardItem[];
   unitName: string;
+  scopeName: string;
   searchKeyword: string;
   currentPage: number;
   onRowClick: (item: LeaderboardItem) => void;
@@ -65,6 +66,7 @@ export const LeaderboardSection = forwardRef<HTMLDivElement, Props>(function Lea
     meta,
     data,
     unitName,
+    scopeName,
     searchKeyword,
     currentPage,
     onRowClick,
@@ -84,9 +86,10 @@ export const LeaderboardSection = forwardRef<HTMLDivElement, Props>(function Lea
 
   return (
     <div id="leaderboardContent" className="flex-1 min-w-0">
-      <div id="leaderboardTable" className="bg-[#1E293B] rounded-xl border border-[#475569] pt-3 px-6 pb-6 shadow-sm">
+      <div id="leaderboardTable" className="bg-[#1E293B] rounded-xl border border-[#475569] pb-6 shadow-sm">
+        <LeaderboardHeader meta={meta} scopeName={scopeName} unitName={unitName} />
         <div
-          className="flex items-center gap-3 px-3 border-b border-[#475569] pb-2"
+          className="flex items-center gap-3 px-3 mx-6 border-b border-[#475569] pb-2"
         >
           <div className="flex-shrink-0 flex items-center gap-2 w-24">
             <div className="flex-shrink-0 w-12 text-center">
@@ -107,7 +110,7 @@ export const LeaderboardSection = forwardRef<HTMLDivElement, Props>(function Lea
             </span>
           </div>
         </div>
-        <div id="leaderboardDataRows" ref={ref} className="space-y-1.5 pt-2">
+        <div id="leaderboardDataRows" ref={ref} className="space-y-1.5 pt-2 px-6">
           {!data || data.length === 0 ? (
             <div className="text-center text-[#64748B] py-10 font-mono text-sm">
               <p>{t('insight.noData')}</p>

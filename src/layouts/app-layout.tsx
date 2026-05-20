@@ -18,6 +18,7 @@ import {
   ChevronDown,
   ChevronRight,
   BarChart3,
+  Radar,
 } from 'lucide-react';
 
 interface NavItem {
@@ -35,6 +36,7 @@ const navItems: NavItem[] = [
   { labelKey: 'nav.shop', path: '/shop', icon: <ShoppingBag className="h-5 w-5" /> },
   { labelKey: 'nav.organizations', path: '/organizations', icon: <Building2 className="h-5 w-5" /> },
   { labelKey: 'nav.messages', path: '/messages', icon: <MessageSquare className="h-5 w-5" /> },
+  { labelKey: 'nav.talentReach', path: '/talent-reach', icon: <Radar className="h-5 w-5" /> },
   {
     labelKey: 'nav.settings',
     path: '/settings',
@@ -140,8 +142,9 @@ export function AppLayout() {
           className="flex items-center gap-2 transition-colors hover:opacity-80"
         >
           <Logo className="h-8 w-8" />
-          <span className="text-lg font-bold gradient-text-green">
-            OpenTalent
+          <span className="text-lg font-bold">
+            <span style={{ color: "#3B82F6" }}>Open</span>
+            <span style={{ color: "#22C55E" }}>Share</span>
           </span>
         </Link>
         <LanguageToggle iconOnly />

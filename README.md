@@ -1,5 +1,5 @@
 
-  # OpenTalent Frontend
+  # OpenShare Frontend
   
   ## Running the code
 

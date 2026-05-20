@@ -40,8 +40,9 @@ export function Footer() {
               <div className="w-8 h-8 bg-gradient-to-br from-[#22C55E] to-[#3B82F6] rounded-lg flex items-center justify-center">
                 <Github className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-semibold text-[#E2E8F0]">
-                OpenTalent
+              <span className="text-xl font-semibold">
+                <span style={{ color: "#3B82F6" }}>Open</span>
+                <span style={{ color: "#22C55E" }}>Share</span>
               </span>
             </div>
             <p className="text-sm text-[#64748B] mb-6">

@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { getApiError } from '@/lib/api';
 import { applyFieldErrors, resolveApiErrorMessage } from '@/lib/auth-errors';
+import { readRedirectFromParams } from '@/lib/redirect';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import {
@@ -24,7 +25,11 @@ export default function SignupPage() {
   const { t } = useTranslation();
   const { register: registerUser } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
+
+  // 与登录页一致：从 URL 读取注册后跳转目标
+  const redirectTarget = readRedirectFromParams(searchParams) ?? '/insight';
 
   const signupSchema = z.object({
     username: z.string().min(3, t('auth.usernameMin3')).max(30, t('auth.usernameMax30')),
@@ -47,7 +52,7 @@ export default function SignupPage() {
     setIsLoading(true);
     try {
       await registerUser(values.username, values.email, values.password, values.password_confirm);
-      navigate('/insight', { replace: true });
+      navigate(redirectTarget, { replace: true });
     } catch (error: unknown) {
       const apiError = getApiError(error);
       // 后端返回的字段 -> 前端表单字段映射
@@ -145,7 +150,10 @@ export default function SignupPage() {
 
       <div className="text-center text-sm">
         <span className="text-muted-foreground">{t('auth.hasAccount')}</span>{' '}
-        <Link to="/login" className="text-primary hover:underline">
+        <Link
+          to={`/login${redirectTarget !== '/insight' ? `?redirect=${encodeURIComponent(redirectTarget)}` : ''}`}
+          className="text-primary hover:underline"
+        >
           {t('auth.goLogin')}
         </Link>
       </div>

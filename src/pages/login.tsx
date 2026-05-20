@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import axios from 'axios';
@@ -10,6 +10,7 @@ import { Github, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import api, { getApiError } from '@/lib/api';
 import { resolveApiErrorMessage } from '@/lib/auth-errors';
+import { readRedirectFromParams, stashSocialRedirect } from '@/lib/redirect';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import {
@@ -55,11 +56,12 @@ export default function LoginPage() {
   const { t } = useTranslation();
   const { login } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [providers, setProviders] = useState<SocialProvider[]>([]);
 
-  const from = (location.state as { from?: string })?.from || '/insight';
+  // 从 URL 参数读取登录后跳转目标；未提供或不合法时默认 /insight
+  const redirectTarget = readRedirectFromParams(searchParams) ?? '/insight';
 
   const loginSchema = z.object({
     account: z.string().min(1, t('auth.enterAccount')),
@@ -93,7 +95,7 @@ export default function LoginPage() {
     try {
       await login(values.account, values.password);
       toast.success(t('auth.loginSuccess'));
-      navigate(from, { replace: true });
+      navigate(redirectTarget, { replace: true });
     } catch (error: unknown) {
       // 优先处理特殊网络状态
       if (axios.isAxiosError(error) && !error.response) {
@@ -113,6 +115,10 @@ export default function LoginPage() {
   function handleSocialLogin(provider: string) {
     const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
     const redirectUri = `${window.location.origin}/social-callback`;
+    // 社交登录会经历 OAuth 整页跳转，以及后端重定向。
+    // 自定义查询参数无法随路保留，这里先把 redirect 目标存入 sessionStorage，
+    // 等回到 /social-callback 后再取出。
+    stashSocialRedirect(redirectTarget);
     // 直接跳转后端社交登录入口；后端会重定向到 OAuth 授权页
     // 完成后再跳回前端 /social-callback 用 exchange_code 兑换 JWT
     window.location.href = `${baseUrl}/auth/social/${provider}/start?redirect_uri=${encodeURIComponent(redirectUri)}`;
@@ -183,7 +189,10 @@ export default function LoginPage() {
       </Form>
 
       <div className="flex items-center justify-between text-sm">
-        <Link to="/signup" className="text-primary hover:underline">
+        <Link
+          to={`/signup${redirectTarget !== '/insight' ? `?redirect=${encodeURIComponent(redirectTarget)}` : ''}`}
+          className="text-primary hover:underline"
+        >
           {t('auth.register')}
         </Link>
         <Link to="/password-reset" className="text-primary hover:underline">

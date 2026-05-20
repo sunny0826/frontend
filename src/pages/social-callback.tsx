@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import api, { getApiError } from '@/lib/api';
 import { resolveApiErrorMessage, translateTopLevelCode } from '@/lib/auth-errors';
+import { consumeSocialRedirect } from '@/lib/redirect';
 import { Button } from '@/app/components/ui/button';
 
 export default function SocialCallbackPage() {
@@ -13,6 +14,7 @@ export default function SocialCallbackPage() {
   const navigate = useNavigate();
   const { setTokens } = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const exchangedRef = useRef(false);
 
   const exchangeCode = useMemo(
     () => searchParams.get('exchange_code') ?? searchParams.get('code'),
@@ -32,14 +34,20 @@ export default function SocialCallbackPage() {
       return;
     }
 
+    if (exchangedRef.current) return;
+    exchangedRef.current = true;
+
     async function exchange() {
       try {
         const { data } = await api.post('/auth/social/exchange', {
           exchange_code: exchangeCode,
         });
         await setTokens(data.access_token, data.refresh_token);
-        navigate('/insight', { replace: true });
+        // 取出登录前暂存的 redirect 目标，没有则默认 /insight
+        const target = consumeSocialRedirect() ?? '/insight';
+        navigate(target, { replace: true });
       } catch (err: unknown) {
+        exchangedRef.current = false;
         const apiError = getApiError(err);
         setError(resolveApiErrorMessage(t, apiError, t('auth.socialLoginFailed')));
       }

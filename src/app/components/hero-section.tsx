@@ -1,5 +1,6 @@
-import { Github, GitBranch, Users, TrendingUp, Search } from "lucide-react";
+import { Github, GitBranch, Users, TrendingUp } from "lucide-react";
 import { useLanguage } from "@/app/contexts/language-context";
+import { SiteSearchBox } from "@/app/components/site-search-box";
 
 export function HeroSection() {
   const { t } = useLanguage();
@@ -27,15 +28,8 @@ export function HeroSection() {
           </h1>
 
           {/* Search input */}
-          <div className="flex justify-center mb-16 max-w-2xl mx-auto">
-            <div className="relative w-full">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#64748B]" />
-              <input
-                type="text"
-                placeholder={t("hero.search.placeholder")}
-                className="w-full h-12 pl-12 pr-4 rounded-lg border border-[#475569] bg-[#1E293B] focus:border-[#22C55E] focus:outline-none text-[#E2E8F0] placeholder:text-[#64748B]"
-              />
-            </div>
+          <div className="flex justify-center mb-16 max-w-4xl mx-auto">
+            <SiteSearchBox variant="landing" />
           </div>
 
           {/* Stats grid */}
@@ -76,7 +70,7 @@ export function HeroSection() {
                   <TrendingUp className="w-6 h-6 text-green-400" />
                 </div>
               </div>
-              <div className="text-3xl font-bold text-[#E2E8F0] mb-1">98%</div>
+              <div className="text-3xl font-bold text-[#E2E8F0] mb-1">{t("hero.stats.accuracy.count")}</div>
               <div className="text-sm text-[#94A3B8]">{t("hero.stats.accuracy")}</div>
             </div>
           </div>

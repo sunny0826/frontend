@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { buildLoginPath, currentRedirectTarget } from '@/lib/redirect';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1',
@@ -15,7 +16,7 @@ api.interceptors.request.use((config) => {
 });
 
 // 响应拦截器：401 时自动刷新（登录/注册/刷新等认证端点除外，避免掩盖凭证错误）
-const AUTH_ENDPOINTS_SKIP_REFRESH = ['/auth/login', '/auth/register', '/auth/refresh'];
+const AUTH_ENDPOINTS_SKIP_REFRESH = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/social/exchange'];
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -38,7 +39,9 @@ api.interceptors.response.use(
       } catch {
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
-        window.location.href = '/login';
+        // 携带当前路径作为 redirect，登录后回到原页面
+        const target = currentRedirectTarget(window.location);
+        window.location.href = buildLoginPath(target);
         return Promise.reject(error);
       }
     }

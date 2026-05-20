@@ -16,8 +16,9 @@ export function Header() {
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <Logo className="w-8 h-8" />
-            <span className="text-xl font-semibold gradient-text-green">
-              OpenTalent
+            <span className="text-xl font-semibold">
+              <span style={{ color: "#3B82F6" }}>Open</span>
+              <span style={{ color: "#22C55E" }}>Share</span>
             </span>
           </Link>
 

@@ -8,8 +8,9 @@ export function AuthLayout() {
         <div className="flex flex-col items-center">
           <Link to="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
             <Logo className="h-9 w-9" />
-            <span className="text-2xl font-semibold gradient-text-green">
-              OpenTalent
+            <span className="text-2xl font-semibold">
+              <span style={{ color: "#3B82F6" }}>Open</span>
+              <span style={{ color: "#22C55E" }}>Share</span>
             </span>
           </Link>
         </div>

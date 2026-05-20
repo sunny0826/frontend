@@ -23,6 +23,8 @@ type Props = {
   dense?: boolean;
   /** When set (e.g. community detail JSON keys), min/max selectable range follows this instead of global meta. */
   boundsOverride?: TimeBounds | null;
+  /** Called when the dropdown opens or closes, so parent containers can adjust overflow. */
+  onOpenChange?: (open: boolean) => void;
 };
 
 export function TimeRangePicker({
@@ -36,8 +38,13 @@ export function TimeRangePicker({
   hideOuterLabel = false,
   dense = false,
   boundsOverride = null,
+  onOpenChange,
 }: Props) {
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    onOpenChange?.(open);
+  }, [open, onOpenChange]);
   const wrapRef = useRef<HTMLDivElement>(null);
 
   const bounds: TimeBounds = boundsOverride ?? getTimeBounds(meta);

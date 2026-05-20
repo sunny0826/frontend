@@ -3,14 +3,6 @@ import { useLanguage } from "@/app/contexts/language-context";
 
 export function CTASection() {
   const { t } = useLanguage();
-  const partners = [
-    "清华大学",
-    "北京大学",
-    "阿里云",
-    "腾讯开源",
-    "华为云",
-    "字节跳动",
-  ];
 
   return (
     <section className="py-24 px-6 relative overflow-hidden">
@@ -30,20 +22,9 @@ export function CTASection() {
           {t("cta.title.line2")}
         </h2>
 
-        <p className="text-lg md:text-xl text-[#94A3B8] mb-12 max-w-2xl mx-auto">
+        <p className="text-lg md:text-xl text-[#94A3B8] max-w-2xl mx-auto">
           {t("cta.description")}
         </p>
-
-        <div className="mt-16 pt-12 border-t border-[#475569]">
-          <p className="text-sm text-[#64748B] mb-4">{t("cta.partners")}</p>
-          <div className="flex flex-wrap justify-center gap-8 items-center">
-            {partners.map((org) => (
-              <div key={org} className="text-[#94A3B8] font-medium">
-                {org}
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </section>
   );

@@ -10,7 +10,8 @@ import { formatUpdateTime } from './domain/format';
 import { getLabelDetailPath, getRepoDetailPath, getDeveloperDetailPath } from './domain/routes';
 import type { LeaderboardItem, LeaderboardMeta } from './types/api';
 import { FilterPanel } from './components/FilterPanel';
-import { LeaderboardHeader, LeaderboardSection } from './components/LeaderboardSection';
+import { SiteSearchBox } from '@/app/components/site-search-box';
+import { LeaderboardSection } from './components/LeaderboardSection';
 import { PaginationControl } from './components/PaginationControl';
 
 function ContentMessage({ type, message }: { type: 'error' | 'loading' | 'plain'; message: string }) {
@@ -171,12 +172,7 @@ export default function InsightPage() {
   return (
     <div className="mx-auto space-y-6">
       {filtersReady && meta && !metaError ? (
-        <div
-          className="transition-all duration-300"
-          style={{ paddingRight: filterCollapsed ? 'calc(60px + 1.5rem)' : 'calc(16.666667% + 1.5rem)' }}
-        >
-          <LeaderboardHeader meta={meta} scopeName={scopeValue} unitName={unitValue} />
-        </div>
+        <SiteSearchBox variant="insight" />
       ) : null}
       <div className="flex gap-6 items-start">
         {metaError ? (
@@ -201,6 +197,7 @@ export default function InsightPage() {
             meta={meta}
             data={leaderboardData}
             unitName={unitValue}
+            scopeName={scopeValue}
             searchKeyword={searchKeyword}
             currentPage={currentPage}
             onRowClick={handleRowClick}

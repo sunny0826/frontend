@@ -141,11 +141,36 @@ export default function RepoDetailPage() {
             />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center flex-wrap gap-2 mb-1">
               <h1 className="text-xl font-semibold text-[#E2E8F0]">{repoName}</h1>
               <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-900/30 text-blue-400 border border-blue-700/50">
                 {t('insight.detailSectionRepoSingular')}
               </span>
+              {metaLabels.map((label, idx) => {
+                const text = lang === 'zh' ? (label.name_zh || label.name || '') : (label.name || label.name_zh || '');
+                if (!text) return null;
+                const hasLink = Boolean(label.id);
+                if (hasLink) {
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      className="inline-block px-2 py-0.5 rounded text-[11px] font-mono leading-tight bg-[#334155] text-[#E2E8F0] border border-[#475569] hover:border-primary/50 hover:text-primary transition-colors cursor-pointer"
+                      onClick={() => navigate(getLabelDetailPath(label.id!))}
+                    >
+                      {text}
+                    </button>
+                  );
+                }
+                return (
+                  <span
+                    key={idx}
+                    className="inline-block px-2 py-0.5 rounded text-[11px] font-mono leading-tight bg-[#334155] text-[#94A3B8] border border-[#475569]"
+                  >
+                    {text}
+                  </span>
+                );
+              })}
             </div>
             {description && (
               <p className="mt-2 text-sm text-[#94A3B8] line-clamp-2">{description}</p>
@@ -258,41 +283,7 @@ export default function RepoDetailPage() {
         </div>
       </div>
 
-      {/* Related Labels */}
-      {metaLabels.length > 0 && (
-        <div className="bg-[#1E293B] rounded-xl border border-[#475569] p-6">
-          <h2 className="text-base font-semibold text-[#E2E8F0] mb-4">
-            {t('insight.repoRelatedLabels')}
-          </h2>
-          <div className="flex flex-wrap gap-2">
-            {metaLabels.map((label, idx) => {
-              const text = lang === 'zh' ? (label.name_zh || label.name || '') : (label.name || label.name_zh || '');
-              if (!text) return null;
-              const hasLink = Boolean(label.id);
-              if (hasLink) {
-                return (
-                  <button
-                    key={idx}
-                    type="button"
-                    className="inline-flex items-center px-3 py-1.5 rounded-lg bg-[#334155] border border-[#475569] text-sm text-[#E2E8F0] hover:bg-[#22C55E]/10 hover:border-[#22C55E]/50 hover:text-[#22C55E] transition-colors cursor-pointer"
-                    onClick={() => navigate(getLabelDetailPath(label.id!))}
-                  >
-                    {text}
-                  </button>
-                );
-              }
-              return (
-                <span
-                  key={idx}
-                  className="inline-flex items-center px-3 py-1.5 rounded-lg bg-[#334155] border border-[#475569] text-sm text-[#94A3B8]"
-                >
-                  {text}
-                </span>
-              );
-            })}
-          </div>
-        </div>
-      )}
+
 
       {/* Contribution Map */}
       {showContributionMap && (

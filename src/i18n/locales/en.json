@@ -9,7 +9,8 @@
     "submit": "Submit",
     "back": "Back",
     "default": "Default",
-    "present": "Present"
+    "present": "Present",
+    "comingSoon": "Coming Soon"
   },
   "nav": {
     "profile": "Profile",
@@ -25,7 +26,8 @@
     "settingsMerge": "Account Merge",
     "settingsLanguage": "Language",
     "logout": "Sign Out",
-    "insight": "Insight"
+    "insight": "Insight",
+    "talentReach": "Talent Reach"
   },
   "header": {
     "login": "Login"
@@ -33,13 +35,18 @@
   "hero": {
     "title.line1": "In the world of open source",
     "title.line2": "Every contribution deserves its reward",
-    "search.placeholder": "Search developer ID to view talent profile",
+    "search.placeholder": "Search repos, developers, labels and more for data insights",
+    "search.typeRepo": "Repository",
+    "search.typeUser": "Developer",
+    "search.typeLabel": "Label",
+    "search.noResults": "No matching repositories or developers found",
     "stats.platforms": "Integrated Platforms",
     "stats.developers": "Developer Profiles",
     "stats.developers.count": "20M+",
     "stats.projects": "Project Analysis",
     "stats.projects.count": "40M+",
-    "stats.accuracy": "Data Accuracy"
+    "stats.accuracy": "Points Allocated",
+    "stats.accuracy.count": "10M+"
   },
   "platforms": {
     "subtitle": "Data Sources",
@@ -50,21 +57,21 @@
     "badge": "Core Products",
     "title": "Building a Complete Open Source Talent Ecosystem",
     "description": "From value discovery to precise connection and contribution incentives, creating a closed loop of open source talent economy",
-    "insight.name": "OpenTalent Insight",
+    "insight.name": "Insight",
     "insight.subtitle": "Deep Open Source Talent Insights",
     "insight.description": "Build developer capability profiles and value assessment systems based on multi-dimensional open source contribution data. Quantify technical capabilities, collaboration quality, and contribution trends to provide data support for talent decisions.",
     "insight.feature1": "Multi-dimensional Contribution Assessment",
     "insight.feature2": "Technical Domain Proficiency Analysis",
     "insight.feature3": "Time-series Capability Tracking",
     "insight.feature4": "Developer Ranking & Comparison",
-    "ads.name": "OpenTalent Ads",
+    "ads.name": "Talent Reach",
     "ads.subtitle": "Precise Talent Outreach",
     "ads.description": "An intelligent filtering and targeted outreach platform based on developer profiles. Help enterprises and communities efficiently connect with target talents and achieve precise matching of talent supply and demand.",
     "ads.feature1": "Smart Multi-dimensional Filtering",
     "ads.feature2": "Targeted In-platform Outreach",
     "ads.feature3": "Performance Data Tracking",
     "ads.feature4": "Developer Incentive Mechanism",
-    "credit.name": "OpenTalent Credit",
+    "credit.name": "Credits",
     "credit.subtitle": "Contribution Incentive System",
     "credit.description": "Build an ecosystem for open source contribution value circulation. Enterprises can grant incentives to core contributors, developers receive continuous recognition and rewards for their contributions, forming a virtuous cycle.",
     "credit.feature1": "Contribution Value Quantification",
@@ -82,7 +89,7 @@
     "badge": "Authoritative Reports",
     "title": "Leading Open Source Ecosystem Insights",
     "description": "Based on massive platform data and in-depth analysis, publish industry-leading reports to provide decision-making references for governments, enterprises, and developers",
-    "global.title": "Global Open Source In-depth Development Report",
+    "global.title": "Global Open Source Development Report",
     "global.year": "2025",
     "global.description": "In-depth analysis of global open source technology development trends, key domain breakthroughs, and future evolution directions",
     "global.badge": "Annual Flagship",
@@ -103,7 +110,6 @@
     "talent.highlight1": "Talent Profiles",
     "talent.highlight2": "Supply & Demand Analysis",
     "talent.highlight3": "Value Trends",
-    "button": "View Report",
     "stat1": "Annual Reports Published",
     "stat2": "Enterprises Using",
     "stat3": "Government Citations",
@@ -143,15 +149,14 @@
     "badge": "Ushering in a New Era of Open Source Talent",
     "title.line1": "Let every open source contribution",
     "title.line2": "receive its deserved value",
-    "description": "Join the OpenTalent ecosystem, together with millions of developers and thousands of enterprises worldwide, to build a brighter future for open source talent economy",
-    "partners": "Trusted by industry-leading organizations"
+    "description": "Join the OpenShare ecosystem, together with millions of developers and thousands of enterprises worldwide, to build a brighter future for open source talent economy"
   },
   "footer": {
     "description": "Open Source Talent Value Discovery & Ecosystem Incentive Platform",
     "products": "Products",
-    "products.insight": "OpenTalent Insight",
-    "products.ads": "OpenTalent Ads",
-    "products.credit": "OpenTalent Credit",
+    "products.insight": "Insight",
+    "products.ads": "Talent Reach",
+    "products.credit": "Credits",
     "products.pricing": "Pricing",
     "resources": "Resources",
     "resources.reports": "Reports",
@@ -168,7 +173,7 @@
     "legal.terms": "Terms of Service",
     "legal.security": "Data Security",
     "legal.compliance": "Compliance",
-    "copyright": "© 2026 OpenTalent. All rights reserved.",
+    "copyright": "© 2026 OpenShare. All rights reserved.",
     "slogan": "In the world of open source, every contribution deserves its reward"
   },
   "auth": {

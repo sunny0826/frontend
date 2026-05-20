@@ -58,6 +58,7 @@ export function FilterPanel({
   const lang = i18n.language as 'zh' | 'en';
   const [scopeMenuOpen, setScopeMenuOpen] = useState(false);
   const [unitMenuOpen, setUnitMenuOpen] = useState(false);
+  const [timePickerOpen, setTimePickerOpen] = useState(false);
 
   const anyFilterOpen = scopeMenuOpen || unitMenuOpen;
   useEffect(() => {
@@ -108,7 +109,7 @@ export function FilterPanel({
   return (
     <div
       id="filterPanel"
-      className="flex-shrink-0 transition-all duration-300 overflow-hidden"
+      className={`flex-shrink-0 transition-all duration-300 ${timePickerOpen ? 'overflow-visible' : 'overflow-hidden'}`}
       style={{ width: filterCollapsed ? '60px' : '16.666667%' }}
     >
       <div className="bg-[#1E293B] rounded-xl border border-[#475569] p-5 sticky top-24 shadow-sm">
@@ -280,6 +281,7 @@ export function FilterPanel({
               t={t}
               onValueChange={onTimeValueChange}
               onCommit={onTimeCommit}
+              onOpenChange={setTimePickerOpen}
             />
           </div>
           <div>

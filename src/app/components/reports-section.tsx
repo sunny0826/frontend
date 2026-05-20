@@ -1,6 +1,5 @@
-import { FileText, Award, TrendingUp, Globe, ArrowRight } from "lucide-react";
+import { FileText, Award, TrendingUp, Globe } from "lucide-react";
 import { Card } from "@/app/components/ui/card";
-import { Button } from "@/app/components/ui/button";
 import { useLanguage } from "@/app/contexts/language-context";
 
 export function ReportsSection() {
@@ -87,7 +86,7 @@ export function ReportsSection() {
                   {report.description}
                 </p>
 
-                <div className="space-y-2 mb-6">
+                <div className="space-y-2">
                   {report.highlights.map((highlight) => (
                     <div
                       key={highlight}
@@ -98,14 +97,6 @@ export function ReportsSection() {
                     </div>
                   ))}
                 </div>
-
-                <Button
-                  variant="ghost"
-                  className="w-full text-[#94A3B8] hover:bg-[#22C55E]/10 hover:text-[#22C55E]"
-                >
-                  {t("reports.button")}
-                  <ArrowRight className="ml-2 w-4 h-4" />
-                </Button>
               </Card>
             );
           })}

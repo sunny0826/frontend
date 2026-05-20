@@ -36,6 +36,7 @@ import ChangePasswordPage from '@/pages/change-password';
 import AddressesPage from '@/pages/addresses';
 import AccountMergePage from '@/pages/account-merge';
 import PointAllocationPage from '@/pages/point-allocation';
+import TalentReachPage from '@/pages/talent-reach';
 import InsightPage from '../pages/insight/index';
 import InsightDispatcher from '../pages/insight/insight-dispatcher';
 // Register MDI offline icon collection used across insight pages.
@@ -93,6 +94,7 @@ export const router = createBrowserRouter([
           { path: '/shop/:id', element: <ShopItemPage /> },
           { path: '/redemptions', element: <RedemptionsPage /> },
           { path: '/messages', element: <MessagesPage /> },
+          { path: '/talent-reach', element: <TalentReachPage /> },
           { path: '/organizations', element: <OrganizationsPage /> },
           { path: '/organizations/create', element: <OrganizationCreatePage /> },
           { path: '/organizations/:slug', element: <OrganizationDetailPage /> },
