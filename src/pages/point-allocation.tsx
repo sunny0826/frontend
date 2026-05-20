@@ -178,11 +178,8 @@ function getRecipientLogin(r: PreviewRecipient): string {
   return r.github_login ?? r.actor_login ?? "";
 }
 
-/** 获取贡献者的唯一键，与后端 _build_preview_item 的 user_key 逻辑对齐 */
 function getRecipientKey(r: PreviewRecipient): string {
-  if (typeof r.user_id === "number") return String(r.user_id);
-  if (r.actor_login) return r.actor_login;
-  return r.github_login ?? "";
+  return `${r.platform ?? ""}:${r.actor_id ?? ""}`;
 }
 
 export default function PointAllocationPage() {
