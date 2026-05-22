@@ -36,6 +36,7 @@
     "title.line1": "In the world of open source",
     "title.line2": "Every contribution deserves its reward",
     "search.placeholder": "Search repos, developers, labels and more for data insights",
+    "search.placeholder.unauthenticated": "Login to search repos, developers, labels and more for data insights",
     "search.typeRepo": "Repository",
     "search.typeUser": "Developer",
     "search.typeLabel": "Label",
@@ -230,7 +231,12 @@
     "confirmPasswordRequired": "Please confirm your password",
     "passwordMismatch": "Passwords do not match",
     "usernameMin3": "Username must be at least 3 characters",
-    "usernameMax30": "Username must be at most 30 characters"
+    "usernameMax30": "Username must be at most 30 characters",
+    "agreePrefix": "I have read and agree to the",
+    "registerAgreement": "User Registration Agreement",
+    "pointRedemptionAgreement": "Points Redemption Agreement",
+    "agreementAnd": "and",
+    "agreementRequired": "Please read and agree to the User Registration Agreement and Points Redemption Agreement first"
   },
   "profile": {
     "title": "Profile",

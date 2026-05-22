@@ -11,6 +11,7 @@ import { getApiError } from '@/lib/api';
 import { applyFieldErrors, resolveApiErrorMessage } from '@/lib/auth-errors';
 import { readRedirectFromParams } from '@/lib/redirect';
 import { Button } from '@/app/components/ui/button';
+import { AgreementCheckbox } from '@/components/agreement-checkbox';
 import { Input } from '@/app/components/ui/input';
 import {
   Form,
@@ -27,6 +28,7 @@ export default function SignupPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
+  const [agreed, setAgreed] = useState(false);
 
   // 与登录页一致：从 URL 读取注册后跳转目标
   const redirectTarget = readRedirectFromParams(searchParams) ?? '/insight';
@@ -49,6 +51,10 @@ export default function SignupPage() {
   });
 
   async function onSubmit(values: SignupFormValues) {
+    if (!agreed) {
+      toast.error(t('auth.agreementRequired'));
+      return;
+    }
     setIsLoading(true);
     try {
       await registerUser(values.username, values.email, values.password, values.password_confirm);
@@ -147,6 +153,8 @@ export default function SignupPage() {
           </Button>
         </form>
       </Form>
+
+      <AgreementCheckbox checked={agreed} onCheckedChange={setAgreed} />
 
       <div className="text-center text-sm">
         <span className="text-muted-foreground">{t('auth.hasAccount')}</span>{' '}

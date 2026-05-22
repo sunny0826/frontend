@@ -22,6 +22,7 @@ import {
   FormMessage,
 } from '@/app/components/ui/form';
 import { Separator } from '@/app/components/ui/separator';
+import { AgreementCheckbox } from '@/components/agreement-checkbox';
 
 // 仅展示 GitHub 与 Gitee；顺序与数组一致
 const ENABLED_SOCIAL_PROVIDERS = ['github', 'gitee'] as const;
@@ -59,6 +60,7 @@ export default function LoginPage() {
   const [searchParams] = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [providers, setProviders] = useState<SocialProvider[]>([]);
+  const [agreed, setAgreed] = useState(false);
 
   // 从 URL 参数读取登录后跳转目标；未提供或不合法时默认 /insight
   const redirectTarget = readRedirectFromParams(searchParams) ?? '/insight';
@@ -91,6 +93,10 @@ export default function LoginPage() {
   }, []);
 
   async function onSubmit(values: LoginFormValues) {
+    if (!agreed) {
+      toast.error(t('auth.agreementRequired'));
+      return;
+    }
     setIsLoading(true);
     try {
       await login(values.account, values.password);
@@ -113,6 +119,10 @@ export default function LoginPage() {
   }
 
   function handleSocialLogin(provider: string) {
+    if (!agreed) {
+      toast.error(t('auth.agreementRequired'));
+      return;
+    }
     const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
     const redirectUri = `${window.location.origin}/social-callback`;
     // 社交登录会经历 OAuth 整页跳转，以及后端重定向。
@@ -187,6 +197,8 @@ export default function LoginPage() {
           </Button>
         </form>
       </Form>
+
+      <AgreementCheckbox checked={agreed} onCheckedChange={setAgreed} />
 
       <div className="flex items-center justify-between text-sm">
         <Link

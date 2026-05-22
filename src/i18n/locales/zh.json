@@ -36,6 +36,7 @@
     "title.line1": "开源的世界里",
     "title.line2": "每一份贡献都值得回报",
     "search.placeholder": "搜索仓库、开发者、标签名等查看数据洞察",
+    "search.placeholder.unauthenticated": "登录后搜索仓库、开发者、标签名等查看数据洞察",
     "search.typeRepo": "仓库",
     "search.typeUser": "开发者",
     "search.typeLabel": "标签",
@@ -230,7 +231,12 @@
     "confirmPasswordRequired": "请确认密码",
     "passwordMismatch": "两次输入的密码不一致",
     "usernameMin3": "用户名至少 3 个字符",
-    "usernameMax30": "用户名最多 30 个字符"
+    "usernameMax30": "用户名最多 30 个字符",
+    "agreePrefix": "我已阅读并同意",
+    "registerAgreement": "用户注册协议",
+    "pointRedemptionAgreement": "积分兑换协议",
+    "agreementAnd": "和",
+    "agreementRequired": "请先阅读并同意用户注册协议和积分兑换协议"
   },
   "profile": {
     "title": "个人中心",

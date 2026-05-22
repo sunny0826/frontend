@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, Loader2, Tag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
+import { useAuth } from '@/contexts/auth-context';
 import { RepoPlatformIcon } from '@/pages/insight/components/RepoPlatformIcon';
 import { inferLabelAvatarUrl } from '@/pages/insight/domain/repoPlatform';
 import { LABEL_TYPE_MAP } from '@/pages/insight/domain/labelTypes';
@@ -55,6 +56,10 @@ export function SiteSearchBox({ variant = 'landing' }: SiteSearchBoxProps) {
   const { t, i18n } = useTranslation();
   const lang = (i18n.language || 'en').startsWith('zh') ? 'zh' : 'en';
   const navigate = useNavigate();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+
+  // Disable search on landing page until user is authenticated
+  const isDisabled = variant === 'landing' && !authLoading && !isAuthenticated;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResultItem[]>([]);
@@ -62,19 +67,29 @@ export function SiteSearchBox({ variant = 'landing' }: SiteSearchBoxProps) {
   const [showResults, setShowResults] = useState(false);
 
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Debounced search
   useEffect(() => {
-    if (!searchQuery.trim()) {
+    const trimmed = searchQuery.trim();
+    if (!trimmed || trimmed.length < 2 || isDisabled) {
       setSearchResults([]);
       setShowResults(false);
       return;
     }
     const timer = setTimeout(async () => {
+      // Cancel previous in-flight request to avoid backend concurrency errors
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
       setIsSearching(true);
       try {
         const { data } = await api.get<{ items: SearchResultItem[] }>(
-          `/public/search?q=${encodeURIComponent(searchQuery.trim())}`,
+          `/public/search?q=${encodeURIComponent(trimmed)}`,
+          { signal: controller.signal },
         );
         setSearchResults(
           data.items.filter((item) => {
@@ -83,14 +98,21 @@ export function SiteSearchBox({ variant = 'landing' }: SiteSearchBoxProps) {
           }),
         );
         setShowResults(true);
-      } catch {
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name === 'CanceledError') return;
         setSearchResults([]);
         setShowResults(true);
       } finally {
         setIsSearching(false);
       }
     }, 500);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+    };
   }, [searchQuery]);
 
   // Click outside to close
@@ -125,10 +147,14 @@ export function SiteSearchBox({ variant = 'landing' }: SiteSearchBoxProps) {
     setSearchResults([]);
   }
 
+  const placeholderKey = isDisabled
+    ? 'hero.search.placeholder.unauthenticated'
+    : 'hero.search.placeholder';
+
   const inputClass =
     variant === 'insight'
       ? 'w-full h-12 pl-12 pr-4 rounded-xl border border-[#475569] bg-[#1E293B] focus:border-[#22C55E] focus:ring-1 focus:ring-[#22C55E]/30 focus:outline-none text-[#E2E8F0] placeholder:text-[#64748B] shadow-lg shadow-black/20 transition-all duration-200'
-      : 'w-full h-12 pl-12 pr-4 rounded-lg border border-[#475569] bg-[#1E293B] focus:border-[#22C55E] focus:outline-none text-[#E2E8F0] placeholder:text-[#64748B]';
+      : `w-full h-12 pl-12 pr-4 rounded-lg border border-[#475569] bg-[#1E293B] focus:border-[#22C55E] focus:outline-none text-[#E2E8F0] placeholder:text-[#64748B]${isDisabled ? ' opacity-60 cursor-not-allowed' : ''}`;
 
   const repoResults = searchResults.filter(
     (item) => (item.type || '').toLowerCase() === 'repo',
@@ -206,11 +232,12 @@ export function SiteSearchBox({ variant = 'landing' }: SiteSearchBoxProps) {
       <input
         type="text"
         value={searchQuery}
+        disabled={isDisabled}
         onChange={(e) => setSearchQuery(e.target.value)}
         onFocus={() => {
           if (searchQuery.trim()) setShowResults(true);
         }}
-        placeholder={t('hero.search.placeholder')}
+        placeholder={t(placeholderKey)}
         className={inputClass}
       />
 
