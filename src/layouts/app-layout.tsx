@@ -45,6 +45,7 @@ const navItems: NavItem[] = [
       { labelKey: 'nav.settingsEmail', path: '/settings/email' },
       { labelKey: 'nav.settingsPassword', path: '/settings/password' },
       { labelKey: 'nav.settingsAddresses', path: '/settings/addresses' },
+      { labelKey: 'nav.settingsWithdrawalAccounts', path: '/settings/withdrawal-accounts' },
       { labelKey: 'nav.settingsMerge', path: '/settings/merge' },
     ],
   },

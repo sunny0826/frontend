@@ -34,6 +34,7 @@ import OrganizationTransactionsPage from '@/pages/organization-transactions';
 import ChangeEmailPage from '@/pages/change-email';
 import ChangePasswordPage from '@/pages/change-password';
 import AddressesPage from '@/pages/addresses';
+import WithdrawalAccountsPage from '@/pages/withdrawal-accounts';
 import AccountMergePage from '@/pages/account-merge';
 import PointAllocationPage from '@/pages/point-allocation';
 import TalentReachPage from '@/pages/talent-reach';
@@ -106,6 +107,7 @@ export const router = createBrowserRouter([
           { path: '/settings/email', element: <ChangeEmailPage /> },
           { path: '/settings/password', element: <ChangePasswordPage /> },
           { path: '/settings/addresses', element: <AddressesPage /> },
+          { path: '/settings/withdrawal-accounts', element: <WithdrawalAccountsPage /> },
           { path: '/settings/merge', element: <AccountMergePage /> },
         ],
       },
