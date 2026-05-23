@@ -176,6 +176,7 @@
     "orSocialLogin": "Or continue with",
     "signInWithGitHub": "Sign in with GitHub",
     "signInWithGitee": "Sign in with Gitee",
+    "connectingProvider": "Connecting to {{provider}}, please wait...",
     "loginSuccess": "Login successful, welcome back",
     "loginFailed": "Login failed, please try again later",
     "loginFailedCredentials": "Login failed, please check your credentials",

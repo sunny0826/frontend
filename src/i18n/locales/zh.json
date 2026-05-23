@@ -176,6 +176,7 @@
     "orSocialLogin": "或使用第三方账号登录",
     "signInWithGitHub": "使用 GitHub 登录",
     "signInWithGitee": "使用 Gitee 登录",
+    "connectingProvider": "正在跳转到 {{provider}} 登录,请稍候...",
     "loginSuccess": "登录成功，欢迎回来",
     "loginFailed": "登录失败，请稍后重试",
     "loginFailedCredentials": "登录失败，请检查凭证",
