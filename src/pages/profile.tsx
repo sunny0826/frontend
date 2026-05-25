@@ -8,7 +8,6 @@ import {
   Calendar,
   MapPin,
   Building2,
-  Github,
   Globe,
   Twitter,
   Linkedin,
@@ -21,6 +20,7 @@ import {
   Link2,
   Unlink,
   Loader2,
+  Plus,
 } from 'lucide-react';
 import api, { getApiError } from '@/lib/api';
 import { inferDeveloperAvatarUrl } from '@/pages/insight/domain/repoPlatform';
@@ -41,6 +41,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/app/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/app/components/ui/dialog';
 import { toast } from 'sonner';
 
 interface Profile {
@@ -61,23 +69,70 @@ interface SocialConnectionItem {
   social_auth_id: number | null;
 }
 
+interface SocialProviderItem {
+  provider: string;
+  name: string;
+  icon: string;
+  start_url: string;
+}
+
+// 与落地页 platforms-section.tsx 保持一致，复用 OpenDigger OSS 提供的平台 logo
+// 文件名规则：https://oss.open-digger.cn/logos/{slug}.png
+const OPEN_DIGGER_LOGO_SLUGS: Record<string, string> = {
+  github: 'github',
+  gitlab: 'gitlab',
+  gitee: 'gitee',
+  atomgit: 'atomgit',
+  huggingface: 'huggingface',
+};
+
 function getSocialProviderIcon(provider: string) {
+  const logoSlug = OPEN_DIGGER_LOGO_SLUGS[provider];
+  if (logoSlug) {
+    return (
+      <img
+        src={`https://oss.open-digger.cn/logos/${logoSlug}.png`}
+        alt={provider}
+        className="size-4 object-contain"
+        loading="lazy"
+        onError={(e) => {
+          (e.currentTarget as HTMLImageElement).style.display = 'none';
+        }}
+      />
+    );
+  }
   switch (provider) {
-    case 'github':
-      return <Github className="size-4" />;
     case 'twitter-oauth2':
       return <Twitter className="size-4" />;
     case 'linkedin-oauth2':
       return <Linkedin className="size-4" />;
     case 'google-oauth2':
       return <Globe className="size-4" />;
-    case 'gitee':
-      return <span className="text-xs font-bold">G</span>;
-    case 'huggingface':
-      return <span className="text-xs">🤗</span>;
     default:
       return <Link2 className="size-4" />;
   }
+}
+
+// 超过指定长度的文本以省略号截断，防止超长 ID/用户名冲出容器
+function truncateText(text: string, max: number): string {
+  if (!text) return text;
+  if (text.length <= max) return text;
+  return `${text.slice(0, Math.max(1, max - 1))}…`;
+}
+
+// 构造 username(uid) 展示文本，同时返回原始未截断的文本用于 title 属性
+function formatSocialAccountLabel(
+  username: string | null | undefined,
+  uid: string | null | undefined,
+): { display: string; full: string } | null {
+  const u = (username ?? '').trim();
+  const i = (uid ?? '').trim();
+  if (!u && !i) return null;
+  const fullParts = u && i ? `${u}(${i})` : u || i;
+  const tu = u ? truncateText(u, 20) : '';
+  const ti = i ? truncateText(i, 16) : '';
+  const display = tu && ti ? `${tu}(${ti})` : tu || ti;
+  return { display, full: fullParts };
 }
 
 interface WorkExperience {
@@ -125,6 +180,11 @@ export default function ProfilePage() {
   const [canDisconnectSocial, setCanDisconnectSocial] = useState(true);
   const [disconnectingId, setDisconnectingId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  // 添加社交账号弹窗状态
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [availableProviders, setAvailableProviders] = useState<SocialProviderItem[]>([]);
+  const [providersLoading, setProvidersLoading] = useState(false);
+  const [providersLoaded, setProvidersLoaded] = useState(false);
 
   const fetchSocialConnections = useCallback(async () => {
     try {
@@ -135,6 +195,20 @@ export default function ProfilePage() {
       // 静默处理：社交连接禁用时不阻断主流程
     }
   }, []);
+
+  const fetchAvailableProviders = useCallback(async () => {
+    setProvidersLoading(true);
+    try {
+      const { data: providersData } = await api.get('/auth/social/providers');
+      setAvailableProviders(providersData?.providers ?? []);
+      setProvidersLoaded(true);
+    } catch (error) {
+      const apiError = getApiError(error);
+      toast.error(apiError.message || t('profile.loadProvidersFailed'));
+    } finally {
+      setProvidersLoading(false);
+    }
+  }, [t]);
 
   useEffect(() => {
     Promise.all([
@@ -198,6 +272,20 @@ export default function ProfilePage() {
       `${baseUrl}/auth/social/${provider}/start?${query}`,
       '_blank'
     );
+  }
+
+  function handleOpenAddDialog() {
+    setAddDialogOpen(true);
+    if (!providersLoaded && !providersLoading) {
+      void fetchAvailableProviders();
+    }
+  }
+
+  function handleSelectProviderToBind(provider: string) {
+    handleConnectProvider(provider);
+    // OAuth 流程会在新标签页进行，关闭弹窗并提示用户
+    setAddDialogOpen(false);
+    toast.info(t('profile.bindOpenedInNewTab'));
   }
 
   // 已绑定社交账号的头像 URL（复用数据洞察开发者详情页的构造逻辑）
@@ -305,7 +393,7 @@ export default function ProfilePage() {
             {profile.birth_date && (
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Calendar className="size-4" />
-                <span>{t('profile.birthday')}：{format(new Date(profile.birth_date), 'yyyy-MM-dd')}</span>
+                <span>{t('profile.birthday')}：{format(new Date(profile.birth_date), 'yyyy-MM')}</span>
               </div>
             )}
             {!profile.bio && !profile.company && !profile.location && !profile.birth_date && (
@@ -317,7 +405,19 @@ export default function ProfilePage() {
         {/* 社交账号卡片 */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base font-semibold">{t('profile.socialAccounts')}</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base font-semibold">{t('profile.socialAccounts')}</CardTitle>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="h-7 px-2 text-xs"
+                onClick={handleOpenAddDialog}
+              >
+                <Plus className="size-4" />
+                {t('profile.addAccount')}
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             {socialConnections.length === 0 ? (
@@ -325,33 +425,36 @@ export default function ProfilePage() {
             ) : (
               <div className="space-y-2">
                 {socialConnections.map((conn) => {
-                  const accountLabel =
-                    conn.username && conn.uid
-                      ? `${conn.username}(${conn.uid})`
-                      : conn.username || conn.uid;
+                  const labelInfo = formatSocialAccountLabel(conn.username, conn.uid);
+                  const rowKey =
+                    conn.social_auth_id ?? `${conn.provider}-${conn.uid ?? ''}`;
                   return (
                   <div
-                    key={conn.provider}
+                    key={rowKey}
                     className="flex items-center justify-between gap-2"
                   >
-                    <div className="flex items-center gap-2 text-sm min-w-0">
+                    <div className="flex items-center gap-2 text-sm min-w-0 flex-1">
                       <div className="flex size-6 items-center justify-center rounded-full bg-muted shrink-0">
                         {getSocialProviderIcon(conn.provider)}
                       </div>
                       <span className="font-medium shrink-0">{conn.name}</span>
-                      {conn.is_connected && accountLabel && (
+                      {conn.is_connected && labelInfo && (
                         conn.profile_url ? (
                           <a
                             href={conn.profile_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-xs text-primary hover:underline truncate"
+                            title={labelInfo.full}
+                            className="text-xs text-primary hover:underline truncate min-w-0"
                           >
-                            {accountLabel}
+                            {labelInfo.display}
                           </a>
                         ) : (
-                          <span className="text-xs text-muted-foreground truncate">
-                            {accountLabel}
+                          <span
+                            title={labelInfo.full}
+                            className="text-xs text-muted-foreground truncate min-w-0"
+                          >
+                            {labelInfo.display}
                           </span>
                         )
                       )}
@@ -399,17 +502,7 @@ export default function ProfilePage() {
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-7 px-2 text-xs shrink-0"
-                        onClick={() => handleConnectProvider(conn.provider)}
-                      >
-                        <Link2 className="size-4" />
-                        {t('profile.bind')}
-                      </Button>
-                    )}
+                    ) : null}
                   </div>
                   );
                 })}
@@ -514,6 +607,149 @@ export default function ProfilePage() {
           )}
         </CardContent>
       </Card>
+
+      {/* 添加社交账号弹窗 */}
+      <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{t('profile.addAccountTitle')}</DialogTitle>
+            <DialogDescription>{t('profile.addAccountDesc')}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            {/* 已绑定账号清单（与外部卡片一致的 login(id) 展示） */}
+            <section>
+              <h4 className="text-xs font-semibold text-muted-foreground mb-2">
+                {t('profile.boundAccountsHeading')}
+              </h4>
+              {socialConnections.length === 0 ? (
+                <p className="text-sm text-muted-foreground italic">
+                  {t('profile.socialNotBound')}
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {socialConnections.map((conn) => {
+                    const labelInfo = formatSocialAccountLabel(conn.username, conn.uid);
+                    const rowKey =
+                      conn.social_auth_id ?? `${conn.provider}-${conn.uid ?? ''}`;
+                    return (
+                      <div
+                        key={rowKey}
+                        className="flex items-center justify-between gap-2 rounded-md border px-2 py-1.5"
+                      >
+                        <div className="flex items-center gap-2 text-sm min-w-0 flex-1">
+                          <div className="flex size-6 items-center justify-center rounded-full bg-muted shrink-0">
+                            {getSocialProviderIcon(conn.provider)}
+                          </div>
+                          <span className="font-medium shrink-0">{conn.name}</span>
+                          {labelInfo && (
+                            conn.profile_url ? (
+                              <a
+                                href={conn.profile_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title={labelInfo.full}
+                                className="text-xs text-primary hover:underline truncate min-w-0"
+                              >
+                                {labelInfo.display}
+                              </a>
+                            ) : (
+                              <span
+                                title={labelInfo.full}
+                                className="text-xs text-muted-foreground truncate min-w-0"
+                              >
+                                {labelInfo.display}
+                              </span>
+                            )
+                          )}
+                        </div>
+                        {conn.social_auth_id !== null && (
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            className="h-7 px-2 text-xs shrink-0"
+                            disabled={
+                              !canDisconnectSocial ||
+                              disconnectingId === conn.social_auth_id
+                            }
+                            onClick={() =>
+                              handleDisconnectProvider(
+                                conn.provider,
+                                conn.social_auth_id as number,
+                              )
+                            }
+                          >
+                            {disconnectingId === conn.social_auth_id ? (
+                              <Loader2 className="size-4 animate-spin" />
+                            ) : (
+                              <Unlink className="size-4" />
+                            )}
+                            {t('profile.unbind')}
+                          </Button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+
+            {/* 可绑定的 providers（全部可点，支持同一平台多次绑定） */}
+            <section>
+              <h4 className="text-xs font-semibold text-muted-foreground mb-2">
+                {t('profile.bindablePlatformsHeading')}
+              </h4>
+              {providersLoading ? (
+                <div className="flex items-center justify-center py-6">
+                  <Loader2 className="size-5 animate-spin text-muted-foreground" />
+                </div>
+              ) : availableProviders.length === 0 ? (
+                <p className="text-sm text-muted-foreground italic text-center py-4">
+                  {t('profile.noProvidersAvailable')}
+                </p>
+              ) : (
+                <div className="grid gap-2">
+                  {availableProviders.map((provider) => {
+                    const boundCount = socialConnections.filter(
+                      (c) => c.provider === provider.provider,
+                    ).length;
+                    return (
+                      <Button
+                        key={provider.provider}
+                        type="button"
+                        variant="outline"
+                        className="justify-between h-auto py-2.5"
+                        onClick={() => handleSelectProviderToBind(provider.provider)}
+                      >
+                        <span className="flex items-center gap-2">
+                          <span className="flex size-6 items-center justify-center rounded-full bg-muted shrink-0">
+                            {getSocialProviderIcon(provider.provider)}
+                          </span>
+                          <span className="font-medium">{provider.name}</span>
+                          {boundCount > 0 && (
+                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                              {t('profile.boundCountBadge', { count: boundCount })}
+                            </Badge>
+                          )}
+                        </span>
+                        <Link2 className="size-4 text-muted-foreground" />
+                      </Button>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {t('profile.addAccountTip')}
+          </p>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setAddDialogOpen(false)}>
+              {t('common.close')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -78,3 +78,5 @@ storybook-static/
 # Temporary folders
 tmp/
 temp/
+
+publish.sh

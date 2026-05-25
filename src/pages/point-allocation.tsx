@@ -953,7 +953,7 @@ export default function PointAllocationPage() {
                 )}
                 {theoreticalTotal > 0 && theoreticalTotal > availableBalance && (
                   <p className="text-center text-xs text-amber-600">
-                    积分池余额不足以覆盖理论全额，已按最大比例分配
+                    {t('pointAllocation.insufficientBalanceHint')}
                   </p>
                 )}
               </div>
