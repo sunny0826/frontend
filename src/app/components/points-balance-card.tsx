@@ -1,8 +1,13 @@
 import { useTranslation } from "react-i18next";
-import { Wallet, Banknote, Gift } from "lucide-react";
+import { Wallet, Banknote, Gift, HelpCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Separator } from "@/app/components/ui/separator";
 import { Badge } from "@/app/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/app/components/ui/tooltip";
 
 export interface PointsBalanceData {
   total: number;
@@ -51,7 +56,24 @@ export function PointsBalanceCard({
                 <Banknote className="size-5 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">{t('points.cashPoints')}</p>
+                <div className="flex items-center gap-1">
+                  <p className="text-xs text-muted-foreground">{t('points.cashPoints')}</p>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        tabIndex={-1}
+                        aria-label={t('points.cashPointsTooltip')}
+                        className="inline-flex items-center justify-center text-muted-foreground/70 hover:text-muted-foreground focus:outline-none"
+                      >
+                        <HelpCircle className="size-3.5" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-sm text-pretty">
+                      {t('points.cashPointsTooltip')}
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <p className="text-xl font-semibold text-emerald-700 dark:text-emerald-300">
                   {balance.cash.toLocaleString()}
                 </p>

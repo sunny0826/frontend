@@ -3,7 +3,7 @@ import { formatDistanceToNow, format } from "date-fns";
 import { zhCN, enUS } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { Plus, Loader2, Wallet, Banknote } from "lucide-react";
+import { Plus, Loader2, Wallet, Banknote, HelpCircle } from "lucide-react";
 import api, { getApiError } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
@@ -26,6 +26,11 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/app/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/app/components/ui/tooltip";
 import { toast } from "sonner";
 
 interface Withdrawal {
@@ -261,7 +266,24 @@ export default function WithdrawalsPage() {
               <Banknote className="size-6 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">{t('withdrawals.currentCashPoints')}</p>
+              <div className="flex items-center gap-1">
+                <p className="text-sm text-muted-foreground">{t('withdrawals.currentCashPoints')}</p>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      tabIndex={-1}
+                      aria-label={t('withdrawals.cashPointsTooltip')}
+                      className="inline-flex items-center justify-center text-muted-foreground/70 hover:text-muted-foreground focus:outline-none"
+                    >
+                      <HelpCircle className="size-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-sm text-pretty">
+                    {t('withdrawals.cashPointsTooltip')}
+                  </TooltipContent>
+                </Tooltip>
+              </div>
               {balanceLoading ? (
                 <Loader2 className="size-5 animate-spin text-muted-foreground mt-1" />
               ) : (
@@ -384,7 +406,24 @@ export default function WithdrawalsPage() {
             <div className="flex items-center gap-3 p-4 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800">
               <Wallet className="size-5 text-emerald-600 dark:text-emerald-400" />
               <div>
-                <p className="text-xs text-muted-foreground">{t('withdrawals.currentCashPoints')}</p>
+                <div className="flex items-center gap-1">
+                  <p className="text-xs text-muted-foreground">{t('withdrawals.currentCashPoints')}</p>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        tabIndex={-1}
+                        aria-label={t('withdrawals.cashPointsTooltip')}
+                        className="inline-flex items-center justify-center text-muted-foreground/70 hover:text-muted-foreground focus:outline-none"
+                      >
+                        <HelpCircle className="size-3.5" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-sm text-pretty">
+                      {t('withdrawals.cashPointsTooltip')}
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <p className="text-lg font-semibold text-emerald-700 dark:text-emerald-300">
                   {cashBalance.toLocaleString()}
                 </p>
@@ -471,6 +510,31 @@ export default function WithdrawalsPage() {
               <p className="text-xs text-muted-foreground">
                 {t('withdrawals.minAmountTip')}
               </p>
+              {(() => {
+                const num = Number(withdrawAmount);
+                if (!withdrawAmount || isNaN(num) || num <= 0) return null;
+                const cny = (num / 10).toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                });
+                const selectedAccount = accounts.find(
+                  (a) => String(a.id) === selectedAccountId,
+                );
+                const isInternational =
+                  selectedAccount?.account_type === "international";
+                return (
+                  <div className="space-y-1">
+                    <p className="text-xs text-emerald-700 dark:text-emerald-400">
+                      {t('withdrawals.estimatedCash', { amount: cny })}
+                    </p>
+                    {isInternational && (
+                      <p className="text-xs text-muted-foreground">
+                        {t('withdrawals.internationalRateNote')}
+                      </p>
+                    )}
+                  </div>
+                );
+              })()}
               {amountError && (
                 <p className="text-xs text-red-600">{amountError}</p>
               )}
