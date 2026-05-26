@@ -289,9 +289,9 @@ export default function ProfilePage() {
   }
 
   // 已绑定社交账号的头像 URL（复用数据洞察开发者详情页的构造逻辑）
-  // 仅支持 github / gitee / gitlab / atomgit；按此优先级取首个可用项
+  // 优先使用国内平台头像以加快加载速度：gitee > atomgit > github > gitlab
   const socialAvatarUrl = (() => {
-    const priority = ['github', 'gitee', 'gitlab', 'atomgit'];
+    const priority = ['gitee', 'atomgit', 'github', 'gitlab'];
     for (const provider of priority) {
       const conn = socialConnections.find(
         (c) => c.is_connected && c.provider === provider && (c.username || c.uid),
