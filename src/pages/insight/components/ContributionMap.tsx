@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import type { ContributionRow } from '../types/api';
 import { preprocessContributions } from '../domain/geography';
 import { WORLD_GEOJSON_URL } from '../api/constants';
+import { normalizeInsightLang } from '../domain/lang';
 
 type Props = {
   contributions: ContributionRow[];
@@ -11,7 +12,7 @@ type Props = {
 
 export function ContributionMap({ contributions }: Props) {
   const { t, i18n } = useTranslation();
-  const lang = i18n.language as 'zh' | 'en';
+  const lang = normalizeInsightLang(i18n.language);
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<echarts.ECharts | null>(null);
   const optionRef = useRef<echarts.EChartsOption | null>(null);

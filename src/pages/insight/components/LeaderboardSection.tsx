@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import type { LeaderboardItem, LeaderboardMeta, MetaGroupType } from '../types/api';
 import { getFilteredLeaderboardData, ITEMS_PER_PAGE, joinZhLeaderboardScopeUnit } from '../domain/leaderboard';
 import { leaderboardAvatarForItem } from '../domain/geography';
+import { normalizeInsightLang } from '../domain/lang';
 import { LeaderboardAvatar } from './LeaderboardAvatar';
 import { DeltaDisplay } from './DeltaDisplay';
 
@@ -15,7 +16,7 @@ type HeaderProps = {
 
 export function LeaderboardHeader({ meta, scopeName, unitName }: HeaderProps) {
   const { t, i18n } = useTranslation();
-  const lang = i18n.language as 'zh' | 'en';
+  const lang = normalizeInsightLang(i18n.language);
 
   const currentScope = meta?.scopes?.find((s) => s.name === scopeName);
   const currentGroupType = meta?.groupTypes?.find((g) => g.name === unitName);
@@ -68,7 +69,7 @@ export const LeaderboardSection = forwardRef<HTMLDivElement, Props>(function Lea
   ref,
 ) {
   const { t, i18n } = useTranslation();
-  const lang = i18n.language as 'zh' | 'en';
+  const lang = normalizeInsightLang(i18n.language);
 
   const currentGroupType = meta?.groupTypes?.find((g) => g.name === unitName);
 

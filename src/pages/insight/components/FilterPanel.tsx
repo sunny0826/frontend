@@ -5,6 +5,7 @@ import type { LeaderboardMeta } from '../types/api';
 import { filterGroupTypesForUnitDropdown } from '../domain/meta';
 import { TimeRangePicker } from './TimeRangePicker';
 import { computeInitialTimeValue } from '../domain/timeRange';
+import { normalizeInsightLang } from '../domain/lang';
 
 type Props = {
   meta: LeaderboardMeta | null;
@@ -55,7 +56,7 @@ export function FilterPanel({
   paginationSlot,
 }: Props) {
   const { t, i18n } = useTranslation();
-  const lang = i18n.language as 'zh' | 'en';
+  const lang = normalizeInsightLang(i18n.language);
   const [scopeMenuOpen, setScopeMenuOpen] = useState(false);
   const [unitMenuOpen, setUnitMenuOpen] = useState(false);
   const [timePickerOpen, setTimePickerOpen] = useState(false);

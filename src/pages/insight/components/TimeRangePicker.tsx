@@ -1,6 +1,7 @@
 import { Icon } from '@iconify/react/offline';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Lang, LeaderboardMeta } from '../types/api';
+import { normalizeInsightLang } from '../domain/lang';
 import { formatTimeDisplay, getTimeBounds, type TimeBounds } from '../domain/timeRange';
 
 /** Month abbreviations for the time-range picker grid */
@@ -40,6 +41,7 @@ export function TimeRangePicker({
   boundsOverride = null,
   onOpenChange,
 }: Props) {
+  const normalizedLang = normalizeInsightLang(lang);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -131,7 +133,7 @@ export function TimeRangePicker({
   const prevYearDisabled = yNum <= bounds.minYear;
   const nextYearDisabled = yNum >= bounds.maxYear;
 
-  const monthNames = MONTH_SHORT_NAMES[lang];
+  const monthNames = MONTH_SHORT_NAMES[normalizedLang] ?? MONTH_SHORT_NAMES.en;
   const currentMonth =
     timeType === 'month' ? parseInt((timeValue || '').split('-')[1] || '0', 10) || 0 : 0;
   const yearForGrid = (timeValue || bounds.maxMonth).split('-')[0];
@@ -170,7 +172,7 @@ export function TimeRangePicker({
             }}
             className={`flex min-w-0 flex-1 cursor-pointer items-center justify-center text-foreground transition-colors hover:bg-secondary/60 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset ${dense ? 'px-2 py-1 text-xs' : 'px-3 py-2.5 text-sm'}`}
           >
-            <span className="truncate">{formatTimeDisplay(timeValue, timeType, lang)}</span>
+            <span className="truncate">{formatTimeDisplay(timeValue, timeType, normalizedLang)}</span>
           </button>
           <button
             type="button"

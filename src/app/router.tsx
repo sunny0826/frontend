@@ -32,6 +32,7 @@ const OrganizationDetailPage = lazy(() => import('@/pages/organization-detail'))
 const OrganizationMembersPage = lazy(() => import('@/pages/organization-members'));
 const OrganizationSettingsPage = lazy(() => import('@/pages/organization-settings'));
 const OrganizationTransactionsPage = lazy(() => import('@/pages/organization-transactions'));
+const SettingsGeneralPage = lazy(() => import('@/pages/settings-general'));
 const ChangeEmailPage = lazy(() => import('@/pages/change-email'));
 const ChangePasswordPage = lazy(() => import('@/pages/change-password'));
 const AddressesPage = lazy(() => import('@/pages/addresses'));
@@ -114,6 +115,7 @@ export const router = createBrowserRouter([
           { path: '/organizations/:slug/transactions', element: lazyElement(<OrganizationTransactionsPage />) },
           { path: '/insight', element: lazyElement(<InsightPage />) },
           { path: '/insight/*', element: lazyElement(<InsightDispatcher />) },
+          { path: '/settings/general', element: lazyElement(<SettingsGeneralPage />) },
           { path: '/settings/email', element: lazyElement(<ChangeEmailPage />) },
           { path: '/settings/password', element: lazyElement(<ChangePasswordPage />) },
           { path: '/settings/addresses', element: lazyElement(<AddressesPage />) },

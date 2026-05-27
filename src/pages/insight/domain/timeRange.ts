@@ -1,4 +1,5 @@
 import type { Lang, LeaderboardMeta } from '../types/api';
+import { normalizeInsightLang } from './lang';
 
 const TIME_YEAR_DISPLAY: Record<Lang, string> = {
   zh: '{{y}}年',
@@ -32,8 +33,9 @@ export function getLastMonth(baseDate: string | number | Date | null = null): st
 }
 
 export function formatTimeDisplay(value: string, timeType: 'month' | 'year', lang: Lang): string {
+  const normalizedLang = normalizeInsightLang(lang);
   if (timeType === 'year') {
-    return TIME_YEAR_DISPLAY[lang].replace('{{y}}', value);
+    return (TIME_YEAR_DISPLAY[normalizedLang] ?? TIME_YEAR_DISPLAY.en).replace('{{y}}', value);
   }
   const [y, m] = value.split('-');
   return `${y}.${m}`;

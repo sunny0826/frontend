@@ -416,6 +416,12 @@ export default function PointAllocationPage() {
   const unregisteredCount = previewData
     ? previewData.preview.filter((r) => !r.is_registered).length
     : 0;
+  const paginatedPreviewRecipients = previewData
+    ? previewData.preview.slice(
+      (previewPage - 1) * PREVIEW_PAGE_SIZE,
+      previewPage * PREVIEW_PAGE_SIZE,
+    )
+    : [];
 
   // 总积分（effectiveAdjustments.total）在缩放后必然 <= availableBalance，
   // 因此 canExecute 只需判断有受益人即可。
@@ -557,7 +563,7 @@ export default function PointAllocationPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="mx-auto max-w-4xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">{t('pointAllocation.title')}</h1>
         <p className="text-muted-foreground">{t('pointAllocation.subtitle')}</p>
@@ -679,8 +685,8 @@ export default function PointAllocationPage() {
                       )}
                       <button
                         type="button"
-                        aria-label="remove"
-                        className="ml-1 inline-flex size-5 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                        aria-label={t('pointAllocation.removeTag', { name: tag.name })}
+                        className="ml-1 inline-flex size-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                         onClick={() => {
                           setSelectedTags((prev) => prev.filter((t) => t.id !== tag.id));
                           setPreviewData(null);
@@ -814,6 +820,7 @@ export default function PointAllocationPage() {
       <div className="flex justify-center">
         <Button
           size="lg"
+          className="w-full sm:w-auto"
           disabled={!canPreview || previewLoading}
           onClick={handlePreview}
         >
@@ -832,28 +839,28 @@ export default function PointAllocationPage() {
           <Separator />
 
           {/* Stats cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Card>
-              <CardContent className="pt-4 text-center">
+              <CardContent className="pt-4 text-center sm:text-left">
                 <p className="text-sm text-muted-foreground">{t('pointAllocation.totalPeople')}</p>
                 <p className="text-2xl font-bold">{previewData.preview.length}</p>
               </CardContent>
             </Card>
             <Card>
-              <CardContent className="pt-4 text-center">
+              <CardContent className="pt-4 text-center sm:text-left">
                 <p className="text-sm text-muted-foreground">{t('pointAllocation.registered')}</p>
                 <p className="text-2xl font-bold text-green-600">{registeredCount}</p>
               </CardContent>
             </Card>
             <Card>
-              <CardContent className="pt-4 text-center">
+              <CardContent className="pt-4 text-center sm:text-left">
                 <p className="text-sm text-muted-foreground">{t('pointAllocation.unregistered')}</p>
                 <p className="text-2xl font-bold text-orange-500">{unregisteredCount}</p>
               </CardContent>
             </Card>
             <Card>
-              <CardContent className="pt-4 text-center">
-                <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground">
+              <CardContent className="pt-4 text-center sm:text-left">
+                <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground sm:justify-start">
                   <span>{t('pointAllocation.totalPoints')}</span>
                   <TooltipProvider delayDuration={150}>
                     <Tooltip>
@@ -891,50 +898,57 @@ export default function PointAllocationPage() {
             <CardContent className="pt-4 pb-4">
               <div className="space-y-2">
                 {/* 积分总量 + 比例 + 问号提示（同一行） */}
-                <div className="flex items-center justify-center gap-2">
-                  <div className="flex items-baseline gap-1 text-lg">
+                <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-center">
+                  <div className="flex items-baseline justify-center gap-1 text-lg sm:justify-start">
                     <span className="font-bold text-2xl">{totalAmount.toLocaleString()}</span>
                     <span className="text-muted-foreground">/</span>
                     <span className="text-muted-foreground">{availableBalance.toLocaleString()}</span>
                   </div>
-                  <TooltipProvider delayDuration={200}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="ghost"
-                          className="size-7"
-                          onClick={handleResetToRatioOne}
-                          disabled={!previewData || theoreticalTotal <= 0}
-                          aria-label={t('pointAllocation.resetToRatioOne')}
-                        >
-                          <RotateCcw className="size-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="max-w-xs text-sm">
-                        {t('pointAllocation.resetToRatioOneTip')}
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <span className="text-muted-foreground mx-1">·</span>
-                  <span className="text-sm text-muted-foreground">
-                    {t('pointAllocation.globalRatio')}: <span className="font-semibold text-foreground">{(actualRatio * 100).toFixed(1)}%</span>
-                  </span>
-                  <TooltipProvider delayDuration={200}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <HelpCircle className="size-4 text-muted-foreground cursor-help" />
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="max-w-xs text-sm">
-                        通过滑块调整全局发放比例，后续可对特定开发者发放数量进行精调
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <div className="flex items-center justify-center gap-2">
+                    <TooltipProvider delayDuration={200}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            className="size-11 sm:size-8"
+                            onClick={handleResetToRatioOne}
+                            disabled={!previewData || theoreticalTotal <= 0}
+                            aria-label={t('pointAllocation.resetToRatioOne')}
+                          >
+                            <RotateCcw className="size-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs text-sm">
+                          {t('pointAllocation.resetToRatioOneTip')}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <span className="text-sm text-muted-foreground">
+                      {t('pointAllocation.globalRatio')}: <span className="font-semibold text-foreground">{(actualRatio * 100).toFixed(1)}%</span>
+                    </span>
+                    <TooltipProvider delayDuration={200}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            type="button"
+                            className="inline-flex size-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:size-8"
+                            aria-label={t('pointAllocation.globalRatioTip')}
+                          >
+                            <HelpCircle className="size-4" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs text-sm">
+                          {t('pointAllocation.globalRatioTip')}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                 </div>
 
                 {/* Slider with border */}
-                <div className="border border-border rounded-lg px-4 py-3">
+                <div className="border border-border rounded-lg px-4 py-4 sm:py-3">
                   <Slider
                     min={0}
                     max={availableBalance}
@@ -948,7 +962,7 @@ export default function PointAllocationPage() {
                 {/* UI 提示 */}
                 {theoreticalTotal > 0 && theoreticalTotal <= availableBalance && (
                   <p className="text-center text-xs text-green-600">
-                    积分池余额充足
+                    {t('pointAllocation.sufficientBalanceHint')}
                   </p>
                 )}
                 {theoreticalTotal > 0 && theoreticalTotal > availableBalance && (
@@ -966,7 +980,118 @@ export default function PointAllocationPage() {
               <CardTitle className="text-base">{t('pointAllocation.contributorList')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
+              <div className="divide-y divide-border md:hidden">
+                {paginatedPreviewRecipients.map((r) => {
+                  const key = getRecipientKey(r);
+                  const login = getRecipientLogin(r);
+                  const normalizedPlatform = r.platform
+                    ? normalizeRepoPlatform(r.platform)
+                    : "";
+                  const profileUrl = r.platform
+                    ? getDeveloperProfileUrlByPlatform(r.platform, login)
+                    : "";
+                  const platformLogo = normalizedPlatform
+                    ? `${OPEN_DIGGER_PLATFORM_LOGO_BASE}${normalizedPlatform}.png`
+                    : "";
+                  const inputId = `allocation-${key || r.email || login}`;
+
+                  return (
+                    <article
+                      key={key || r.email || String(r.contribution_score)}
+                      className="py-4 first:pt-0 last:pb-0"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="flex min-w-0 items-center gap-2">
+                            {platformLogo && (
+                              <img
+                                src={platformLogo}
+                                alt={r.platform}
+                                title={r.platform}
+                                className="size-5 shrink-0 rounded-full object-cover"
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                }}
+                              />
+                            )}
+                            {profileUrl ? (
+                              <a
+                                href={profileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="truncate text-sm font-semibold text-primary hover:underline"
+                              >
+                                {login}
+                              </a>
+                            ) : (
+                              <span className="truncate text-sm font-semibold">{login}</span>
+                            )}
+                          </div>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {t('pointAllocation.contribution')}: {r.contribution_score.toFixed(2)}
+                          </p>
+                        </div>
+                        {r.is_registered ? (
+                          <Badge className="shrink-0 bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
+                            {t('pointAllocation.registered')}
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="shrink-0">
+                            {t('pointAllocation.unregistered')}
+                          </Badge>
+                        )}
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <p className="text-xs text-muted-foreground">{t('pointAllocation.calculatedPoints')}</p>
+                          <p className="mt-1 font-semibold tabular-nums">
+                            {(computedBasePoints.get(key) ?? 0).toLocaleString()}
+                          </p>
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor={inputId} className="text-xs text-muted-foreground">
+                            {t('pointAllocation.adjustedPoints')}
+                          </Label>
+                          <Input
+                            id={inputId}
+                            type="number"
+                            min={0}
+                            inputMode="numeric"
+                            className="text-right tabular-nums"
+                            value={getAdjustedPoints(r)}
+                            onChange={(e) => {
+                              if (!key) return;
+                              setIndividualAdjustments((prev) => ({
+                                ...prev,
+                                [key]: Number(e.target.value),
+                              }));
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="mt-3 min-h-11 w-full"
+                        onClick={() => {
+                          if (!key) return;
+                          setIndividualAdjustments((prev) => {
+                            const next = { ...prev };
+                            delete next[key];
+                            return next;
+                          });
+                        }}
+                      >
+                        {t('pointAllocation.reset')}
+                      </Button>
+                    </article>
+                  );
+                })}
+              </div>
+
+              <div className="hidden overflow-x-auto md:block">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -979,12 +1104,7 @@ export default function PointAllocationPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {previewData.preview
-                      .slice(
-                        (previewPage - 1) * PREVIEW_PAGE_SIZE,
-                        previewPage * PREVIEW_PAGE_SIZE,
-                      )
-                      .map((r) => {
+                    {paginatedPreviewRecipients.map((r) => {
                       const login = getRecipientLogin(r);
                       const normalizedPlatform = r.platform
                         ? normalizeRepoPlatform(r.platform)
@@ -1043,6 +1163,7 @@ export default function PointAllocationPage() {
                           <Input
                             type="number"
                             min={0}
+                            inputMode="numeric"
                             className="w-24 ml-auto text-right"
                             value={getAdjustedPoints(r)}
                             onChange={(e) => {
@@ -1114,6 +1235,7 @@ export default function PointAllocationPage() {
           <div className="flex justify-center pb-8">
             <Button
               size="lg"
+              className="w-full sm:w-auto"
               disabled={!canExecute || executing}
               onClick={openConfirmDialog}
             >

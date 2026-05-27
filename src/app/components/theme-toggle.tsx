@@ -1,9 +1,14 @@
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/app/components/ui/button";
+import { cn } from "@/app/components/ui/utils";
 import { useLanguage } from "@/app/contexts/language-context";
 
-export function ThemeToggle() {
+interface ThemeToggleProps {
+  className?: string;
+}
+
+export function ThemeToggle({ className }: ThemeToggleProps) {
   const { t } = useLanguage();
   const { resolvedTheme, setTheme } = useTheme();
   const isDark = resolvedTheme !== "light";
@@ -16,11 +21,14 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       onClick={() => setTheme(nextTheme)}
-      className="border border-border bg-transparent text-foreground hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
+      className={cn(
+        "size-11 border border-border bg-transparent text-foreground hover:border-primary/40 hover:bg-primary/10 hover:text-primary",
+        className,
+      )}
       title={label}
       aria-label={label}
     >
-      <Icon className="size-4" strokeWidth={1.5} />
+      <Icon className="size-4" strokeWidth={1.5} aria-hidden="true" />
     </Button>
   );
 }

@@ -11,6 +11,7 @@ import { LeaderboardAvatar } from './components/LeaderboardAvatar';
 import { RepoPlatformIcon } from './components/RepoPlatformIcon';
 import { enrichLabelItemWithMeta, getLabelDetailDescriptionFromMeta } from './domain/detailHelpers';
 import { preprocessContributions } from './domain/geography';
+import { normalizeInsightLang } from './domain/lang';
 import { isClickableDetailMetaLabelType, isDivisionZeroTypeName, LABEL_TYPE_MAP } from './domain/labelTypes';
 import { divisionLabelFlagAvatarUrl } from './domain/geography';
 import { getRepoUrlByPlatform } from './domain/repoPlatform';
@@ -107,7 +108,7 @@ export default function LabelDetailPage() {
   const labelId = rawLabelId.replace(/^labels\//, '');
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const lang = i18n.language as 'zh' | 'en';
+  const lang = normalizeInsightLang(i18n.language);
 
   const fullLabelId = '#' + (labelId || '');
 

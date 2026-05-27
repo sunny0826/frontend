@@ -1,10 +1,14 @@
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Popover, PopoverContent, PopoverTrigger } from "./popover";
 import { cn } from "./utils";
 
-export type MonthPickerProps = {
+export type MonthPickerProps = Omit<
+  React.ComponentPropsWithoutRef<"button">,
+  "value" | "onChange" | "onBlur" | "disabled" | "name" | "className" | "id"
+> & {
   value?: string; // YYYY-MM 格式
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void; // 模拟 input 的 onChange 事件，兼容 react-hook-form
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
@@ -17,7 +21,7 @@ export type MonthPickerProps = {
   id?: string;
 };
 
-const MONTH_LABELS = [
+const DEFAULT_MONTH_LABELS = [
   "1月",
   "2月",
   "3月",
@@ -51,16 +55,28 @@ const MonthPicker = React.forwardRef<HTMLInputElement, MonthPickerProps>(
       onBlur,
       min,
       max,
-      placeholder = "选择月份",
+      placeholder,
       disabled = false,
       className,
       name,
       id,
+      ...triggerProps
     },
     ref,
   ) => {
+    const { t } = useTranslation();
     const [open, setOpen] = React.useState(false);
     const inputRef = React.useRef<HTMLInputElement>(null);
+    const translatedMonthLabels = t("common.months", {
+      returnObjects: true,
+    }) as unknown;
+    const monthLabels =
+      Array.isArray(translatedMonthLabels) &&
+      translatedMonthLabels.length === 12 &&
+      translatedMonthLabels.every((label) => typeof label === "string")
+        ? translatedMonthLabels
+        : DEFAULT_MONTH_LABELS;
+    const placeholderText = placeholder ?? t("common.selectMonth");
 
     // 合并外部 ref 和内部 ref
     React.useImperativeHandle(ref, () => inputRef.current as HTMLInputElement);
@@ -101,6 +117,13 @@ const MonthPicker = React.forwardRef<HTMLInputElement, MonthPickerProps>(
     // 当前选中的年月
     const selectedYear = value ? parseInt(value.split("-")[0], 10) : null;
     const selectedMonth = value ? parseInt(value.split("-")[1], 10) : null;
+    const selectedMonthLabel =
+      selectedMonth !== null &&
+      Number.isInteger(selectedMonth) &&
+      selectedMonth >= 1 &&
+      selectedMonth <= 12
+        ? monthLabels[selectedMonth - 1]
+        : null;
 
     // 触发 onChange 事件（模拟原生 input 的 ChangeEvent）
     const triggerChange = (newValue: string) => {
@@ -149,8 +172,11 @@ const MonthPicker = React.forwardRef<HTMLInputElement, MonthPickerProps>(
     };
 
     // 格式化显示文本
-    const displayText = value
-      ? `${value.split("-")[0]}年${parseInt(value.split("-")[1], 10)}月`
+    const displayText = value && selectedYear !== null && selectedMonthLabel
+      ? t("common.monthYear", {
+          year: selectedYear,
+          month: selectedMonthLabel,
+        })
       : "";
 
     return (
@@ -160,23 +186,23 @@ const MonthPicker = React.forwardRef<HTMLInputElement, MonthPickerProps>(
           ref={inputRef}
           type="hidden"
           name={name}
-          id={id}
           value={value || ""}
           onChange={onChange}
           onBlur={onBlur}
-          tabIndex={-1}
           aria-hidden="true"
         />
 
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild disabled={disabled}>
             <button
+              {...triggerProps}
+              id={id}
               type="button"
               disabled={disabled}
               onBlur={onBlur as unknown as React.FocusEventHandler<HTMLButtonElement>}
               className={cn(
                 // 与 Input 组件保持一致的样式
-                "border-input flex h-9 w-full min-w-0 rounded-md border px-3 py-1 text-base bg-input-background transition-[color,box-shadow] outline-none md:text-sm",
+                "border-input flex h-11 w-full min-w-0 rounded-lg border bg-input-background px-3.5 py-2 text-base shadow-sm outline-none transition-[color,box-shadow] md:text-sm",
                 "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
                 "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
                 "items-center justify-between gap-2",
@@ -185,7 +211,7 @@ const MonthPicker = React.forwardRef<HTMLInputElement, MonthPickerProps>(
               )}
             >
               <span className="truncate">
-                {displayText || placeholder}
+                {displayText || placeholderText}
               </span>
               <Calendar className="h-4 w-4 shrink-0 opacity-50" />
             </button>
@@ -198,8 +224,8 @@ const MonthPicker = React.forwardRef<HTMLInputElement, MonthPickerProps>(
                 type="button"
                 disabled={isPrevYearDisabled}
                 onClick={() => setDisplayYear((y) => y - 1)}
-                className="flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors disabled:pointer-events-none disabled:opacity-50"
-                aria-label="上一年"
+                className="flex size-10 items-center justify-center rounded-md transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50"
+                aria-label={t("common.previousYear")}
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -208,8 +234,8 @@ const MonthPicker = React.forwardRef<HTMLInputElement, MonthPickerProps>(
                 type="button"
                 disabled={isNextYearDisabled}
                 onClick={() => setDisplayYear((y) => y + 1)}
-                className="flex items-center justify-center h-7 w-7 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors disabled:pointer-events-none disabled:opacity-50"
-                aria-label="下一年"
+                className="flex size-10 items-center justify-center rounded-md transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50"
+                aria-label={t("common.nextYear")}
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -217,11 +243,15 @@ const MonthPicker = React.forwardRef<HTMLInputElement, MonthPickerProps>(
 
             {/* 3x4 月份网格 */}
             <div className="grid grid-cols-3 gap-1.5">
-              {MONTH_LABELS.map((label, i) => {
+              {monthLabels.map((label, i) => {
                 const month = i + 1;
                 const isDisabled = isMonthDisabled(month);
                 const isSelected =
                   selectedYear === displayYear && selectedMonth === month;
+                const monthLabel = t("common.monthYear", {
+                  year: displayYear,
+                  month: label,
+                });
 
                 return (
                   <button
@@ -229,8 +259,9 @@ const MonthPicker = React.forwardRef<HTMLInputElement, MonthPickerProps>(
                     type="button"
                     disabled={isDisabled}
                     onClick={() => handleSelectMonth(month)}
+                    aria-label={monthLabel}
                     className={cn(
-                      "h-8 rounded-md text-sm transition-colors cursor-pointer",
+                      "min-h-10 rounded-md text-sm transition-colors cursor-pointer",
                       "hover:bg-accent hover:text-accent-foreground",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       "disabled:pointer-events-none disabled:opacity-50",

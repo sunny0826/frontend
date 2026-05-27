@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { fetchItemMeta, fetchRepoTrendData } from './api/openDiggerTrend';
 import { getLabelDetailPath, getInsightHomePath } from './domain/routes';
 import { getRepoUrlByPlatform, normalizeRepoPlatform } from './domain/repoPlatform';
+import { normalizeInsightLang } from './domain/lang';
 import { TrendChart } from './components/TrendChart';
 import { ContributionMap } from './components/ContributionMap';
 import { RepoPlatformIcon } from './components/RepoPlatformIcon';
@@ -39,7 +40,7 @@ export default function RepoDetailPage() {
   const repoName = `${owner}/${repo}`;
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const lang = i18n.language as 'zh' | 'en';
+  const lang = normalizeInsightLang(i18n.language);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

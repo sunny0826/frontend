@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import {
+  type LucideIcon,
   User,
   Mail,
   Calendar,
@@ -21,6 +22,7 @@ import {
   Unlink,
   Loader2,
   Plus,
+  RefreshCw,
 } from 'lucide-react';
 import api, { getApiError } from '@/lib/api';
 import { inferDeveloperAvatarUrl } from '@/pages/insight/domain/repoPlatform';
@@ -28,8 +30,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/app/components/ui/ca
 import { Avatar, AvatarFallback, AvatarImage } from '@/app/components/ui/avatar';
 import { Button } from '@/app/components/ui/button';
 import { Badge } from '@/app/components/ui/badge';
-import { Separator } from '@/app/components/ui/separator';
 import { Skeleton } from '@/app/components/ui/skeleton';
+import { cn } from '@/app/components/ui/utils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -92,7 +94,8 @@ function getSocialProviderIcon(provider: string) {
     return (
       <img
         src={`https://oss.open-digger.cn/logos/${logoSlug}.png`}
-        alt={provider}
+        alt=""
+        aria-hidden="true"
         className="size-4 object-contain"
         loading="lazy"
         onError={(e) => {
@@ -103,13 +106,13 @@ function getSocialProviderIcon(provider: string) {
   }
   switch (provider) {
     case 'twitter-oauth2':
-      return <Twitter className="size-4" />;
+      return <Twitter className="size-4" aria-hidden="true" />;
     case 'linkedin-oauth2':
-      return <Linkedin className="size-4" />;
+      return <Linkedin className="size-4" aria-hidden="true" />;
     case 'google-oauth2':
-      return <Globe className="size-4" />;
+      return <Globe className="size-4" aria-hidden="true" />;
     default:
-      return <Link2 className="size-4" />;
+      return <Link2 className="size-4" aria-hidden="true" />;
   }
 }
 
@@ -135,6 +138,17 @@ function formatSocialAccountLabel(
   return { display, full: fullParts };
 }
 
+function formatPoints(value: number): string {
+  return new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(value);
+}
+
+function formatMonth(value: string | null | undefined): string {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return format(date, 'yyyy-MM');
+}
+
 interface WorkExperience {
   id: number;
   company_name: string;
@@ -157,6 +171,16 @@ interface PointsBalance {
   total: number;
   cash: number;
   gift: number;
+}
+
+type PointsTone = 'primary' | 'cash' | 'gift';
+
+interface PointsItem {
+  key: keyof PointsBalance;
+  label: string;
+  value: number;
+  icon: LucideIcon;
+  tone: PointsTone;
 }
 
 interface UserSummary {
@@ -186,6 +210,32 @@ export default function ProfilePage() {
   const [providersLoading, setProvidersLoading] = useState(false);
   const [providersLoaded, setProvidersLoaded] = useState(false);
 
+  const loadProfile = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [profileRes, workRes, eduRes, socialRes] = await Promise.all([
+        api.get('/me/profile'),
+        api.get('/me/work-experiences'),
+        api.get('/me/educations'),
+        api.get('/auth/social/connections').catch(() => null),
+      ]);
+
+      setData(profileRes.data);
+      setWorkExperiences(workRes.data?.items ?? []);
+      setEducations(eduRes.data?.items ?? []);
+      if (socialRes) {
+        setSocialConnections(socialRes.data?.connections ?? []);
+        setCanDisconnectSocial(socialRes.data?.can_disconnect ?? true);
+      }
+    } catch (error) {
+      const apiError = getApiError(error);
+      toast.error(apiError.message || t('profile.loadFailedMsg'));
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [t]);
+
   const fetchSocialConnections = useCallback(async () => {
     try {
       const { data: socialData } = await api.get('/auth/social/connections');
@@ -211,40 +261,43 @@ export default function ProfilePage() {
   }, [t]);
 
   useEffect(() => {
-    Promise.all([
-      api.get('/me/profile'),
-      api.get('/me/work-experiences'),
-      api.get('/me/educations'),
-      api.get('/auth/social/connections').catch(() => null),
-    ])
-      .then(([profileRes, workRes, eduRes, socialRes]) => {
-        setData(profileRes.data);
-        setWorkExperiences(workRes.data?.items ?? []);
-        setEducations(eduRes.data?.items ?? []);
-        if (socialRes) {
-          setSocialConnections(socialRes.data?.connections ?? []);
-          setCanDisconnectSocial(socialRes.data?.can_disconnect ?? true);
-        }
-      })
-      .catch((error) => {
-        const apiError = getApiError(error);
-        toast.error(apiError.message || t('profile.loadFailedMsg'));
-      })
-      .finally(() => setLoading(false));
-  }, []);
+    void loadProfile();
+  }, [loadProfile]);
+
+  const socialAvatarUrl = useMemo(() => {
+    const priority = ['gitee', 'atomgit', 'github', 'gitlab'];
+    for (const provider of priority) {
+      const conn = socialConnections.find(
+        (c) => c.is_connected && c.provider === provider && (c.username || c.uid),
+      );
+      if (!conn) continue;
+      const url = inferDeveloperAvatarUrl(
+        conn.provider,
+        conn.username || conn.uid || '',
+        conn.uid,
+      );
+      if (url) return url;
+    }
+    return '';
+  }, [socialConnections]);
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto p-6 space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="mx-auto max-w-5xl space-y-6 px-4 py-5 sm:px-6 lg:py-8">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <Skeleton className="h-8 w-32" />
-          <Skeleton className="h-9 w-24" />
+          <Skeleton className="h-11 w-28" />
         </div>
-        <div className="grid gap-6 md:grid-cols-2">
-          <Skeleton className="h-48" />
-          <Skeleton className="h-48" />
-          <Skeleton className="h-48" />
-          <Skeleton className="h-48" />
+        <Skeleton className="h-36 rounded-xl" />
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
+          <div className="space-y-5">
+            <Skeleton className="h-44 rounded-xl" />
+            <Skeleton className="h-56 rounded-xl" />
+          </div>
+          <div className="space-y-5">
+            <Skeleton className="h-44 rounded-xl" />
+            <Skeleton className="h-44 rounded-xl" />
+          </div>
         </div>
       </div>
     );
@@ -252,13 +305,50 @@ export default function ProfilePage() {
 
   if (!data) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
-        <p className="text-muted-foreground text-center">{t('profile.loadFailed')}</p>
+      <div className="mx-auto flex min-h-[min(24rem,60dvh)] max-w-4xl items-center justify-center px-4 py-8 sm:px-6">
+        <Card className="w-full max-w-md">
+          <CardContent className="flex flex-col items-center gap-4 p-6 text-center">
+            <div className="flex size-11 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+              <RefreshCw className="size-5" aria-hidden="true" />
+            </div>
+            <div className="space-y-1">
+              <h1 className="text-lg font-semibold text-balance">{t('profile.loadFailed')}</h1>
+              <p className="text-sm text-muted-foreground text-pretty">{t('profile.loadFailedMsg')}</p>
+            </div>
+            <Button type="button" variant="outline" onClick={() => void loadProfile()}>
+              <RefreshCw className="size-4" aria-hidden="true" />
+              {t('common.retry')}
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   const { user, profile, balance } = data;
+  const pointsItems: PointsItem[] = [
+    {
+      key: 'total',
+      label: t('profile.totalBalance'),
+      value: balance.total,
+      icon: Coins,
+      tone: 'primary',
+    },
+    {
+      key: 'cash',
+      label: t('profile.cashPoints'),
+      value: balance.cash,
+      icon: Wallet,
+      tone: 'cash',
+    },
+    {
+      key: 'gift',
+      label: t('profile.giftPoints'),
+      value: balance.gift,
+      icon: Gift,
+      tone: 'gift',
+    },
+  ];
 
   function handleConnectProvider(provider: string) {
     const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
@@ -270,7 +360,8 @@ export default function ProfilePage() {
     const query = new URLSearchParams({ access_token: accessToken }).toString();
     window.open(
       `${baseUrl}/auth/social/${provider}/start?${query}`,
-      '_blank'
+      '_blank',
+      'noopener,noreferrer',
     );
   }
 
@@ -288,25 +379,6 @@ export default function ProfilePage() {
     toast.info(t('profile.bindOpenedInNewTab'));
   }
 
-  // 已绑定社交账号的头像 URL（复用数据洞察开发者详情页的构造逻辑）
-  // 优先使用国内平台头像以加快加载速度：gitee > atomgit > github > gitlab
-  const socialAvatarUrl = (() => {
-    const priority = ['gitee', 'atomgit', 'github', 'gitlab'];
-    for (const provider of priority) {
-      const conn = socialConnections.find(
-        (c) => c.is_connected && c.provider === provider && (c.username || c.uid),
-      );
-      if (!conn) continue;
-      const url = inferDeveloperAvatarUrl(
-        conn.provider,
-        conn.username || conn.uid || '',
-        conn.uid,
-      );
-      if (url) return url;
-    }
-    return '';
-  })();
-
   async function handleDisconnectProvider(provider: string, associationId: number) {
     setDisconnectingId(associationId);
     try {
@@ -322,303 +394,320 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      {/* 页面标题 */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t('profile.title')}</h1>
-        <Button asChild>
+    <div className="mx-auto max-w-5xl space-y-6 px-4 py-5 sm:px-6 lg:py-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0 space-y-1">
+          <h1 className="text-2xl font-semibold text-balance">{t('profile.title')}</h1>
+          <p className="text-sm text-muted-foreground text-pretty">{t('profile.basicInfo')}</p>
+        </div>
+        <Button asChild className="min-h-11 w-full sm:w-auto">
           <Link to="/profile/edit">
-            <Pencil className="size-4" />
+            <Pencil className="size-4" aria-hidden="true" />
             {t('profile.editProfile')}
           </Link>
         </Button>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* 基本信息卡片 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base font-semibold">{t('profile.basicInfo')}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-4">
-              <Avatar className="size-16">
+      <Card className="overflow-visible">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-center gap-4">
+              <Avatar className="size-16 shrink-0 ring-1 ring-border sm:size-20">
                 {socialAvatarUrl && (
                   <AvatarImage src={socialAvatarUrl} alt={user.username || ''} />
                 )}
-                <AvatarFallback className="text-lg">
+                <AvatarFallback className="bg-primary/10 text-xl font-semibold text-primary sm:text-2xl">
                   {(user.username?.charAt(0) || '?').toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <div className="space-y-1">
-                <p className="font-medium text-lg">{user.username}</p>
-                <p className="text-sm text-muted-foreground">{user.email}</p>
+              <div className="min-w-0 space-y-2">
+                <div className="min-w-0">
+                  <p className="truncate text-xl font-semibold text-foreground sm:text-2xl" title={user.username}>
+                    {user.username}
+                  </p>
+                  <p className="truncate text-sm text-muted-foreground" title={user.email}>
+                    {user.email}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                  <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border bg-secondary/60 px-2.5 py-1">
+                    <User className="size-3.5 shrink-0" aria-hidden="true" />
+                    <span className="truncate">{user.username}</span>
+                  </span>
+                  <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border bg-secondary/60 px-2.5 py-1">
+                    <Mail className="size-3.5 shrink-0" aria-hidden="true" />
+                    <span className="truncate">{user.email}</span>
+                  </span>
+                </div>
               </div>
             </div>
-            <Separator />
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <User className="size-4" />
-                <span>{t('profile.username')}：{user.username}</span>
-              </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Mail className="size-4" />
-                <span>{t('profile.email')}：{user.email}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 个人简介卡片 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base font-semibold">{t('profile.bio')}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            {profile.bio && (
-              <p className="text-muted-foreground">{profile.bio}</p>
-            )}
-            {profile.company && (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Building2 className="size-4" />
-                <span>{profile.company}</span>
-              </div>
-            )}
-            {profile.location && (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <MapPin className="size-4" />
-                <span>{profile.location}</span>
-              </div>
-            )}
-            {profile.birth_date && (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Calendar className="size-4" />
-                <span>{t('profile.birthday')}：{format(new Date(profile.birth_date), 'yyyy-MM')}</span>
-              </div>
-            )}
-            {!profile.bio && !profile.company && !profile.location && !profile.birth_date && (
-              <p className="text-muted-foreground italic">{t('profile.noBio')}</p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* 社交账号卡片 */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-semibold">{t('profile.socialAccounts')}</CardTitle>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                className="h-7 px-2 text-xs"
-                onClick={handleOpenAddDialog}
-              >
-                <Plus className="size-4" />
-                {t('profile.addAccount')}
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {socialConnections.length === 0 ? (
-              <p className="text-sm text-muted-foreground italic">{t('profile.socialNotBound')}</p>
-            ) : (
-              <div className="space-y-2">
-                {socialConnections.map((conn) => {
-                  const labelInfo = formatSocialAccountLabel(conn.username, conn.uid);
-                  const rowKey =
-                    conn.social_auth_id ?? `${conn.provider}-${conn.uid ?? ''}`;
-                  return (
+            <div className="grid grid-cols-3 gap-2 sm:min-w-80 sm:gap-3">
+              {pointsItems.map((item) => {
+                const Icon = item.icon;
+                return (
                   <div
-                    key={rowKey}
-                    className="flex items-center justify-between gap-2"
+                    key={item.key}
+                    className="min-w-0 rounded-lg border border-border bg-secondary/40 p-3"
                   >
-                    <div className="flex items-center gap-2 text-sm min-w-0 flex-1">
-                      <div className="flex size-6 items-center justify-center rounded-full bg-muted shrink-0">
-                        {getSocialProviderIcon(conn.provider)}
+                    <div className="mb-2 flex items-center justify-between gap-2">
+                      <Icon
+                        className={cn(
+                          'size-4 shrink-0',
+                          item.tone === 'primary' && 'text-primary',
+                          item.tone === 'cash' && 'text-chart-2',
+                          item.tone === 'gift' && 'text-chart-4',
+                        )}
+                        aria-hidden="true"
+                      />
+                    </div>
+                    <p className="truncate text-lg font-semibold tabular-nums text-foreground" title={String(item.value)}>
+                      {formatPoints(item.value)}
+                    </p>
+                    <p className="mt-1 text-xs leading-snug text-muted-foreground text-pretty">
+                      {item.label}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="space-y-5">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base font-semibold">{t('profile.bio')}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm">
+              {profile.bio ? (
+                <p className="max-w-3xl text-muted-foreground text-pretty break-words">
+                  {profile.bio}
+                </p>
+              ) : null}
+              <div className="grid gap-3 sm:grid-cols-3">
+                {profile.company ? (
+                  <div className="flex min-w-0 items-start gap-2 text-muted-foreground">
+                    <Building2 className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                    <span className="break-words">{profile.company}</span>
+                  </div>
+                ) : null}
+                {profile.location ? (
+                  <div className="flex min-w-0 items-start gap-2 text-muted-foreground">
+                    <MapPin className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                    <span className="break-words">{profile.location}</span>
+                  </div>
+                ) : null}
+                {profile.birth_date && formatMonth(profile.birth_date) ? (
+                  <div className="flex min-w-0 items-start gap-2 text-muted-foreground">
+                    <Calendar className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                    <span>{t('profile.birthday')}：{formatMonth(profile.birth_date)}</span>
+                  </div>
+                ) : null}
+              </div>
+              {!profile.bio && !profile.company && !profile.location && !profile.birth_date && (
+                <p className="text-muted-foreground italic">{t('profile.noBio')}</p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                <Briefcase className="size-4" aria-hidden="true" />
+                {t('profile.workExperience')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {workExperiences.length > 0 ? (
+                <div className="space-y-4">
+                  {workExperiences.map((exp) => (
+                    <div key={exp.id} className="rounded-lg border border-border bg-secondary/30 p-4">
+                      <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0 space-y-1">
+                          <p className="break-words font-medium text-foreground">{exp.company_name}</p>
+                          {exp.description ? (
+                            <p className="text-sm text-muted-foreground text-pretty break-words">
+                              {exp.description}
+                            </p>
+                          ) : null}
+                        </div>
+                        <Badge variant="secondary" className="max-w-full whitespace-normal text-left">
+                          {exp.title}
+                        </Badge>
                       </div>
-                      <span className="font-medium shrink-0">{conn.name}</span>
-                      {conn.is_connected && labelInfo && (
-                        conn.profile_url ? (
-                          <a
-                            href={conn.profile_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title={labelInfo.full}
-                            className="text-xs text-primary hover:underline truncate min-w-0"
-                          >
-                            {labelInfo.display}
-                          </a>
-                        ) : (
-                          <span
-                            title={labelInfo.full}
-                            className="text-xs text-muted-foreground truncate min-w-0"
-                          >
-                            {labelInfo.display}
-                          </span>
-                        )
-                      )}
+                      <p className="mt-3 text-sm text-muted-foreground">
+                        {formatMonth(exp.start_date)} - {exp.end_date ? formatMonth(exp.end_date) : t('common.present')}
+                      </p>
                     </div>
-                    {conn.is_connected && conn.social_auth_id !== null ? (
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="sm"
-                            className="h-7 px-2 text-xs shrink-0"
-                            disabled={
-                              !canDisconnectSocial ||
-                              disconnectingId === conn.social_auth_id
-                            }
-                          >
-                            {disconnectingId === conn.social_auth_id ? (
-                              <Loader2 className="size-4 animate-spin" />
-                            ) : (
-                              <Unlink className="size-4" />
-                            )}
-                            {t('profile.unbind')}
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>{t('profile.confirmUnbindTitle')}</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              {t('profile.confirmUnbindDesc', { name: conn.name })}
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() =>
-                                handleDisconnectProvider(
-                                  conn.provider,
-                                  conn.social_auth_id as number
-                                )
-                              }
-                            >
-                              {t('profile.confirmUnbind')}
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    ) : null}
-                  </div>
-                  );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground italic">{t('profile.noWorkExperience')}</p>
+              )}
+            </CardContent>
+          </Card>
 
-        {/* 积分概览卡片 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base font-semibold">{t('profile.pointsOverview')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="flex flex-col items-center gap-1 rounded-lg border p-3">
-                <Coins className="size-5 text-primary" />
-                <span className="text-lg font-bold">{balance.total}</span>
-                <span className="text-xs text-muted-foreground">{t('profile.totalBalance')}</span>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                <GraduationCap className="size-4" aria-hidden="true" />
+                {t('profile.education')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {educations.length > 0 ? (
+                <div className="space-y-4">
+                  {educations.map((edu) => (
+                    <div key={edu.id} className="rounded-lg border border-border bg-secondary/30 p-4">
+                      <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0 space-y-1">
+                          <p className="break-words font-medium text-foreground">{edu.institution_name}</p>
+                          <p className="text-sm text-muted-foreground break-words">{edu.field_of_study}</p>
+                        </div>
+                        <Badge variant="secondary" className="max-w-full whitespace-normal text-left">
+                          {edu.degree}
+                        </Badge>
+                      </div>
+                      <p className="mt-3 text-sm text-muted-foreground">
+                        {formatMonth(edu.start_date)} - {edu.end_date ? formatMonth(edu.end_date) : t('common.present')}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground italic">{t('profile.noEducation')}</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start">
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:flex-col lg:items-stretch">
+                <CardTitle className="text-base font-semibold">{t('profile.socialAccounts')}</CardTitle>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="min-h-11 w-full sm:w-auto lg:w-full"
+                  onClick={handleOpenAddDialog}
+                >
+                  <Plus className="size-4" aria-hidden="true" />
+                  {t('profile.addAccount')}
+                </Button>
               </div>
-              <div className="flex flex-col items-center gap-1 rounded-lg border p-3">
-                <Wallet className="size-5 text-green-500" />
-                <span className="text-lg font-bold">{balance.cash}</span>
-                <span className="text-xs text-muted-foreground">{t('profile.cashPoints')}</span>
-              </div>
-              <div className="flex flex-col items-center gap-1 rounded-lg border p-3">
-                <Gift className="size-5 text-orange-500" />
-                <span className="text-lg font-bold">{balance.gift}</span>
-                <span className="text-xs text-muted-foreground">{t('profile.giftPoints')}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardHeader>
+            <CardContent>
+              {socialConnections.length === 0 ? (
+                <p className="text-sm text-muted-foreground italic">{t('profile.socialNotBound')}</p>
+              ) : (
+                <div className="space-y-3">
+                  {socialConnections.map((conn) => {
+                    const labelInfo = formatSocialAccountLabel(conn.username, conn.uid);
+                    const rowKey =
+                      conn.social_auth_id ?? `${conn.provider}-${conn.uid ?? ''}`;
+                    return (
+                      <div
+                        key={rowKey}
+                        className="flex min-w-0 flex-col gap-3 rounded-lg border border-border bg-secondary/30 p-3 sm:flex-row sm:items-center sm:justify-between lg:flex-col lg:items-stretch"
+                      >
+                        <div className="flex min-w-0 flex-1 items-center gap-2 text-sm">
+                          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted">
+                            {getSocialProviderIcon(conn.provider)}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="truncate font-medium text-foreground" title={conn.name}>
+                              {conn.name}
+                            </p>
+                            {conn.is_connected && labelInfo ? (
+                              conn.profile_url ? (
+                                <a
+                                  href={conn.profile_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  title={labelInfo.full}
+                                  className="block truncate text-xs text-primary hover:underline"
+                                >
+                                  {labelInfo.display}
+                                </a>
+                              ) : (
+                                <span
+                                  title={labelInfo.full}
+                                  className="block truncate text-xs text-muted-foreground"
+                                >
+                                  {labelInfo.display}
+                                </span>
+                              )
+                            ) : null}
+                          </div>
+                        </div>
+                        {conn.is_connected && conn.social_auth_id !== null ? (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="sm"
+                                className="min-h-11 shrink-0"
+                                disabled={
+                                  !canDisconnectSocial ||
+                                  disconnectingId === conn.social_auth_id
+                                }
+                              >
+                                {disconnectingId === conn.social_auth_id ? (
+                                  <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                                ) : (
+                                  <Unlink className="size-4" aria-hidden="true" />
+                                )}
+                                {t('profile.unbind')}
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>{t('profile.confirmUnbindTitle')}</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  {t('profile.confirmUnbindDesc', { name: conn.name })}
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() =>
+                                    handleDisconnectProvider(
+                                      conn.provider,
+                                      conn.social_auth_id as number,
+                                    )
+                                  }
+                                >
+                                  {t('profile.confirmUnbind')}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </aside>
       </div>
-
-      {/* 工作经历卡片 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base font-semibold flex items-center gap-2">
-            <Briefcase className="size-4" />
-            {t('profile.workExperience')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {workExperiences.length > 0 ? (
-            <div className="relative space-y-6 pl-6 before:absolute before:left-[7px] before:top-2 before:bottom-2 before:w-px before:bg-border">
-              {workExperiences.map((exp) => (
-                <div key={exp.id} className="relative">
-                  <div className="absolute -left-6 top-1.5 size-3 rounded-full border-2 border-primary bg-background" />
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{exp.company_name}</span>
-                      <Badge variant="secondary">{exp.title}</Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {format(new Date(exp.start_date), 'yyyy-MM')} -{' '}
-                      {exp.end_date ? format(new Date(exp.end_date), 'yyyy-MM') : t('common.present')}
-                    </p>
-                    {exp.description && (
-                      <p className="text-sm text-muted-foreground mt-1">{exp.description}</p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground italic">{t('profile.noWorkExperience')}</p>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* 教育背景卡片 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base font-semibold flex items-center gap-2">
-            <GraduationCap className="size-4" />
-            {t('profile.education')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {educations.length > 0 ? (
-            <div className="relative space-y-6 pl-6 before:absolute before:left-[7px] before:top-2 before:bottom-2 before:w-px before:bg-border">
-              {educations.map((edu) => (
-                <div key={edu.id} className="relative">
-                  <div className="absolute -left-6 top-1.5 size-3 rounded-full border-2 border-primary bg-background" />
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{edu.institution_name}</span>
-                      <Badge variant="secondary">{edu.degree}</Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{edu.field_of_study}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {format(new Date(edu.start_date), 'yyyy-MM')} -{' '}
-                      {edu.end_date ? format(new Date(edu.end_date), 'yyyy-MM') : t('common.present')}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground italic">{t('profile.noEducation')}</p>
-          )}
-        </CardContent>
-      </Card>
 
       {/* 添加社交账号弹窗 */}
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-        <DialogContent className="sm:max-w-2xl">
-          <DialogHeader>
+        <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-hidden sm:max-w-2xl">
+          <DialogHeader className="pr-8">
             <DialogTitle>{t('profile.addAccountTitle')}</DialogTitle>
             <DialogDescription>{t('profile.addAccountDesc')}</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-2">
+          <div className="min-h-0 space-y-5 overflow-y-auto pr-1">
             {/* 已绑定账号清单（与外部卡片一致的 login(id) 展示） */}
             <section>
-              <h4 className="text-xs font-semibold text-muted-foreground mb-2">
+              <h4 className="mb-2 text-xs font-semibold text-muted-foreground">
                 {t('profile.boundAccountsHeading')}
               </h4>
               {socialConnections.length === 0 ? (
@@ -634,40 +723,44 @@ export default function ProfilePage() {
                     return (
                       <div
                         key={rowKey}
-                        className="flex items-center justify-between gap-2 rounded-md border px-2 py-1.5"
+                        className="flex min-w-0 flex-col gap-3 rounded-lg border border-border bg-secondary/30 p-3 sm:flex-row sm:items-center sm:justify-between"
                       >
-                        <div className="flex items-center gap-2 text-sm min-w-0 flex-1">
-                          <div className="flex size-6 items-center justify-center rounded-full bg-muted shrink-0">
+                        <div className="flex min-w-0 flex-1 items-center gap-2 text-sm">
+                          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted">
                             {getSocialProviderIcon(conn.provider)}
                           </div>
-                          <span className="font-medium shrink-0">{conn.name}</span>
-                          {labelInfo && (
-                            conn.profile_url ? (
-                              <a
-                                href={conn.profile_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                title={labelInfo.full}
-                                className="text-xs text-primary hover:underline truncate min-w-0"
-                              >
-                                {labelInfo.display}
-                              </a>
-                            ) : (
-                              <span
-                                title={labelInfo.full}
-                                className="text-xs text-muted-foreground truncate min-w-0"
-                              >
-                                {labelInfo.display}
-                              </span>
-                            )
-                          )}
+                          <div className="min-w-0">
+                            <p className="truncate font-medium text-foreground" title={conn.name}>
+                              {conn.name}
+                            </p>
+                            {labelInfo ? (
+                              conn.profile_url ? (
+                                <a
+                                  href={conn.profile_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  title={labelInfo.full}
+                                  className="block truncate text-xs text-primary hover:underline"
+                                >
+                                  {labelInfo.display}
+                                </a>
+                              ) : (
+                                <span
+                                  title={labelInfo.full}
+                                  className="block truncate text-xs text-muted-foreground"
+                                >
+                                  {labelInfo.display}
+                                </span>
+                              )
+                            ) : null}
+                          </div>
                         </div>
                         {conn.social_auth_id !== null && (
                           <Button
                             type="button"
                             variant="destructive"
                             size="sm"
-                            className="h-7 px-2 text-xs shrink-0"
+                            className="min-h-11 shrink-0"
                             disabled={
                               !canDisconnectSocial ||
                               disconnectingId === conn.social_auth_id
@@ -680,9 +773,9 @@ export default function ProfilePage() {
                             }
                           >
                             {disconnectingId === conn.social_auth_id ? (
-                              <Loader2 className="size-4 animate-spin" />
+                              <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                             ) : (
-                              <Unlink className="size-4" />
+                              <Unlink className="size-4" aria-hidden="true" />
                             )}
                             {t('profile.unbind')}
                           </Button>
@@ -696,12 +789,13 @@ export default function ProfilePage() {
 
             {/* 可绑定的 providers（全部可点，支持同一平台多次绑定） */}
             <section>
-              <h4 className="text-xs font-semibold text-muted-foreground mb-2">
+              <h4 className="mb-2 text-xs font-semibold text-muted-foreground">
                 {t('profile.bindablePlatformsHeading')}
               </h4>
               {providersLoading ? (
-                <div className="flex items-center justify-center py-6">
-                  <Loader2 className="size-5 animate-spin text-muted-foreground" />
+                <div className="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground" role="status">
+                  <Loader2 className="size-5 animate-spin" aria-hidden="true" />
+                  <span>{t('common.loading')}</span>
                 </div>
               ) : availableProviders.length === 0 ? (
                 <p className="text-sm text-muted-foreground italic text-center py-4">
@@ -714,25 +808,25 @@ export default function ProfilePage() {
                       (c) => c.provider === provider.provider,
                     ).length;
                     return (
-                      <Button
+	                      <Button
                         key={provider.provider}
                         type="button"
                         variant="outline"
-                        className="justify-between h-auto py-2.5"
+                        className="min-h-11 justify-between py-2.5"
                         onClick={() => handleSelectProviderToBind(provider.provider)}
                       >
-                        <span className="flex items-center gap-2">
+                        <span className="flex min-w-0 items-center gap-2">
                           <span className="flex size-6 items-center justify-center rounded-full bg-muted shrink-0">
                             {getSocialProviderIcon(provider.provider)}
                           </span>
-                          <span className="font-medium">{provider.name}</span>
+                          <span className="truncate font-medium">{provider.name}</span>
                           {boundCount > 0 && (
-                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                            <Badge variant="secondary" className="shrink-0 px-1.5 py-0 text-[10px]">
                               {t('profile.boundCountBadge', { count: boundCount })}
                             </Badge>
                           )}
                         </span>
-                        <Link2 className="size-4 text-muted-foreground" />
+                        <Link2 className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                       </Button>
                     );
                   })}
@@ -740,11 +834,11 @@ export default function ProfilePage() {
               )}
             </section>
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground text-pretty">
             {t('profile.addAccountTip')}
           </p>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setAddDialogOpen(false)}>
+            <Button type="button" variant="outline" className="min-h-11" onClick={() => setAddDialogOpen(false)}>
               {t('common.close')}
             </Button>
           </DialogFooter>

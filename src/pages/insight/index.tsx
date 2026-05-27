@@ -8,6 +8,7 @@ import { buildDataUrl, getItemTypeFromUnit, ITEMS_PER_PAGE } from './domain/lead
 import { computeInitialTimeValue } from './domain/timeRange';
 import { defaultScopeValue, defaultUnitValue, filterGroupTypesForUnitDropdown } from './domain/meta';
 import { formatUpdateTime } from './domain/format';
+import { normalizeInsightLang } from './domain/lang';
 import { getLabelDetailPath, getRepoDetailPath, getDeveloperDetailPath } from './domain/routes';
 import type { LeaderboardItem, LeaderboardMeta } from './types/api';
 import { FilterPanel } from './components/FilterPanel';
@@ -49,7 +50,7 @@ function ContentMessage({ type, message }: { type: 'error' | 'loading' | 'plain'
 
 export default function InsightPage() {
   const { t, i18n } = useTranslation();
-  const lang = i18n.language as 'zh' | 'en';
+  const lang = normalizeInsightLang(i18n.language);
   const navigate = useNavigate();
 
   const [meta, setMeta] = useState<LeaderboardMeta | null>(null);
