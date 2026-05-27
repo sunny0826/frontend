@@ -22,7 +22,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
       size="icon"
       onClick={() => setTheme(nextTheme)}
       className={cn(
-        "size-11 border border-border bg-transparent text-foreground hover:border-primary/40 hover:bg-primary/10 hover:text-primary",
+        "size-11 bg-transparent text-foreground hover:bg-primary/10 hover:text-primary",
         className,
       )}
       title={label}

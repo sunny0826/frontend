@@ -66,7 +66,7 @@ export function Header() {
                 <Link to="/login">{t("header.login")}</Link>
               </Button>
             )}
-            <LanguageToggle />
+            <LanguageToggle iconOnly />
             <ThemeToggle />
             <Button
               ref={menuButtonRef}

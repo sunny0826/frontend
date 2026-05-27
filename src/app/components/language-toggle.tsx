@@ -25,7 +25,7 @@ export function LanguageToggle({ iconOnly = false, className }: LanguageTogglePr
         size="icon"
         onClick={toggleLanguage}
         className={cn(
-          "size-11 border border-border bg-transparent text-foreground hover:border-primary/40 hover:bg-primary/10 hover:text-primary",
+          "size-11 bg-transparent text-foreground hover:bg-primary/10 hover:text-primary",
           className,
         )}
         title={ariaLabel}
@@ -41,7 +41,7 @@ export function LanguageToggle({ iconOnly = false, className }: LanguageTogglePr
       variant="ghost"
       onClick={toggleLanguage}
       className={cn(
-        "gap-2 border border-border bg-transparent text-foreground hover:border-primary/40 hover:bg-primary/10 hover:text-primary",
+        "gap-2 bg-transparent text-foreground hover:bg-primary/10 hover:text-primary",
         className,
       )}
       aria-label={ariaLabel}

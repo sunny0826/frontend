@@ -82,3 +82,5 @@ temp/
 publish.sh
 
 .trae
+.vercel
+.env*
