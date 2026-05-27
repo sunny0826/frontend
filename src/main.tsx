@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';
+import { ThemeProvider } from 'next-themes';
 import { router } from './app/router';
 import './i18n';
 import './styles/index.css';
@@ -38,8 +39,8 @@ function DeferredToaster() {
 }
 
 createRoot(document.getElementById('root')!).render(
-  <>
+  <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
     <RouterProvider router={router} />
     <DeferredToaster />
-  </>
+  </ThemeProvider>
 );

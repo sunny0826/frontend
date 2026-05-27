@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/app/components/ui/button";
 import { Logo } from "@/app/components/logo";
 import { LanguageToggle } from "@/app/components/language-toggle";
+import { ThemeToggle } from "@/app/components/theme-toggle";
 import { useLanguage } from "@/app/contexts/language-context";
 import { useAuth } from "@/contexts/auth-context";
 
@@ -66,6 +67,7 @@ export function Header() {
               </Button>
             )}
             <LanguageToggle />
+            <ThemeToggle />
             <Button
               ref={menuButtonRef}
               variant="ghost"

@@ -36,6 +36,10 @@
     "menu": "Navigation menu",
     "openMenu": "Open menu"
   },
+  "theme": {
+    "switchToLight": "Switch to light mode",
+    "switchToDark": "Switch to dark mode"
+  },
   "hero": {
     "kicker": "Open Source Value Network",
     "title.line1": "In the world of open source",

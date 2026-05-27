@@ -158,9 +158,11 @@
     background: linear-gradient(
       90deg,
       transparent,
-      color-mix(in srgb, var(--border) 30%, transparent) 16%,
+      color-mix(in srgb, var(--border) 34%, transparent) 6%,
+      color-mix(in srgb, var(--border) 78%, transparent) 22%,
       color-mix(in srgb, var(--border) 82%, transparent) 50%,
-      color-mix(in srgb, var(--border) 30%, transparent) 84%,
+      color-mix(in srgb, var(--border) 78%, transparent) 78%,
+      color-mix(in srgb, var(--border) 34%, transparent) 94%,
       transparent
     );
   }

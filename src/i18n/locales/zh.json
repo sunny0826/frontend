@@ -36,6 +36,10 @@
     "menu": "导航菜单",
     "openMenu": "打开菜单"
   },
+  "theme": {
+    "switchToLight": "切换到亮色模式",
+    "switchToDark": "切换到暗色模式"
+  },
   "hero": {
     "kicker": "开源价值网络",
     "title.line1": "开源的世界里",
