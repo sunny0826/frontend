@@ -5,24 +5,20 @@ export function CTASection() {
   const { t } = useLanguage();
 
   return (
-    <section className="py-24 px-6 relative overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A]" />
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMzLjMxIDAgNiAyLjY5IDYgNnMtMi42OSA2LTYgNi02LTIuNjktNi02IDIuNjktNiA2LTZ6TTI0IDQyYzMuMzEgMCA2IDIuNjkgNiA2cy0yLjY5IDYtNiA2LTYtMi42OS02LTYgMi42OS02IDYtNnoiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLW9wYWNpdHk9Ii4xIiBzdHJva2Utd2lkdGg9IjIiLz48L2c+PC9zdmc+')] opacity-10" />
-
-      <div className="max-w-4xl mx-auto relative z-10 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#22C55E]/15 backdrop-blur-sm rounded-full mb-8">
-          <Sparkles className="w-4 h-4 text-[#22C55E]" />
-          <span className="text-sm font-medium text-[#22C55E]">{t("cta.badge")}</span>
+    <section className="relative overflow-hidden px-4 py-20 sm:px-6">
+      <div className="relative z-10 mx-auto max-w-4xl text-center">
+        <div className="mb-8 inline-flex h-8 items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3">
+          <Sparkles className="size-4 text-primary" strokeWidth={1.5} />
+          <span className="text-sm font-medium text-primary">{t("cta.badge")}</span>
         </div>
 
-        <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight gradient-text-green">
+        <h2 className="mb-6 text-balance text-3xl font-semibold leading-tight text-primary md:text-4xl lg:text-5xl">
           {t("cta.title.line1")}
           <br />
           {t("cta.title.line2")}
         </h2>
 
-        <p className="text-lg md:text-xl text-[#94A3B8] max-w-2xl mx-auto">
+        <p className="mx-auto max-w-2xl text-pretty text-base text-muted-foreground md:text-lg">
           {t("cta.description")}
         </p>
       </div>

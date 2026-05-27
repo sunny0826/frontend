@@ -1,5 +1,6 @@
 import { useParams, useRoutes } from 'react-router-dom';
 
+import './icons/registerMdiOffline';
 import LabelDetailPage from './label-detail';
 import RepoDetailPage from './repo-detail';
 import DeveloperDetailPage from './developer-detail';

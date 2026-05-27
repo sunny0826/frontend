@@ -58,7 +58,7 @@ export default function SocialCallbackPage() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-4">
+      <div className="flex min-h-dvh items-center justify-center bg-background px-4">
         <div className="w-full max-w-md space-y-6 text-center">
           <div className="flex justify-center">
             <AlertCircle className="size-12 text-destructive" />
@@ -76,7 +76,7 @@ export default function SocialCallbackPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
+    <div className="flex min-h-dvh items-center justify-center bg-background px-4">
       <div className="space-y-4 text-center">
         <Loader2 className="mx-auto size-8 animate-spin text-primary" />
         <p className="text-sm text-muted-foreground">{t('auth.completingLogin')}</p>

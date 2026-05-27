@@ -22,11 +22,11 @@ export function LanguageToggle({ iconOnly = false }: LanguageToggleProps) {
         variant="ghost"
         size="icon"
         onClick={toggleLanguage}
-        className="size-8 rounded-md border border-[#475569] bg-transparent text-[#E2E8F0] hover:bg-[#22C55E]/10 hover:text-[#22C55E] hover:border-[#22C55E]/40"
+        className="size-8 border border-border bg-transparent text-foreground hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
         title={ariaLabel}
         aria-label={ariaLabel}
       >
-        <Languages className="w-4 h-4" />
+        <Languages className="size-4" strokeWidth={1.5} />
       </Button>
     );
   }
@@ -35,10 +35,10 @@ export function LanguageToggle({ iconOnly = false }: LanguageToggleProps) {
     <Button
       variant="ghost"
       onClick={toggleLanguage}
-      className="gap-2 border border-[#475569] bg-transparent text-[#E2E8F0] hover:bg-[#22C55E]/10 hover:text-[#22C55E] hover:border-[#22C55E]/40"
+      className="gap-2 border border-border bg-transparent text-foreground hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
       aria-label={ariaLabel}
     >
-      <Languages className="w-4 h-4" />
+      <Languages className="size-4" strokeWidth={1.5} />
       <span>{nextLabel}</span>
     </Button>
   );

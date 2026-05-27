@@ -140,7 +140,7 @@ export function TimeRangePicker({
     <div>
       {!hideOuterLabel ? (
         <label
-          className={`flex items-center gap-2 font-medium mb-2 text-[#94A3B8] ${dense ? 'text-xs' : 'text-sm'}`}
+          className={`mb-2 flex items-center gap-2 font-medium text-muted-foreground ${dense ? 'text-xs' : 'text-sm'}`}
         >
           <Icon icon="mdi:calendar" className={dense ? 'text-sm' : 'text-base'} />
           <span>{t('insight.timeSelection')}</span>
@@ -148,7 +148,7 @@ export function TimeRangePicker({
       ) : null}
       <div ref={wrapRef} className="relative">
         <div
-          className={`flex items-center bg-[#0F172A] border border-[#475569] overflow-hidden ${dense ? 'rounded-md' : 'rounded-lg'}`}
+          className={`flex items-center overflow-hidden border border-border bg-background ${dense ? 'rounded-md' : 'rounded-lg'}`}
         >
           <button
             type="button"
@@ -158,7 +158,7 @@ export function TimeRangePicker({
               e.stopPropagation();
               stepTime(-1);
             }}
-            className={`time-picker-arrow flex items-center justify-center flex-shrink-0 text-[#94A3B8] hover:text-primary hover:bg-[#334155] transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset ${dense ? 'w-7 h-7' : 'w-9 h-10'}`}
+            className={`time-picker-arrow flex flex-shrink-0 cursor-pointer items-center justify-center text-muted-foreground transition-colors hover:bg-secondary hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset ${dense ? 'size-7' : 'h-10 w-9'}`}
           >
             <Icon icon="mdi:chevron-left" className={dense ? 'text-sm' : 'text-lg'} aria-hidden />
           </button>
@@ -168,7 +168,7 @@ export function TimeRangePicker({
               e.stopPropagation();
               setOpen((o) => !o);
             }}
-            className={`flex-1 flex items-center justify-center min-w-0 text-[#E2E8F0] hover:bg-[#334155]/50 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset ${dense ? 'px-2 py-1 text-xs' : 'px-3 py-2.5 text-sm'}`}
+            className={`flex min-w-0 flex-1 cursor-pointer items-center justify-center text-foreground transition-colors hover:bg-secondary/60 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset ${dense ? 'px-2 py-1 text-xs' : 'px-3 py-2.5 text-sm'}`}
           >
             <span className="truncate">{formatTimeDisplay(timeValue, timeType, lang)}</span>
           </button>
@@ -180,7 +180,7 @@ export function TimeRangePicker({
               e.stopPropagation();
               stepTime(1);
             }}
-            className={`time-picker-arrow flex items-center justify-center flex-shrink-0 text-[#94A3B8] hover:text-primary hover:bg-[#334155] transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset ${dense ? 'w-7 h-7' : 'w-9 h-10'}`}
+            className={`time-picker-arrow flex flex-shrink-0 cursor-pointer items-center justify-center text-muted-foreground transition-colors hover:bg-secondary hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset ${dense ? 'size-7' : 'h-10 w-9'}`}
           >
             <Icon icon="mdi:chevron-right" className={dense ? 'text-sm' : 'text-lg'} aria-hidden />
           </button>
@@ -195,11 +195,11 @@ export function TimeRangePicker({
                 e.stopPropagation();
                 stepYearInPicker(-1);
               }}
-              className={`time-picker-arrow flex items-center justify-center rounded text-[#94A3B8] hover:text-primary hover:bg-[#334155] transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary ${dense ? 'w-6 h-6' : 'w-8 h-8'}`}
+              className={`time-picker-arrow flex cursor-pointer items-center justify-center rounded text-muted-foreground transition-colors hover:bg-secondary hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring ${dense ? 'size-6' : 'size-8'}`}
             >
               <Icon icon="mdi:chevron-left" className={dense ? 'text-sm' : 'text-lg'} aria-hidden />
             </button>
-            <span className={`font-medium text-[#E2E8F0] flex-1 text-center ${dense ? 'text-xs' : 'text-sm'}`}>
+            <span className={`flex-1 text-center font-medium text-foreground ${dense ? 'text-xs' : 'text-sm'}`}>
               {timeType === 'year' ? timeValue : (timeValue || bounds.maxMonth).split('-')[0]}
             </span>
             <button
@@ -210,7 +210,7 @@ export function TimeRangePicker({
                 e.stopPropagation();
                 stepYearInPicker(1);
               }}
-              className={`time-picker-arrow flex items-center justify-center rounded text-[#94A3B8] hover:text-primary hover:bg-[#334155] transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary ${dense ? 'w-6 h-6' : 'w-8 h-8'}`}
+              className={`time-picker-arrow flex cursor-pointer items-center justify-center rounded text-muted-foreground transition-colors hover:bg-secondary hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring ${dense ? 'size-6' : 'size-8'}`}
             >
               <Icon icon="mdi:chevron-right" className={dense ? 'text-sm' : 'text-lg'} aria-hidden />
             </button>
@@ -232,10 +232,10 @@ export function TimeRangePicker({
                       selectMonth(month);
                     }}
                     className={
-                      'time-picker-month-btn rounded cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary transition-colors duration-200 ' +
+                      'time-picker-month-btn cursor-pointer rounded focus:outline-none focus:ring-2 focus:ring-ring transition-colors duration-150 ' +
                       (isActive
-                        ? 'bg-primary/10 text-primary border-primary/50 border'
-                        : 'bg-[#0F172A] hover:bg-[#334155] hover:text-primary text-[#94A3B8] border border-[#475569]')
+                        ? 'border border-primary/50 bg-primary/10 text-primary'
+                        : 'border border-border bg-background text-muted-foreground hover:bg-secondary hover:text-primary')
                     }
                   >
                     {nm}

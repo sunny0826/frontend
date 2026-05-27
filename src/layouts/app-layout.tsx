@@ -29,18 +29,18 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { labelKey: 'nav.insight', path: '/insight', icon: <BarChart3 className="h-5 w-5" /> },
-  { labelKey: 'nav.profile', path: '/profile', icon: <User className="h-5 w-5" /> },
-  { labelKey: 'nav.points', path: '/points', icon: <Wallet className="h-5 w-5" /> },
-  { labelKey: 'nav.pointsAllocate', path: '/points/allocate', icon: <HandCoins className="h-5 w-5" /> },
-  { labelKey: 'nav.shop', path: '/shop', icon: <ShoppingBag className="h-5 w-5" /> },
-  { labelKey: 'nav.organizations', path: '/organizations', icon: <Building2 className="h-5 w-5" /> },
-  { labelKey: 'nav.messages', path: '/messages', icon: <MessageSquare className="h-5 w-5" /> },
-  { labelKey: 'nav.talentReach', path: '/talent-reach', icon: <Radar className="h-5 w-5" /> },
+  { labelKey: 'nav.insight', path: '/insight', icon: <BarChart3 className="size-4" strokeWidth={1.5} /> },
+  { labelKey: 'nav.profile', path: '/profile', icon: <User className="size-4" strokeWidth={1.5} /> },
+  { labelKey: 'nav.points', path: '/points', icon: <Wallet className="size-4" strokeWidth={1.5} /> },
+  { labelKey: 'nav.pointsAllocate', path: '/points/allocate', icon: <HandCoins className="size-4" strokeWidth={1.5} /> },
+  { labelKey: 'nav.shop', path: '/shop', icon: <ShoppingBag className="size-4" strokeWidth={1.5} /> },
+  { labelKey: 'nav.organizations', path: '/organizations', icon: <Building2 className="size-4" strokeWidth={1.5} /> },
+  { labelKey: 'nav.messages', path: '/messages', icon: <MessageSquare className="size-4" strokeWidth={1.5} /> },
+  { labelKey: 'nav.talentReach', path: '/talent-reach', icon: <Radar className="size-4" strokeWidth={1.5} /> },
   {
     labelKey: 'nav.settings',
     path: '/settings',
-    icon: <Settings className="h-5 w-5" />,
+    icon: <Settings className="size-4" strokeWidth={1.5} />,
     children: [
       { labelKey: 'nav.settingsEmail', path: '/settings/email' },
       { labelKey: 'nav.settingsPassword', path: '/settings/password' },
@@ -133,26 +133,40 @@ export function AppLayout() {
     return !hasMoreSpecific;
   };
 
+  const navItemClass = (active: boolean) =>
+    `group relative flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium outline-none transition-[background-color,border-color,color,box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-ring ${
+      active
+        ? 'border border-primary/30 bg-primary/10 text-primary shadow-sm before:absolute before:left-1 before:top-2 before:bottom-2 before:w-0.5 before:rounded-full before:bg-primary'
+        : 'border border-transparent text-muted-foreground hover:border-border hover:bg-secondary/55 hover:text-foreground'
+    }`;
+
+  const childNavItemClass = (active: boolean) =>
+    `block rounded-lg border px-3 py-2 text-sm outline-none transition-[background-color,border-color,color] duration-150 focus-visible:ring-2 focus-visible:ring-ring ${
+      active
+        ? 'border-primary/25 bg-primary/10 font-medium text-primary'
+        : 'border-transparent text-muted-foreground hover:border-border hover:bg-secondary/55 hover:text-foreground'
+    }`;
+
   const SidebarContent = () => (
     <div className="flex h-full flex-col">
       {/* Logo */}
-      <div className="flex h-16 items-center justify-between border-b border-[#475569] pl-6 pr-3">
+      <div className="flex h-16 items-center justify-between border-b border-border px-3 pl-4">
         <Link
           to="/"
           onClick={() => setSidebarOpen(false)}
-          className="flex items-center gap-2 transition-colors hover:opacity-80"
+          className="flex items-center gap-2 rounded-lg px-2 py-1.5 outline-none transition-colors hover:bg-secondary/55 focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <Logo className="h-8 w-8" />
-          <span className="text-lg font-bold">
-            <span style={{ color: "#3B82F6" }}>Open</span>
-            <span style={{ color: "#22C55E" }}>Share</span>
+          <Logo className="size-7" />
+          <span className="text-[15px] font-semibold leading-none">
+            <span className="text-sky-400">Open</span>
+            <span className="text-primary">Share</span>
           </span>
         </Link>
         <LanguageToggle iconOnly />
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4">
+      <nav className="dark-scrollbar flex-1 overflow-y-auto px-3 py-4" aria-label={t('nav.settings')}>
         <ul className="space-y-1">
           {navItems.map((item) => (
             <li key={item.path}>
@@ -160,34 +174,28 @@ export function AppLayout() {
                 <div>
                   <button
                     onClick={() => setSettingsOpen(!settingsOpen)}
-                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
-                      isActive(item.path)
-                        ? 'bg-[rgba(34,197,94,0.15)] text-[#22C55E] shadow-sm'
-                        : 'text-[#94A3B8] hover:bg-[#334155]'
-                    }`}
+                    className={navItemClass(isActive(item.path))}
+                    aria-expanded={settingsOpen}
+                    aria-controls="settings-navigation"
                   >
-                    <span className="flex items-center gap-3">
+                    <span className="flex min-w-0 items-center gap-3 pl-1">
                       {item.icon}
-                      {t(item.labelKey)}
+                      <span className="truncate">{t(item.labelKey)}</span>
                     </span>
                     {settingsOpen ? (
-                      <ChevronDown className="h-4 w-4" />
+                      <ChevronDown className="size-4" strokeWidth={1.5} />
                     ) : (
-                      <ChevronRight className="h-4 w-4" />
+                      <ChevronRight className="size-4" strokeWidth={1.5} />
                     )}
                   </button>
                   {settingsOpen && (
-                    <ul className="ml-8 mt-1 space-y-1">
+                    <ul id="settings-navigation" className="ml-7 mt-1 space-y-1 border-l border-border/70 pl-2">
                       {item.children.map((child) => (
                         <li key={child.path}>
                           <Link
                             to={child.path}
                             onClick={() => setSidebarOpen(false)}
-                            className={`block rounded-lg px-3 py-2 text-sm transition-all ${
-                              location.pathname === child.path
-                                ? 'bg-[rgba(34,197,94,0.15)] text-[#22C55E] font-medium shadow-sm'
-                                : 'text-[#94A3B8] hover:bg-[#334155]'
-                            }`}
+                            className={childNavItemClass(location.pathname === child.path)}
                           >
                             {t(child.labelKey)}
                           </Link>
@@ -201,16 +209,12 @@ export function AppLayout() {
                 <Link
                   to={item.path}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
-                    isActive(item.path)
-                      ? 'bg-[rgba(34,197,94,0.15)] text-[#22C55E] shadow-sm'
-                      : 'text-[#94A3B8] hover:bg-[#334155]'
-                  }`}
+                  className={navItemClass(isActive(item.path))}
                 >
-                  {item.icon}
-                  {t(item.labelKey)}
+                  <span className="pl-1">{item.icon}</span>
+                  <span className="truncate">{t(item.labelKey)}</span>
                   {item.path === '/messages' && unreadCount > 0 && (
-                    <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-xs text-white">
+                    <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full border border-destructive/30 bg-destructive/15 px-1.5 text-xs font-semibold text-destructive">
                       {unreadCount}
                     </span>
                   )}
@@ -222,12 +226,12 @@ export function AppLayout() {
       </nav>
 
       {/* Logout */}
-      <div className="border-t border-[#475569] px-3 py-4">
+      <div className="border-t border-border px-3 py-4">
         <button
           onClick={handleLogout}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-400 transition-all hover:bg-red-500/10"
+          className="flex min-h-11 w-full items-center gap-3 rounded-lg border border-transparent px-3 py-2 text-sm font-medium text-destructive outline-none transition-[background-color,border-color,color] duration-150 hover:border-destructive/30 hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-destructive/30"
         >
-          <LogOut className="h-5 w-5" />
+          <LogOut className="size-4" strokeWidth={1.5} />
           {t('nav.logout')}
         </button>
       </div>
@@ -235,9 +239,9 @@ export function AppLayout() {
   );
 
   return (
-    <div className="flex h-screen bg-[#0F172A]">
+    <div className="flex h-dvh bg-background">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:w-56 lg:flex-col lg:border-r lg:border-[#475569] lg:bg-[#1E293B]">
+      <aside className="hidden lg:flex lg:w-60 lg:flex-col lg:border-r lg:border-border lg:bg-card/95 lg:shadow-[inset_0_1px_0_rgba(226,232,240,0.08)]">
         <SidebarContent />
       </aside>
 
@@ -245,10 +249,10 @@ export function AppLayout() {
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div
-            className="fixed inset-0 bg-black/50"
+            className="fixed inset-0 bg-slate-950/70"
             onClick={() => setSidebarOpen(false)}
           />
-          <aside className="fixed inset-y-0 left-0 z-50 w-56 bg-[#1E293B] shadow-xl">
+          <aside className="fixed inset-y-0 left-0 z-50 w-64 border-r border-border bg-card shadow-xl">
             <SidebarContent />
           </aside>
         </div>
@@ -257,17 +261,18 @@ export function AppLayout() {
       {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Top Bar (mobile only - menu trigger) */}
-        <header className="flex h-16 items-center border-b border-[#475569] bg-[#1E293B]/95 backdrop-blur-sm px-4 lg:hidden">
+        <header className="flex h-16 items-center border-b border-border bg-card/95 px-4 lg:hidden">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="rounded-lg p-2 text-[#E2E8F0] hover:bg-[#334155]"
+            className="rounded-lg p-2 text-foreground outline-none transition-colors hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label="Open navigation"
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="size-5" strokeWidth={1.5} />
           </button>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+        <main className="dark-scrollbar flex-1 overflow-y-auto p-4 lg:p-6">
           <Outlet />
         </main>
       </div>

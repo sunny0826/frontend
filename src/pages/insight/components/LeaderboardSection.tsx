@@ -35,15 +35,9 @@ export function LeaderboardHeader({ meta, scopeName, unitName }: HeaderProps) {
       : t('insight.leaderboardTitleTemplate').replace('{{scope}}', title).replace('{{unit}}', unitDisplay);
 
   return (
-    <div id="leaderboardTitle" className="px-6 pt-5 pb-3">
+    <div id="leaderboardTitle" className="px-6 pb-3 pt-5">
       <div className="flex flex-col items-center justify-center text-center">
-        <h2 className="text-xl sm:text-2xl font-mono font-bold flex items-center justify-center gap-2 text-[#E2E8F0]">
-          <img
-            src="https://open-digger.cn/open_leaderboard/images/earth-animation.gif"
-            alt=""
-            className="w-8 h-8 object-contain flex-shrink-0"
-            aria-hidden
-          />
+        <h2 className="flex items-center justify-center gap-2 text-balance text-lg font-semibold text-foreground sm:text-xl">
           <span className="truncate">{leaderboardTitle}</span>
         </h2>
       </div>
@@ -85,34 +79,34 @@ export const LeaderboardSection = forwardRef<HTMLDivElement, Props>(function Lea
   const currentPageData = filtered.slice(startIndex, endIndex);
 
   return (
-    <div id="leaderboardContent" className="flex-1 min-w-0">
-      <div id="leaderboardTable" className="bg-[#1E293B] rounded-xl border border-[#475569] pb-6 shadow-sm">
+    <div id="leaderboardContent" className="min-w-0 flex-1">
+      <div id="leaderboardTable" className="rounded-xl border border-border bg-card pb-6 shadow-sm">
         <LeaderboardHeader meta={meta} scopeName={scopeName} unitName={unitName} />
         <div
-          className="flex items-center gap-3 px-3 mx-6 border-b border-[#475569] pb-2"
+          className="mx-6 flex items-center gap-3 border-b border-border px-3 pb-2"
         >
-          <div className="flex-shrink-0 flex items-center gap-2 w-24">
-            <div className="flex-shrink-0 w-12 text-center">
-              <span className="text-sm font-mono font-semibold text-[#94A3B8] leading-tight">{t('insight.headerRank')}</span>
+          <div className="flex w-24 flex-shrink-0 items-center gap-2">
+            <div className="w-12 flex-shrink-0 text-center">
+              <span className="font-mono text-xs font-semibold leading-tight text-muted-foreground">{t('insight.headerRank')}</span>
             </div>
-            <div className="flex-shrink-0 w-12" />
+            <div className="w-12 flex-shrink-0" />
           </div>
-          <div className="w-9 h-9 flex-shrink-0" />
-          <div className="flex-1 min-w-0">
-            <span className="text-sm font-mono font-semibold text-[#94A3B8] leading-tight">{t('insight.headerName')}</span>
+          <div className="size-9 flex-shrink-0" />
+          <div className="min-w-0 flex-1">
+            <span className="font-mono text-xs font-semibold leading-tight text-muted-foreground">{t('insight.headerName')}</span>
           </div>
-          <div className="flex-shrink-0 text-right w-32">
-            <span className="text-sm font-mono font-semibold text-[#94A3B8] leading-tight">{t('insight.headerOpenRank')}</span>
+          <div className="w-32 flex-shrink-0 text-right">
+            <span className="font-mono text-xs font-semibold leading-tight text-muted-foreground">{t('insight.headerOpenRank')}</span>
           </div>
-          <div className="flex-shrink-0 text-right w-48">
-            <span className="text-sm font-mono font-semibold text-[#94A3B8] leading-tight whitespace-nowrap">
+          <div className="w-48 flex-shrink-0 text-right">
+            <span className="whitespace-nowrap font-mono text-xs font-semibold leading-tight text-muted-foreground">
               {t('insight.headerCommunityParticipants')}
             </span>
           </div>
         </div>
-        <div id="leaderboardDataRows" ref={ref} className="space-y-1.5 pt-2 px-6">
+        <div id="leaderboardDataRows" ref={ref} className="space-y-1.5 px-6 pt-2">
           {!data || data.length === 0 ? (
-            <div className="text-center text-[#64748B] py-10 font-mono text-sm">
+            <div className="py-10 text-center font-mono text-sm text-muted-foreground">
               <p>{t('insight.noData')}</p>
             </div>
           ) : (
@@ -122,7 +116,7 @@ export const LeaderboardSection = forwardRef<HTMLDivElement, Props>(function Lea
               );
               const rank = originalIndex >= 0 ? originalIndex + 1 : startIndex + index + 1;
               const medalClass =
-                rank === 1 ? 'text-yellow-500' : rank === 2 ? 'text-[#94A3B8]' : rank === 3 ? 'text-orange-400' : 'text-[#94A3B8]';
+                rank === 1 ? 'text-yellow-500' : rank === 2 ? 'text-muted-foreground' : rank === 3 ? 'text-orange-400' : 'text-muted-foreground';
               const medalIcon =
                 rank === 1
                   ? 'mdi:trophy'
@@ -155,7 +149,7 @@ export const LeaderboardSection = forwardRef<HTMLDivElement, Props>(function Lea
                   key={`${item.id ?? item.name}-${startIndex + index}`}
                   role="button"
                   tabIndex={0}
-                  className="leaderboard-row flex items-center gap-3 py-2 px-3 bg-[#0F172A] rounded-lg border border-[#475569] hover:bg-[#334155] hover:border-primary/40 transition-colors duration-200 cursor-pointer"
+                  className="leaderboard-row flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-transparent bg-background/70 px-3 py-2 outline-none transition-[background-color,border-color,box-shadow] duration-150 hover:border-border hover:bg-secondary/60 focus-visible:ring-2 focus-visible:ring-ring"
                   onClick={() => onRowClick({ ...item })}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -164,36 +158,36 @@ export const LeaderboardSection = forwardRef<HTMLDivElement, Props>(function Lea
                     }
                   }}
                 >
-                  <div className="flex-shrink-0 flex items-center gap-2 w-24">
-                    <div className={`text-lg font-mono font-bold ${medalClass} flex-shrink-0 w-12 text-center`}>
+                  <div className="flex w-24 flex-shrink-0 items-center gap-2">
+                    <div className={`font-mono text-base font-semibold ${medalClass} w-12 flex-shrink-0 text-center`}>
                       {rank < 4 ? (
                         <Icon icon={medalIcon} className="text-xl" aria-hidden />
                       ) : (
                         <span>{rank}</span>
                       )}
                     </div>
-                    <div className="flex-shrink-0 w-12 flex items-center justify-start">
+                    <div className="flex w-12 flex-shrink-0 items-center justify-start">
                       <DeltaDisplay value={rankDelta} isInt />
                     </div>
                   </div>
-                  <div className="w-9 h-9 flex-shrink-0 relative">
+                  <div className="relative size-9 flex-shrink-0">
                     <LeaderboardAvatar avatar={avatar} displayName={displayName} />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-sm mb-0.5 truncate text-[#E2E8F0]">{displayName}</div>
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-0.5 truncate text-sm font-semibold text-foreground">{displayName}</div>
                     {displayDesc ? (
-                      <div className="text-xs text-[#94A3B8] truncate">{displayDesc}</div>
+                      <div className="truncate text-xs text-muted-foreground">{displayDesc}</div>
                     ) : null}
                   </div>
-                  <div className="flex-shrink-0 text-right w-32">
-                    <div className="text-lg font-mono font-bold text-[#E2E8F0]">{score.toFixed(1)}</div>
-                    <div className="flex items-center justify-end mt-0.5">
+                  <div className="w-32 flex-shrink-0 text-right">
+                    <div className="font-mono text-base font-semibold text-foreground tabular-nums">{score.toFixed(1)}</div>
+                    <div className="mt-0.5 flex items-center justify-end">
                       <DeltaDisplay value={openrankDelta} />
                     </div>
                   </div>
-                  <div className="flex-shrink-0 text-right w-48">
-                    <div className="text-lg font-mono font-bold text-[#E2E8F0]">{Math.round(participants)}</div>
-                    <div className="flex items-center justify-end mt-0.5">
+                  <div className="w-48 flex-shrink-0 text-right">
+                    <div className="font-mono text-base font-semibold text-foreground tabular-nums">{Math.round(participants)}</div>
+                    <div className="mt-0.5 flex items-center justify-end">
                       <DeltaDisplay value={participantsDelta} isInt />
                     </div>
                   </div>

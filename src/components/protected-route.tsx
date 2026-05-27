@@ -7,7 +7,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const location = useLocation();
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return <div className="flex min-h-dvh items-center justify-center bg-background text-muted-foreground">Loading...</div>;
   }
 
   if (!isAuthenticated) {

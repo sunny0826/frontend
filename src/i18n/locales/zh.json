@@ -32,11 +32,16 @@
     "talentReach": "人才触达"
   },
   "header": {
-    "login": "登录"
+    "login": "登录",
+    "menu": "导航菜单",
+    "openMenu": "打开菜单"
   },
   "hero": {
+    "kicker": "开源价值网络",
     "title.line1": "开源的世界里",
     "title.line2": "每一份贡献都值得回报",
+    "description": "OpenShare 把跨平台贡献、开发者能力、组织需求与积分激励连接成一条可验证的价值协议，让开源影响力可以被发现、评估、连接并回馈。",
+    "search.ariaLabel": "搜索仓库、开发者和标签",
     "search.placeholder": "搜索仓库、开发者、标签名等查看数据洞察",
     "search.placeholder.unauthenticated": "登录后搜索仓库、开发者、标签名等查看数据洞察",
     "search.typeRepo": "仓库",
@@ -44,16 +49,38 @@
     "search.typeLabel": "标签",
     "search.noResults": "未找到相关仓库或开发者",
     "stats.platforms": "主流平台接入",
+    "stats.platforms.description": "统一接入 GitHub、Gitee、GitLab 等开源数据源",
     "stats.developers": "开发者画像",
+    "stats.developers.description": "沉淀贡献者能力、协作质量与成长轨迹",
     "stats.developers.count": "2000万+",
     "stats.projects": "项目分析",
+    "stats.projects.description": "识别项目活跃度、技术影响力与生态位置",
     "stats.projects.count": "4000万+",
     "stats.accuracy": "积分分配",
-    "stats.accuracy.count": "1000万+"
+    "stats.accuracy.description": "把贡献认可转化为可持续的激励回流",
+    "stats.accuracy.count": "1000万+",
+    "protocol.title": "贡献价值协议",
+    "protocol.subtitle": "从公开活动到真实回报",
+    "protocol.live": "运行中",
+    "protocol.ledger": "source/activity -> profile/value -> reach/reward",
+    "protocol.step1.title": "采集贡献信号",
+    "protocol.step1.description": "同步仓库、开发者、标签与社区活动，形成统一的开源活动底座。",
+    "protocol.step2.title": "生成能力画像",
+    "protocol.step2.description": "结合代码、协作、影响力与持续性，评估贡献者的真实价值。",
+    "protocol.step3.title": "匹配组织需求",
+    "protocol.step3.description": "把开发者、企业与社区需求放进同一张可搜索的价值网络。",
+    "protocol.step4.title": "完成激励回流",
+    "protocol.step4.description": "通过积分与触达机制，把贡献认可转化为持续参与的动力。"
   },
   "platforms": {
     "subtitle": "数据来源平台",
     "title": "汇聚全球主流开源生态数据",
+    "description": "跨平台活动被标准化为可追踪的价值信号，持续进入 OpenShare 的贡献图谱。",
+    "endpoint": "端点",
+    "signal": "信号类型",
+    "status": "状态",
+    "synced": "同步中",
+    "more": "更多",
     "visitWebsite": "访问 {{name}} 官网"
   },
   "products": {
@@ -113,15 +140,20 @@
     "talent.highlight1": "人才画像",
     "talent.highlight2": "供需分析",
     "talent.highlight3": "价值趋势",
+    "stat1.value": "10+",
     "stat1": "年度报告发布",
+    "stat2.value": "500+",
     "stat2": "企业参考使用",
+    "stat3.value": "20+",
     "stat3": "政府部门引用",
+    "stat4.value": "100万+",
     "stat4": "报告下载量"
   },
   "ecosystem": {
     "badge": "生态价值",
     "title": "多方共赢的价值网络",
     "description": "连接开发者、企业与社区，构建开源人才经济的良性循环",
+    "nodes": "生态节点",
     "developers.title": "开源开发者",
     "developers.description": "技术能力被精准量化与认可",
     "developers.benefit1": "多维能力画像与排名",
@@ -152,7 +184,10 @@
     "badge": "开启开源人才新篇章",
     "title.line1": "让每一份开源贡献",
     "title.line2": "都获得应有的价值",
-    "description": "加入 OpenShare 生态，与全球千万开发者、数千家企业一起，共建开源人才经济的美好未来"
+    "description": "加入 OpenShare 生态，与全球千万开发者、数千家企业一起，共建开源人才经济的美好未来",
+    "flow.signal": "贡献信号",
+    "flow.value": "价值画像",
+    "flow.reward": "激励回流"
   },
   "footer": {
     "description": "开源人才价值发现与生态激励平台",

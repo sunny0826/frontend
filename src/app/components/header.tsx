@@ -1,4 +1,5 @@
-import { Menu } from "lucide-react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { BarChart3, Menu, Radar, Wallet } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/app/components/ui/button";
 import { Logo } from "@/app/components/logo";
@@ -6,41 +7,90 @@ import { LanguageToggle } from "@/app/components/language-toggle";
 import { useLanguage } from "@/app/contexts/language-context";
 import { useAuth } from "@/contexts/auth-context";
 
+const MobileMenuSheet = lazy(() =>
+  import("@/app/components/mobile-menu-sheet").then((module) => ({
+    default: module.MobileMenuSheet,
+  })),
+);
+
 export function Header() {
   const { t } = useLanguage();
   const { user, isAuthenticated } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const hasOpenedMobileMenuRef = useRef(false);
+  const mobileNavItems = [
+    { label: t("nav.insight"), to: "/insight", icon: BarChart3 },
+    { label: t("nav.talentReach"), to: "/talent-reach", icon: Radar },
+    { label: t("nav.points"), to: "/points", icon: Wallet },
+  ];
+
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      hasOpenedMobileMenuRef.current = true;
+      return;
+    }
+    if (hasOpenedMobileMenuRef.current) {
+      menuButtonRef.current?.focus();
+    }
+  }, [mobileMenuOpen]);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[#1E293B]/95 backdrop-blur-sm border-b border-[#475569]">
-      <div className="max-w-7xl mx-auto px-6 py-4">
+    <header className="fixed left-0 right-0 top-0 z-50 border-b border-border bg-card/95 pt-[env(safe-area-inset-top)]">
+      <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6">
         <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <Logo className="w-8 h-8" />
-            <span className="text-xl font-semibold">
-              <span style={{ color: "#3B82F6" }}>Open</span>
-              <span style={{ color: "#22C55E" }}>Share</span>
+          <Link
+            to="/"
+            className="flex items-center gap-2 rounded-lg px-2 py-1.5 outline-none transition-colors hover:bg-secondary/55 focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Logo className="size-8" />
+            <span className="text-[15px] font-semibold leading-none">
+              <span className="text-chart-2">Open</span>
+              <span className="text-primary">Share</span>
             </span>
           </Link>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             {isAuthenticated ? (
               <Link
                 to="/profile"
                 title={user?.username || 'User'}
                 aria-label="个人中心"
-                className="hidden md:flex h-9 w-9 items-center justify-center rounded-full bg-[#22C55E]/10 text-[#22C55E] text-sm font-semibold hover:bg-[#22C55E]/20 transition-colors"
+                className="hidden size-9 items-center justify-center rounded-lg border border-primary/25 bg-primary/10 text-sm font-semibold text-primary outline-none transition-colors hover:bg-primary/15 focus-visible:ring-2 focus-visible:ring-ring md:flex"
               >
                 {user?.username?.charAt(0).toUpperCase() || 'U'}
               </Link>
             ) : (
-              <Button variant="ghost" className="hidden md:inline-flex text-[#E2E8F0] hover:text-[#22C55E]" asChild>
+              <Button variant="ghost" className="hidden md:inline-flex" asChild>
                 <Link to="/login">{t("header.login")}</Link>
               </Button>
             )}
             <LanguageToggle />
-            <Button variant="ghost" size="icon" className="md:hidden text-[#E2E8F0]">
-              <Menu className="w-5 h-5" />
+            <Button
+              ref={menuButtonRef}
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              aria-label={t("header.openMenu")}
+              aria-expanded={mobileMenuOpen}
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <Menu className="size-5" strokeWidth={1.5} />
             </Button>
+            {mobileMenuOpen && (
+              <Suspense fallback={null}>
+                <MobileMenuSheet
+                  open={mobileMenuOpen}
+                  onOpenChange={setMobileMenuOpen}
+                  menuLabel={t("header.menu")}
+                  loginLabel={t("header.login")}
+                  profileLabel={t("nav.profile")}
+                  isAuthenticated={isAuthenticated}
+                  username={user?.username}
+                  items={mobileNavItems}
+                />
+              </Suspense>
+            )}
           </div>
         </div>
       </div>

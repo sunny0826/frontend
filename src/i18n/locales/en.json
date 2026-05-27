@@ -32,11 +32,16 @@
     "talentReach": "Talent Reach"
   },
   "header": {
-    "login": "Login"
+    "login": "Login",
+    "menu": "Navigation menu",
+    "openMenu": "Open menu"
   },
   "hero": {
+    "kicker": "Open Source Value Network",
     "title.line1": "In the world of open source",
     "title.line2": "Every contribution deserves its reward",
+    "description": "OpenShare connects cross-platform contributions, developer capability, organization demand, and points incentives into a verifiable value protocol for open source influence.",
+    "search.ariaLabel": "Search repositories, developers, and labels",
     "search.placeholder": "Search repos, developers, labels and more for data insights",
     "search.placeholder.unauthenticated": "Login to search repos, developers, labels and more for data insights",
     "search.typeRepo": "Repository",
@@ -44,16 +49,38 @@
     "search.typeLabel": "Label",
     "search.noResults": "No matching repositories or developers found",
     "stats.platforms": "Integrated Platforms",
+    "stats.platforms.description": "Normalize open source signals from GitHub, Gitee, GitLab, and more",
     "stats.developers": "Developer Profiles",
+    "stats.developers.description": "Capture capability, collaboration quality, and growth trajectory",
     "stats.developers.count": "20M+",
     "stats.projects": "Project Analysis",
+    "stats.projects.description": "Read project activity, technical influence, and ecosystem position",
     "stats.projects.count": "40M+",
     "stats.accuracy": "Points Allocated",
-    "stats.accuracy.count": "10M+"
+    "stats.accuracy.description": "Turn contribution recognition into durable incentive flow",
+    "stats.accuracy.count": "10M+",
+    "protocol.title": "Contribution Value Protocol",
+    "protocol.subtitle": "From public activity to real reward",
+    "protocol.live": "Live",
+    "protocol.ledger": "source/activity -> profile/value -> reach/reward",
+    "protocol.step1.title": "Capture Signals",
+    "protocol.step1.description": "Sync repositories, developers, labels, and community activity into one open source activity layer.",
+    "protocol.step2.title": "Map Capability",
+    "protocol.step2.description": "Evaluate real contributor value through code, collaboration, influence, and continuity.",
+    "protocol.step3.title": "Match Demand",
+    "protocol.step3.description": "Place developers, enterprises, and community needs into one searchable value network.",
+    "protocol.step4.title": "Return Rewards",
+    "protocol.step4.description": "Turn contribution recognition into ongoing participation through points and outreach."
   },
   "platforms": {
     "subtitle": "Data Sources",
     "title": "Aggregating Global Open Source Ecosystem Data",
+    "description": "Cross-platform activity is normalized into traceable value signals and continuously enters the OpenShare contribution graph.",
+    "endpoint": "Endpoint",
+    "signal": "Signal Type",
+    "status": "Status",
+    "synced": "Syncing",
+    "more": "and more",
     "visitWebsite": "Visit {{name}} website"
   },
   "products": {
@@ -113,15 +140,20 @@
     "talent.highlight1": "Talent Profiles",
     "talent.highlight2": "Supply & Demand Analysis",
     "talent.highlight3": "Value Trends",
+    "stat1.value": "10+",
     "stat1": "Annual Reports Published",
+    "stat2.value": "500+",
     "stat2": "Enterprises Using",
+    "stat3.value": "20+",
     "stat3": "Government Citations",
+    "stat4.value": "1M+",
     "stat4": "Report Downloads"
   },
   "ecosystem": {
     "badge": "Ecosystem Value",
     "title": "Multi-win Value Network",
     "description": "Connecting developers, enterprises, and communities to build a virtuous cycle of open source talent economy",
+    "nodes": "Ecosystem Nodes",
     "developers.title": "Open Source Developers",
     "developers.description": "Technical capabilities precisely quantified and recognized",
     "developers.benefit1": "Multi-dimensional Capability Profiles & Rankings",
@@ -152,7 +184,10 @@
     "badge": "Ushering in a New Era of Open Source Talent",
     "title.line1": "Let every open source contribution",
     "title.line2": "receive its deserved value",
-    "description": "Join the OpenShare ecosystem, together with millions of developers and thousands of enterprises worldwide, to build a brighter future for open source talent economy"
+    "description": "Join the OpenShare ecosystem, together with millions of developers and thousands of enterprises worldwide, to build a brighter future for open source talent economy",
+    "flow.signal": "Contribution Signal",
+    "flow.value": "Value Profile",
+    "flow.reward": "Reward Return"
   },
   "footer": {
     "description": "Open Source Talent Value Discovery & Ecosystem Incentive Platform",

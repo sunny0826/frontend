@@ -196,7 +196,6 @@ export default function RepoDetailPage() {
           pct={getChangePct(infLatest, infPrev)}
           delta={getStatDelta(infLatest, infPrev)}
           timeKey={timeKey}
-          colorClass="from-purple-900/20 to-[#1E293B]"
         />
         <StatCard
           label={t('insight.detailStatActivity')}
@@ -204,7 +203,6 @@ export default function RepoDetailPage() {
           pct={getChangePct(actLatest, actPrev)}
           delta={getStatDelta(actLatest, actPrev)}
           timeKey={timeKey}
-          colorClass="from-emerald-900/20 to-[#1E293B]"
         />
         <StatCard
           label={t('insight.detailStatDeveloperCount')}
@@ -212,7 +210,6 @@ export default function RepoDetailPage() {
           pct={getChangePct(devLatest, devPrev)}
           delta={getStatDelta(devLatest, devPrev)}
           timeKey={timeKey}
-          colorClass="from-blue-900/20 to-[#1E293B]"
         />
         <StatCard
           label={t('insight.detailChartIssuePrTrend')}
@@ -220,7 +217,6 @@ export default function RepoDetailPage() {
           pct={getChangePct(issuePrLatest, issuePrPrev)}
           delta={getStatDelta(issuePrLatest, issuePrPrev)}
           timeKey={timeKey}
-          colorClass="from-amber-900/20 to-[#1E293B]"
         />
       </div>
 
@@ -305,31 +301,29 @@ function StatCard({
   pct,
   delta,
   timeKey,
-  colorClass,
 }: {
   label: string;
   value: number;
   pct: string;
   delta: number | null;
   timeKey: string;
-  colorClass: string;
 }) {
   const isPositive = delta !== null && delta > 0;
   const isNegative = delta !== null && delta < 0;
 
   return (
-    <div className={`rounded-xl border border-[#475569] p-4 bg-gradient-to-br ${colorClass}`}>
-      <div className="text-xs text-[#94A3B8] mb-1">{label}</div>
-      <div className="text-2xl font-bold text-[#E2E8F0]">
+    <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+      <div className="mb-1 text-xs text-muted-foreground">{label}</div>
+      <div className="text-2xl font-semibold text-foreground tabular-nums">
         {value ? value.toLocaleString(undefined, { maximumFractionDigits: 1 }) : '0'}
       </div>
-      <div className="flex items-center gap-2 mt-1">
+      <div className="mt-1 flex items-center gap-2">
         {delta !== null && (
-          <span className={`text-xs font-medium ${isPositive ? 'text-green-600' : isNegative ? 'text-red-500' : 'text-[#64748B]'}`}>
+          <span className={`text-xs font-medium ${isPositive ? 'text-primary' : isNegative ? 'text-destructive' : 'text-muted-foreground'}`}>
             {isPositive ? '↑' : isNegative ? '↓' : ''} {pct}%
           </span>
         )}
-        {timeKey && <span className="text-xs text-[#64748B]">{timeKey}</span>}
+        {timeKey && <span className="text-xs text-muted-foreground">{timeKey}</span>}
       </div>
     </div>
   );

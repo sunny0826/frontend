@@ -109,19 +109,19 @@ export function FilterPanel({
   return (
     <div
       id="filterPanel"
-      className={`flex-shrink-0 transition-all duration-300 ${timePickerOpen ? 'overflow-visible' : 'overflow-hidden'}`}
-      style={{ width: filterCollapsed ? '60px' : '16.666667%' }}
+      className={`flex-shrink-0 transition-all duration-150 max-xl:!w-full ${timePickerOpen ? 'overflow-visible' : 'overflow-hidden'}`}
+      style={{ width: filterCollapsed ? '60px' : '20rem' }}
     >
-      <div className="bg-[#1E293B] rounded-xl border border-[#475569] p-5 sticky top-24 shadow-sm">
+      <div className="sticky top-6 rounded-xl border border-border bg-card p-4 shadow-sm max-xl:static">
         <button
           type="button"
           id="filterToggle"
           title={t('insight.filterPanelToggleTitle')}
           onClick={onToggleCollapse}
-          className="w-full text-base font-mono font-semibold mb-4 flex items-center gap-2 text-[#E2E8F0] hover:text-primary transition-colors duration-200 whitespace-nowrap cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-[#1E293B] rounded-lg"
+          className="mb-4 flex w-full cursor-pointer items-center gap-2 rounded-lg text-sm font-semibold text-foreground outline-none transition-colors duration-150 hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
           style={{ justifyContent: filterCollapsed ? 'center' : 'space-between' }}
         >
-          <div className="flex items-center gap-2 min-w-0" style={{ display: filterCollapsed ? 'none' : 'flex' }}>
+          <div className="flex min-w-0 items-center gap-2" style={{ display: filterCollapsed ? 'none' : 'flex' }}>
             <Icon icon="mdi:filter" className="flex-shrink-0" />
             <span id="filterTitleText" className="truncate">
               {t('insight.filterConditions')}
@@ -130,13 +130,13 @@ export function FilterPanel({
           <Icon
             id="filterToggleIcon"
             icon={filterCollapsed ? 'mdi:chevron-down' : 'mdi:chevron-up'}
-            className="transition-transform duration-200 flex-shrink-0"
+            className="flex-shrink-0 transition-transform duration-150"
             style={{ transform: filterCollapsed ? 'rotate(180deg)' : 'rotate(0deg)' }}
           />
         </button>
         <div id="filterContent" className="space-y-4" style={{ display: filterCollapsed ? 'none' : 'block' }}>
           <div>
-            <label className="flex items-center gap-2 text-sm font-medium mb-2 text-[#94A3B8]">
+            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <Icon icon="mdi:earth" />
               <span>{t('insight.leaderboardScope')}</span>
             </label>
@@ -144,7 +144,7 @@ export function FilterPanel({
               <button
                 type="button"
                 id="scopeSelectTrigger"
-                className="filter-select-trigger w-full bg-[#0F172A] border border-[#475569] rounded-lg px-3 py-2.5 text-sm text-[#E2E8F0] text-left focus:ring-2 focus:ring-primary focus:border-primary/50 transition-colors duration-200 cursor-pointer"
+                className="filter-select-trigger h-10 w-full cursor-pointer rounded-lg border border-input bg-background px-3 py-2 text-left text-sm text-foreground outline-none transition-[background-color,border-color,box-shadow] duration-150 focus:border-primary focus:ring-2 focus:ring-ring"
                 aria-haspopup="listbox"
                 aria-expanded={scopeMenuOpen}
                 onClick={(e) => {
@@ -185,7 +185,7 @@ export function FilterPanel({
             </div>
           </div>
           <div>
-            <label className="flex items-center gap-2 text-sm font-medium mb-2 text-[#94A3B8]">
+            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <Icon icon="mdi:chart-bar" />
               <span>{t('insight.rankingUnit')}</span>
             </label>
@@ -193,7 +193,7 @@ export function FilterPanel({
               <button
                 type="button"
                 id="unitSelectTrigger"
-                className="filter-select-trigger w-full bg-[#0F172A] border border-[#475569] rounded-lg px-3 py-2.5 text-sm text-[#E2E8F0] text-left focus:ring-2 focus:ring-primary focus:border-primary/50 transition-colors duration-200 cursor-pointer"
+                className="filter-select-trigger h-10 w-full cursor-pointer rounded-lg border border-input bg-background px-3 py-2 text-left text-sm text-foreground outline-none transition-[background-color,border-color,box-shadow] duration-150 focus:border-primary focus:ring-2 focus:ring-ring"
                 aria-haspopup="listbox"
                 aria-expanded={unitMenuOpen}
                 onClick={(e) => {
@@ -234,20 +234,20 @@ export function FilterPanel({
             </div>
           </div>
           <div>
-            <label className="flex items-center gap-2 text-sm font-medium mb-2 text-[#94A3B8]">
+            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <Icon icon="mdi:calendar" />
               <span>{t('insight.timeRangeType')}</span>
             </label>
             <div
               id="timeTypeToggleGroup"
-              className="flex rounded-lg bg-[#0F172A] border border-[#475569] p-0.5"
+              className="flex rounded-lg border border-border bg-background p-0.5"
               role="group"
               aria-label={t('insight.timeRangeTypeToggle')}
             >
               <button
                 type="button"
                 id="timeTypeMonth"
-                className={`detail-trend-toggle px-3 py-1.5 text-xs font-mono rounded-md text-[#94A3B8] transition-colors flex-1 ${timeType === 'month' ? 'active' : ''}`}
+                className={`detail-trend-toggle flex-1 rounded-md px-3 py-1.5 font-mono text-xs text-muted-foreground transition-colors ${timeType === 'month' ? 'active' : ''}`}
                 onClick={() => {
                   if (timeType === 'month') return;
                   onTimeTypeChange('month');
@@ -260,7 +260,7 @@ export function FilterPanel({
               <button
                 type="button"
                 id="timeTypeYear"
-                className={`detail-trend-toggle px-3 py-1.5 text-xs font-mono rounded-md text-[#94A3B8] transition-colors flex-1 ${timeType === 'year' ? 'active' : ''}`}
+                className={`detail-trend-toggle flex-1 rounded-md px-3 py-1.5 font-mono text-xs text-muted-foreground transition-colors ${timeType === 'year' ? 'active' : ''}`}
                 onClick={() => {
                   if (timeType === 'year') return;
                   onTimeTypeChange('year');
@@ -285,7 +285,7 @@ export function FilterPanel({
             />
           </div>
           <div>
-            <label className="flex items-center gap-2 text-sm font-medium mb-2 text-[#94A3B8]">
+            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <Icon icon="mdi:magnify" />
               <span>{t('insight.search')}</span>
             </label>
@@ -296,7 +296,7 @@ export function FilterPanel({
                 placeholder={t('insight.searchPlaceholder')}
                 value={searchKeyword}
                 onChange={(e) => onSearchChange(e.target.value)}
-                className="w-full bg-[#0F172A] border border-[#475569] rounded-lg px-3 py-2.5 pr-9 text-sm text-[#E2E8F0] placeholder-[#64748B] focus:ring-2 focus:ring-primary focus:border-primary/50 hover:border-[#64748B] hover:bg-[#0F172A] transition-colors duration-200"
+                className="h-10 w-full rounded-lg border border-input bg-background px-3 py-2 pr-9 text-sm text-foreground outline-none transition-[background-color,border-color,box-shadow] duration-150 placeholder:text-muted-foreground hover:border-muted-foreground/60 focus:border-primary focus:ring-2 focus:ring-ring"
               />
               <button
                 type="button"
@@ -304,7 +304,7 @@ export function FilterPanel({
                 title={t('insight.clearSearch')}
                 aria-label={t('insight.clearSearch')}
                 onClick={onSearchClear}
-                className={`absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-md text-[#64748B] hover:text-[#E2E8F0] hover:bg-[#475569] transition-colors cursor-pointer ${searchKeyword.trim() ? '' : 'hidden'}`}
+                className={`absolute right-2 top-1/2 flex size-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground ${searchKeyword.trim() ? '' : 'hidden'}`}
               >
                 <Icon icon="mdi:close" className="text-base" />
               </button>

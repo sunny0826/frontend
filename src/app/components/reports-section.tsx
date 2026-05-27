@@ -1,5 +1,14 @@
-import { FileText, Award, TrendingUp, Globe } from "lucide-react";
-import { Card } from "@/app/components/ui/card";
+import {
+  Award,
+  BadgeCheck,
+  BookOpen,
+  Building2,
+  Download,
+  FileText,
+  Globe,
+  Landmark,
+  TrendingUp,
+} from "lucide-react";
 import { useLanguage } from "@/app/contexts/language-context";
 
 export function ReportsSection() {
@@ -16,6 +25,7 @@ export function ReportsSection() {
         t("reports.global.highlight3"),
       ],
       badge: t("reports.global.badge"),
+      tone: "text-chart-2",
     },
     {
       icon: Award,
@@ -28,6 +38,7 @@ export function ReportsSection() {
         t("reports.china.highlight3"),
       ],
       badge: t("reports.china.badge"),
+      tone: "text-primary",
     },
     {
       icon: TrendingUp,
@@ -40,88 +51,136 @@ export function ReportsSection() {
         t("reports.talent.highlight3"),
       ],
       badge: t("reports.talent.badge"),
+      tone: "text-chart-4",
     },
+  ];
+  const [featuredReport, ...supportingReports] = reports;
+  const stats = [
+    { value: t("reports.stat1.value"), label: t("reports.stat1"), icon: FileText },
+    { value: t("reports.stat2.value"), label: t("reports.stat2"), icon: Building2 },
+    { value: t("reports.stat3.value"), label: t("reports.stat3"), icon: Landmark },
+    { value: t("reports.stat4.value"), label: t("reports.stat4"), icon: Download },
   ];
 
   return (
-    <section id="reports" className="py-24 px-6 bg-[#1E293B]">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/15 rounded-full mb-6">
-            <FileText className="w-4 h-4 text-amber-400" />
-            <span className="text-sm text-amber-400 font-medium">{t("reports.badge")}</span>
+    <section id="reports" className="px-4 py-20 sm:px-6">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-12 max-w-3xl">
+          <div className="mb-6 inline-flex h-8 items-center gap-2 rounded-full border border-chart-4/25 bg-chart-4/10 px-3">
+            <BadgeCheck className="size-4 text-chart-4" strokeWidth={1.5} />
+            <span className="text-sm font-medium text-chart-4">{t("reports.badge")}</span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-[#E2E8F0] mb-6">
+          <h2 className="mb-4 max-w-3xl text-balance text-3xl font-semibold text-foreground md:text-4xl">
             {t("reports.title")}
           </h2>
-          <p className="text-lg text-[#94A3B8] max-w-2xl mx-auto">
+          <p className="max-w-2xl text-pretty text-base leading-7 text-muted-foreground">
             {t("reports.description")}
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 mb-12">
-          {reports.map((report) => {
-            const Icon = report.icon;
-            return (
-              <Card
-                key={report.title}
-                className="dark-card dark-card-hover p-8 relative overflow-hidden group"
-              >
-                <div className="absolute top-4 right-4 px-3 py-1 bg-gradient-to-r from-[#22C55E] to-[#3B82F6] text-[#0F172A] text-xs font-medium rounded-full">
-                  {report.badge}
-                </div>
+        <div>
+          <div className="mb-5 flex items-center justify-between gap-4 border-b border-border pb-4">
+            <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <BookOpen className="size-4 text-primary" strokeWidth={1.5} aria-hidden="true" />
+              <span>{t("reports.badge")}</span>
+            </div>
+            <span className="font-mono text-xs text-muted-foreground tabular-nums">
+              {featuredReport.year}
+            </span>
+          </div>
 
-                <div className="w-14 h-14 bg-[#22C55E]/15 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Icon className="w-7 h-7 text-[#22C55E]" />
-                </div>
+          <div className="grid gap-5 lg:grid-cols-5">
+            <article className="rounded-lg border border-border bg-background/80 p-6 lg:col-span-3">
+              <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+                <span className="inline-flex h-7 items-center rounded-full border border-primary/25 bg-primary/10 px-3 text-xs font-medium text-primary">
+                  {featuredReport.badge}
+                </span>
+                <span className="font-mono text-sm text-muted-foreground tabular-nums">
+                  {featuredReport.year}
+                </span>
+              </div>
 
-                <div className="mb-2 flex items-baseline gap-2">
-                  <h3 className="text-xl font-bold text-[#E2E8F0]">
-                    {report.title}
+              <div className="mb-5 flex items-start gap-4">
+                <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border border-border bg-card/70">
+                  <Globe className={`size-6 ${featuredReport.tone}`} strokeWidth={1.5} aria-hidden="true" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-2xl font-semibold leading-8 text-foreground md:text-3xl">
+                    {featuredReport.title}
                   </h3>
-                  <span className="text-sm text-[#64748B]">{report.year}</span>
+                  <p className="mt-3 max-w-2xl text-pretty text-base leading-7 text-muted-foreground">
+                    {featuredReport.description}
+                  </p>
                 </div>
+              </div>
 
-                <p className="text-[#94A3B8] mb-6 leading-relaxed">
-                  {report.description}
-                </p>
+              <ul className="mt-7 flex flex-wrap gap-2">
+                {featuredReport.highlights.map((highlight) => (
+                  <li
+                    key={highlight}
+                    className="inline-flex min-h-9 items-center gap-2 rounded-full border border-border bg-card/40 px-3 text-sm text-muted-foreground"
+                  >
+                    <BadgeCheck className="size-4 text-primary" strokeWidth={1.5} aria-hidden="true" />
+                    {highlight}
+                  </li>
+                ))}
+              </ul>
+            </article>
 
-                <div className="space-y-2">
-                  {report.highlights.map((highlight) => (
-                    <div
-                      key={highlight}
-                      className="flex items-center gap-2 text-sm text-[#94A3B8]"
-                    >
-                      <div className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
-                      {highlight}
+            <div className="space-y-3 lg:col-span-2">
+              {supportingReports.map((report) => {
+                const Icon = report.icon;
+
+                return (
+                  <article key={report.title} className="rounded-lg border border-border bg-background/65 p-4">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border bg-card/70">
+                          <Icon className={`size-5 ${report.tone}`} strokeWidth={1.5} aria-hidden="true" />
+                        </div>
+                        <span className="text-xs font-medium text-primary">{report.badge}</span>
+                      </div>
+                      <span className="font-mono text-xs text-muted-foreground tabular-nums">
+                        {report.year}
+                      </span>
                     </div>
-                  ))}
-                </div>
-              </Card>
-            );
-          })}
-        </div>
-
-        {/* Stats */}
-        <div className="dark-card rounded-2xl p-12">
-          <div className="grid md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-4xl font-bold mb-2 gradient-text-green">10+</div>
-              <div className="text-[#94A3B8]">{t("reports.stat1")}</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold mb-2 gradient-text-green">500+</div>
-              <div className="text-[#94A3B8]">{t("reports.stat2")}</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold mb-2 gradient-text-green">20+</div>
-              <div className="text-[#94A3B8]">{t("reports.stat3")}</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold mb-2 gradient-text-green">100万+</div>
-              <div className="text-[#94A3B8]">{t("reports.stat4")}</div>
+                    <h3 className="text-lg font-semibold leading-6 text-foreground">
+                      {report.title}
+                    </h3>
+                    <p className="mt-2 text-pretty text-sm leading-6 text-muted-foreground">
+                      {report.description}
+                    </p>
+                    <ul className="mt-3 flex flex-wrap gap-2">
+                      {report.highlights.map((highlight) => (
+                        <li key={highlight} className="inline-flex items-center gap-2 rounded-full border border-border bg-card/35 px-2.5 py-1 text-xs text-muted-foreground">
+                          <span className={`size-1.5 rounded-full bg-current ${report.tone}`} aria-hidden="true" />
+                          {highlight}
+                        </li>
+                      ))}
+                    </ul>
+                  </article>
+                );
+              })}
             </div>
           </div>
+
+          <dl className="mt-8 grid gap-4 border-t border-border pt-5 sm:grid-cols-2 lg:grid-cols-4">
+            {stats.map((stat) => {
+              const Icon = stat.icon;
+
+              return (
+                <div key={stat.label} className="min-w-0">
+                  <div className="mb-3 flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                    <Icon className="size-4 text-primary" strokeWidth={1.5} aria-hidden="true" />
+                    <dt>{stat.label}</dt>
+                  </div>
+                  <dd className="font-mono text-2xl font-semibold text-foreground tabular-nums">
+                    {stat.value}
+                  </dd>
+                </div>
+              );
+            })}
+          </dl>
         </div>
       </div>
     </section>

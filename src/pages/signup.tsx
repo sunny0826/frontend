@@ -145,7 +145,7 @@ export default function SignupPage() {
           />
           <Button
             type="submit"
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 text-white hover:from-blue-700 hover:to-indigo-800"
+            className="w-full"
             disabled={isLoading}
           >
             {isLoading && <Loader2 className="size-4 animate-spin" />}

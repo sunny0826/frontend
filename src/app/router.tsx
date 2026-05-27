@@ -1,3 +1,4 @@
+import { lazy, Suspense, type ReactNode } from 'react';
 import { createBrowserRouter, Outlet } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/auth-context';
 import { ProtectedRoute } from '@/components/protected-route';
@@ -8,41 +9,38 @@ import { AppLayout } from '@/layouts/app-layout';
 import App from '@/app/App';
 
 // Public pages
-import LoginPage from '@/pages/login';
-import SignupPage from '@/pages/signup';
-import PasswordResetPage from '@/pages/password-reset';
-import PasswordResetConfirmPage from '@/pages/password-reset-confirm';
-import SocialCallbackPage from '@/pages/social-callback';
-import PublicProfilePage from '@/pages/public-profile';
+const LoginPage = lazy(() => import('@/pages/login'));
+const SignupPage = lazy(() => import('@/pages/signup'));
+const PasswordResetPage = lazy(() => import('@/pages/password-reset'));
+const PasswordResetConfirmPage = lazy(() => import('@/pages/password-reset-confirm'));
+const SocialCallbackPage = lazy(() => import('@/pages/social-callback'));
+const PublicProfilePage = lazy(() => import('@/pages/public-profile'));
 
 // Authenticated pages
-import ProfilePage from '@/pages/profile';
-import ProfileEditPage from '@/pages/profile-edit';
-import PointsPage from '@/pages/points';
-import TransactionsPage from '@/pages/transactions';
-import WithdrawalsPage from '@/pages/withdrawals';
-import ShopPage from '@/pages/shop';
-import ShopItemPage from '@/pages/shop-item';
-import RedemptionsPage from '@/pages/redemptions';
-import MessagesPage from '@/pages/messages';
-import OrganizationsPage from '@/pages/organizations';
-import OrganizationCreatePage from '@/pages/organization-create';
-import OrganizationDetailPage from '@/pages/organization-detail';
-import OrganizationMembersPage from '@/pages/organization-members';
-import OrganizationSettingsPage from '@/pages/organization-settings';
-import OrganizationTransactionsPage from '@/pages/organization-transactions';
-import ChangeEmailPage from '@/pages/change-email';
-import ChangePasswordPage from '@/pages/change-password';
-import AddressesPage from '@/pages/addresses';
-import WithdrawalAccountsPage from '@/pages/withdrawal-accounts';
-import AccountMergePage from '@/pages/account-merge';
-import PointAllocationPage from '@/pages/point-allocation';
-import TalentReachPage from '@/pages/talent-reach';
-import InsightPage from '../pages/insight/index';
-import InsightDispatcher from '../pages/insight/insight-dispatcher';
-// Register MDI offline icon collection used across insight pages.
-// This import has side effects only (calls addCollection on @iconify/react/offline).
-import '../pages/insight/icons/registerMdiOffline';
+const ProfilePage = lazy(() => import('@/pages/profile'));
+const ProfileEditPage = lazy(() => import('@/pages/profile-edit'));
+const PointsPage = lazy(() => import('@/pages/points'));
+const TransactionsPage = lazy(() => import('@/pages/transactions'));
+const WithdrawalsPage = lazy(() => import('@/pages/withdrawals'));
+const ShopPage = lazy(() => import('@/pages/shop'));
+const ShopItemPage = lazy(() => import('@/pages/shop-item'));
+const RedemptionsPage = lazy(() => import('@/pages/redemptions'));
+const MessagesPage = lazy(() => import('@/pages/messages'));
+const OrganizationsPage = lazy(() => import('@/pages/organizations'));
+const OrganizationCreatePage = lazy(() => import('@/pages/organization-create'));
+const OrganizationDetailPage = lazy(() => import('@/pages/organization-detail'));
+const OrganizationMembersPage = lazy(() => import('@/pages/organization-members'));
+const OrganizationSettingsPage = lazy(() => import('@/pages/organization-settings'));
+const OrganizationTransactionsPage = lazy(() => import('@/pages/organization-transactions'));
+const ChangeEmailPage = lazy(() => import('@/pages/change-email'));
+const ChangePasswordPage = lazy(() => import('@/pages/change-password'));
+const AddressesPage = lazy(() => import('@/pages/addresses'));
+const WithdrawalAccountsPage = lazy(() => import('@/pages/withdrawal-accounts'));
+const AccountMergePage = lazy(() => import('@/pages/account-merge'));
+const PointAllocationPage = lazy(() => import('@/pages/point-allocation'));
+const TalentReachPage = lazy(() => import('@/pages/talent-reach'));
+const InsightPage = lazy(() => import('../pages/insight/index'));
+const InsightDispatcher = lazy(() => import('../pages/insight/insight-dispatcher'));
 
 // Root layout with AuthProvider
 function RootLayout() {
@@ -53,6 +51,18 @@ function RootLayout() {
   );
 }
 
+function PageLoader() {
+  return (
+    <div className="flex min-h-dvh items-center justify-center bg-background text-sm text-muted-foreground">
+      Loading...
+    </div>
+  );
+}
+
+function lazyElement(element: ReactNode) {
+  return <Suspense fallback={<PageLoader />}>{element}</Suspense>;
+}
+
 export const router = createBrowserRouter([
   {
     element: <RootLayout />,
@@ -61,19 +71,19 @@ export const router = createBrowserRouter([
       { path: '/', element: <App /> },
 
       // Public profile
-      { path: '/u/:username', element: <PublicProfilePage /> },
+      { path: '/u/:username', element: lazyElement(<PublicProfilePage />) },
 
       // Social login callback
-      { path: '/social-callback', element: <SocialCallbackPage /> },
+      { path: '/social-callback', element: lazyElement(<SocialCallbackPage />) },
 
       // Auth pages (with AuthLayout)
       {
         element: <AuthLayout />,
         children: [
-          { path: '/login', element: <LoginPage /> },
-          { path: '/signup', element: <SignupPage /> },
-          { path: '/password-reset', element: <PasswordResetPage /> },
-          { path: '/password-reset/confirm', element: <PasswordResetConfirmPage /> },
+          { path: '/login', element: lazyElement(<LoginPage />) },
+          { path: '/signup', element: lazyElement(<SignupPage />) },
+          { path: '/password-reset', element: lazyElement(<PasswordResetPage />) },
+          { path: '/password-reset/confirm', element: lazyElement(<PasswordResetConfirmPage />) },
         ],
       },
 
@@ -85,30 +95,30 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
         children: [
-          { path: '/profile', element: <ProfilePage /> },
-          { path: '/profile/edit', element: <ProfileEditPage /> },
-          { path: '/points', element: <PointsPage /> },
-          { path: '/points/transactions', element: <TransactionsPage /> },
-          { path: '/points/withdrawals', element: <WithdrawalsPage /> },
-                    { path: '/points/allocate', element: <PointAllocationPage /> },
-          { path: '/shop', element: <ShopPage /> },
-          { path: '/shop/:id', element: <ShopItemPage /> },
-          { path: '/redemptions', element: <RedemptionsPage /> },
-          { path: '/messages', element: <MessagesPage /> },
-          { path: '/talent-reach', element: <TalentReachPage /> },
-          { path: '/organizations', element: <OrganizationsPage /> },
-          { path: '/organizations/create', element: <OrganizationCreatePage /> },
-          { path: '/organizations/:slug', element: <OrganizationDetailPage /> },
-          { path: '/organizations/:slug/members', element: <OrganizationMembersPage /> },
-          { path: '/organizations/:slug/settings', element: <OrganizationSettingsPage /> },
-          { path: '/organizations/:slug/transactions', element: <OrganizationTransactionsPage /> },
-          { path: '/insight', element: <InsightPage /> },
-          { path: '/insight/*', element: <InsightDispatcher /> },
-          { path: '/settings/email', element: <ChangeEmailPage /> },
-          { path: '/settings/password', element: <ChangePasswordPage /> },
-          { path: '/settings/addresses', element: <AddressesPage /> },
-          { path: '/settings/withdrawal-accounts', element: <WithdrawalAccountsPage /> },
-          { path: '/settings/merge', element: <AccountMergePage /> },
+          { path: '/profile', element: lazyElement(<ProfilePage />) },
+          { path: '/profile/edit', element: lazyElement(<ProfileEditPage />) },
+          { path: '/points', element: lazyElement(<PointsPage />) },
+          { path: '/points/transactions', element: lazyElement(<TransactionsPage />) },
+          { path: '/points/withdrawals', element: lazyElement(<WithdrawalsPage />) },
+          { path: '/points/allocate', element: lazyElement(<PointAllocationPage />) },
+          { path: '/shop', element: lazyElement(<ShopPage />) },
+          { path: '/shop/:id', element: lazyElement(<ShopItemPage />) },
+          { path: '/redemptions', element: lazyElement(<RedemptionsPage />) },
+          { path: '/messages', element: lazyElement(<MessagesPage />) },
+          { path: '/talent-reach', element: lazyElement(<TalentReachPage />) },
+          { path: '/organizations', element: lazyElement(<OrganizationsPage />) },
+          { path: '/organizations/create', element: lazyElement(<OrganizationCreatePage />) },
+          { path: '/organizations/:slug', element: lazyElement(<OrganizationDetailPage />) },
+          { path: '/organizations/:slug/members', element: lazyElement(<OrganizationMembersPage />) },
+          { path: '/organizations/:slug/settings', element: lazyElement(<OrganizationSettingsPage />) },
+          { path: '/organizations/:slug/transactions', element: lazyElement(<OrganizationTransactionsPage />) },
+          { path: '/insight', element: lazyElement(<InsightPage />) },
+          { path: '/insight/*', element: lazyElement(<InsightDispatcher />) },
+          { path: '/settings/email', element: lazyElement(<ChangeEmailPage />) },
+          { path: '/settings/password', element: lazyElement(<ChangePasswordPage />) },
+          { path: '/settings/addresses', element: lazyElement(<AddressesPage />) },
+          { path: '/settings/withdrawal-accounts', element: lazyElement(<WithdrawalAccountsPage />) },
+          { path: '/settings/merge', element: lazyElement(<AccountMergePage />) },
         ],
       },
     ],
