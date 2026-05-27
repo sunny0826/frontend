@@ -334,7 +334,7 @@ export function SiteSearchBox({ variant = 'landing' }: SiteSearchBoxProps) {
   );
 
   const inputAndDropdown = (
-    <div className="relative w-full" ref={searchContainerRef}>
+    <div className={`relative w-full ${showResults || isSearching ? 'z-50' : 'z-10'}`} ref={searchContainerRef}>
       <Search className="absolute left-4 top-1/2 z-10 size-4 -translate-y-1/2 text-muted-foreground" strokeWidth={1.5} />
       <input
         ref={searchInputRef}

@@ -12,7 +12,7 @@ export function HeroSection() {
   ];
 
   return (
-    <section className="relative overflow-hidden px-4 pb-14 pt-28 sm:px-6 lg:pb-16">
+    <section className="relative px-4 pb-14 pt-28 sm:px-6 lg:pb-16">
       <div className="relative z-10 mx-auto grid max-w-7xl gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(21rem,0.46fr)] lg:items-center">
         <div className="max-w-4xl">
           <h1 className="mb-7 max-w-5xl text-balance text-5xl font-semibold leading-[1.04] text-foreground md:text-6xl lg:text-7xl">
@@ -25,7 +25,7 @@ export function HeroSection() {
             {t("hero.description")}
           </p>
 
-          <div className="mb-6 flex max-w-3xl justify-start">
+          <div className="relative z-50 mb-6 flex max-w-3xl justify-start">
             <SiteSearchBox variant="landing" />
           </div>
         </div>
