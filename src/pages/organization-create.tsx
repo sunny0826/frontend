@@ -96,7 +96,7 @@ export default function OrganizationCreatePage() {
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" asChild>
+        <Button variant="ghost" size="icon" asChild aria-label={t('common.back')}>
           <Link to="/organizations">
             <ArrowLeft className="size-4" />
           </Link>

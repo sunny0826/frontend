@@ -2,11 +2,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Icon } from '@iconify/react/offline';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import './icons/registerMdiOffline';
 import { fetchLeaderboardData, fetchLeaderboardMeta } from './api/openLeaderboard';
 import { buildDataUrl, getItemTypeFromUnit, ITEMS_PER_PAGE } from './domain/leaderboard';
 import { computeInitialTimeValue } from './domain/timeRange';
 import { defaultScopeValue, defaultUnitValue, filterGroupTypesForUnitDropdown } from './domain/meta';
 import { formatUpdateTime } from './domain/format';
+import { normalizeInsightLang } from './domain/lang';
 import { getLabelDetailPath, getRepoDetailPath, getDeveloperDetailPath } from './domain/routes';
 import type { LeaderboardItem, LeaderboardMeta } from './types/api';
 import { FilterPanel } from './components/FilterPanel';
@@ -15,12 +17,12 @@ import { LeaderboardSection } from './components/LeaderboardSection';
 import { PaginationControl } from './components/PaginationControl';
 
 function ContentMessage({ type, message }: { type: 'error' | 'loading' | 'plain'; message: string }) {
-  const boxClass = 'bg-[#1E293B] rounded-xl border border-[#475569] shadow-sm';
+  const boxClass = 'rounded-xl border border-border bg-card shadow-sm';
   const padding = type === 'loading' ? 'p-8' : 'p-6';
   if (type === 'error') {
     return (
       <div className={`${boxClass} ${padding}`}>
-        <div className="text-center text-red-500">
+        <div className="text-center text-destructive">
           <Icon icon="mdi:alert-circle" className="text-3xl mb-2" aria-hidden />
           <p>{message}</p>
         </div>
@@ -30,7 +32,7 @@ function ContentMessage({ type, message }: { type: 'error' | 'loading' | 'plain'
   if (type === 'loading') {
     return (
       <div className={`${boxClass} ${padding}`}>
-        <div className="text-center text-[#94A3B8]">
+        <div className="text-center text-muted-foreground">
           <Icon icon="mdi:loading" className="text-3xl mb-2 animate-spin" aria-hidden />
           <p>{message}</p>
         </div>
@@ -39,7 +41,7 @@ function ContentMessage({ type, message }: { type: 'error' | 'loading' | 'plain'
   }
   return (
     <div className={`${boxClass} ${padding}`}>
-      <div className="text-center text-[#94A3B8]">
+      <div className="text-center text-muted-foreground">
         <p>{message}</p>
       </div>
     </div>
@@ -48,7 +50,7 @@ function ContentMessage({ type, message }: { type: 'error' | 'loading' | 'plain'
 
 export default function InsightPage() {
   const { t, i18n } = useTranslation();
-  const lang = i18n.language as 'zh' | 'en';
+  const lang = normalizeInsightLang(i18n.language);
   const navigate = useNavigate();
 
   const [meta, setMeta] = useState<LeaderboardMeta | null>(null);
@@ -174,7 +176,7 @@ export default function InsightPage() {
       {filtersReady && meta && !metaError ? (
         <SiteSearchBox variant="insight" />
       ) : null}
-      <div className="flex gap-6 items-start">
+      <div className="flex items-start gap-6 max-xl:flex-col">
         {metaError ? (
           <div className="flex-1 min-w-0">
             <ContentMessage type="error" message={`${t('insight.error')}: ${metaError}`} />
@@ -241,7 +243,7 @@ export default function InsightPage() {
         />
       </div>
       {updateTimeLabel && (
-        <p className="text-sm text-[#94A3B8] text-center">{updateTimeLabel}</p>
+        <p className="text-center text-sm text-muted-foreground">{updateTimeLabel}</p>
       )}
     </div>
   );

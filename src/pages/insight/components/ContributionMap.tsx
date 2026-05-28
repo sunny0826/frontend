@@ -1,17 +1,25 @@
 import * as echarts from 'echarts';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from 'next-themes';
 import type { ContributionRow } from '../types/api';
 import { preprocessContributions } from '../domain/geography';
 import { WORLD_GEOJSON_URL } from '../api/constants';
+import { normalizeInsightLang } from '../domain/lang';
 
 type Props = {
   contributions: ContributionRow[];
 };
 
+function readThemeColor(name: string, fallback: string): string {
+  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return value || fallback;
+}
+
 export function ContributionMap({ contributions }: Props) {
   const { t, i18n } = useTranslation();
-  const lang = i18n.language as 'zh' | 'en';
+  const { resolvedTheme } = useTheme();
+  const lang = normalizeInsightLang(i18n.language);
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<echarts.ECharts | null>(null);
   const optionRef = useRef<echarts.EChartsOption | null>(null);
@@ -41,6 +49,12 @@ export function ContributionMap({ contributions }: Props) {
       displayNameEn: c.displayNameEn,
     }));
     const maxValue = Math.max(...mapData.map((d) => d.value));
+    const cardColor = readThemeColor('--card', '#1E293B');
+    const foregroundColor = readThemeColor('--foreground', '#E2E8F0');
+    const mutedColor = readThemeColor('--muted-foreground', '#94A3B8');
+    const borderColor = readThemeColor('--border', '#475569');
+    const secondaryColor = readThemeColor('--secondary', '#334155');
+    const primaryColor = readThemeColor('--primary', '#22C55E');
 
     const chart = echarts.init(container);
     chartRef.current = chart;
@@ -57,10 +71,10 @@ export function ContributionMap({ contributions }: Props) {
           backgroundColor: 'transparent',
           tooltip: {
             trigger: 'item',
-            backgroundColor: 'rgba(30, 41, 59, 0.96)',
-            borderColor: '#475569',
+            backgroundColor: cardColor,
+            borderColor,
             borderWidth: 1,
-            textStyle: { color: '#E2E8F0', fontSize: 12 },
+            textStyle: { color: foregroundColor, fontSize: 12 },
             formatter(params: unknown) {
               const p = params as {
                 name?: string;
@@ -96,7 +110,7 @@ export function ContributionMap({ contributions }: Props) {
             bottom: '10',
             text: [t('insight.mapVisualHigh'), t('insight.mapVisualLow')],
             formatter: () => '',
-            textStyle: { color: '#94A3B8' },
+            textStyle: { color: mutedColor },
             calculable: true,
             inRange: { color: ['#dcfce7', '#86efac', '#4ade80', '#22c55e', '#16a34a'] },
           },
@@ -107,12 +121,12 @@ export function ContributionMap({ contributions }: Props) {
               map: 'world',
               roam: true,
               emphasis: {
-                label: { show: true, color: '#E2E8F0' },
-                itemStyle: { areaColor: '#22c55e' },
+                label: { show: true, color: foregroundColor },
+                itemStyle: { areaColor: primaryColor },
               },
               itemStyle: {
-                areaColor: '#334155',
-                borderColor: '#475569',
+                areaColor: secondaryColor,
+                borderColor,
                 borderWidth: 0.5,
               },
               label: { show: false },
@@ -135,7 +149,7 @@ export function ContributionMap({ contributions }: Props) {
       chartRef.current = null;
       optionRef.current = null;
     };
-  }, [contributions, lang, t]);
+  }, [contributions, lang, resolvedTheme, t]);
 
   const resetMap = () => {
     const chart = chartRef.current;
@@ -151,18 +165,18 @@ export function ContributionMap({ contributions }: Props) {
       {!hasData && (
         <div
           id="contributionMapContainer"
-          className="bg-[#1E293B] rounded-lg p-4 border border-[#475569]"
+          className="rounded-lg border border-border bg-background p-4"
           style={{ height: 320 }}
         >
-          <p className="text-[#64748B] text-sm py-4 text-center">{t('insight.noData')}</p>
+          <p className="py-4 text-center text-sm text-muted-foreground">{t('insight.noData')}</p>
         </div>
       )}
       {hasData && loadError && (
         <div
-          className="bg-[#1E293B] rounded-lg p-4 border border-[#475569]"
+          className="rounded-lg border border-border bg-background p-4"
           style={{ height: 320 }}
         >
-          <p className="text-[#64748B] text-sm py-4 text-center">{t('insight.mapLoadFailed')}</p>
+          <p className="py-4 text-center text-sm text-muted-foreground">{t('insight.mapLoadFailed')}</p>
         </div>
       )}
       {hasData && !loadError && (
@@ -170,14 +184,14 @@ export function ContributionMap({ contributions }: Props) {
           <div
             ref={containerRef}
             id="contributionMapContainer"
-            className="bg-[#1E293B] rounded-lg p-4 border border-[#475569]"
+            className="rounded-lg border border-border bg-background p-4"
             style={{ height: 320 }}
           />
           {mapReady && (
             <button
               id="contributionMapResetBtn"
               type="button"
-              className="absolute top-6 right-6 px-2 py-1 text-xs rounded bg-[#334155] border border-[#475569] text-[#94A3B8] hover:bg-[#475569] hover:text-[#E2E8F0] transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
+              className="absolute right-6 top-6 cursor-pointer rounded border border-border bg-secondary px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               title={t('insight.mapResetTitle')}
               onClick={resetMap}
             >

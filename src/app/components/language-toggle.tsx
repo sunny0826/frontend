@@ -1,12 +1,14 @@
 import { Languages } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
+import { cn } from "@/app/components/ui/utils";
 import { useLanguage } from "@/app/contexts/language-context";
 
 interface LanguageToggleProps {
   iconOnly?: boolean;
+  className?: string;
 }
 
-export function LanguageToggle({ iconOnly = false }: LanguageToggleProps) {
+export function LanguageToggle({ iconOnly = false, className }: LanguageToggleProps) {
   const { language, setLanguage } = useLanguage();
 
   const toggleLanguage = () => {
@@ -22,11 +24,14 @@ export function LanguageToggle({ iconOnly = false }: LanguageToggleProps) {
         variant="ghost"
         size="icon"
         onClick={toggleLanguage}
-        className="size-8 rounded-md border border-[#475569] bg-transparent text-[#E2E8F0] hover:bg-[#22C55E]/10 hover:text-[#22C55E] hover:border-[#22C55E]/40"
+        className={cn(
+          "size-11 bg-transparent text-foreground hover:bg-primary/10 hover:text-primary",
+          className,
+        )}
         title={ariaLabel}
         aria-label={ariaLabel}
       >
-        <Languages className="w-4 h-4" />
+        <Languages className="size-4" strokeWidth={1.5} aria-hidden="true" />
       </Button>
     );
   }
@@ -35,10 +40,13 @@ export function LanguageToggle({ iconOnly = false }: LanguageToggleProps) {
     <Button
       variant="ghost"
       onClick={toggleLanguage}
-      className="gap-2 border border-[#475569] bg-transparent text-[#E2E8F0] hover:bg-[#22C55E]/10 hover:text-[#22C55E] hover:border-[#22C55E]/40"
+      className={cn(
+        "gap-2 bg-transparent text-foreground hover:bg-primary/10 hover:text-primary",
+        className,
+      )}
       aria-label={ariaLabel}
     >
-      <Languages className="w-4 h-4" />
+      <Languages className="size-4" strokeWidth={1.5} aria-hidden="true" />
       <span>{nextLabel}</span>
     </Button>
   );

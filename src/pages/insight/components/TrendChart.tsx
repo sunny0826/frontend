@@ -72,8 +72,8 @@ export function TrendChart({ values, label, monthLabels, noDataText }: Props) {
   if (n === 0) {
     return (
       <div className="mb-4">
-        <div className="text-sm font-mono text-[#94A3B8] mb-2">{label}</div>
-        <div className="flex gap-2 items-center h-20 text-[#64748B] text-sm">{noDataText}</div>
+        <div className="mb-2 text-sm font-mono text-muted-foreground">{label}</div>
+        <div className="flex h-20 items-center gap-2 text-sm text-muted-foreground">{noDataText}</div>
       </div>
     );
   }
@@ -93,9 +93,9 @@ export function TrendChart({ values, label, monthLabels, noDataText }: Props) {
 
   return (
     <div className="mb-4">
-      <div className="text-sm font-mono text-[#94A3B8] mb-2">{label}</div>
+      <div className="mb-2 text-sm font-mono text-muted-foreground">{label}</div>
       <div className="flex gap-2">
-        <div className="flex flex-col justify-between text-xs text-[#64748B] font-mono h-20 py-0.5 flex-shrink-0">
+        <div className="flex h-20 flex-shrink-0 flex-col justify-between py-0.5 font-mono text-xs text-muted-foreground">
           {yTicks
             .slice()
             .reverse()
@@ -110,18 +110,18 @@ export function TrendChart({ values, label, monthLabels, noDataText }: Props) {
           data-trend-data={trendDataJson}
         >
           <svg className="w-full flex-1 min-h-0" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
-            <path d={areaPath} fill="rgba(34,197,94,0.15)" />
+            <path d={areaPath} fill="var(--insight-accent-light)" />
             <path
               d={linePath}
               fill="none"
-              stroke="#16a34a"
+              stroke="var(--primary)"
               strokeWidth="0.8"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
           </svg>
           <div className="trend-chart-tooltip" role="tooltip" />
-          <div className="flex justify-between text-xs text-[#64748B] mt-1 flex-shrink-0">
+          <div className="mt-1 flex flex-shrink-0 justify-between text-xs text-muted-foreground">
             <span>{labels[0] || ''}</span>
             <span>{labels[labels.length - 1] || ''}</span>
           </div>

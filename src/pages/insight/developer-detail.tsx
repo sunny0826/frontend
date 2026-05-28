@@ -47,13 +47,13 @@ function StatCard({
     ? String(Math.round(value || 0))
     : value ? value.toFixed(1) : '0';
   return (
-    <div className="bg-[#1E293B] rounded-xl border border-[#475569] p-4 flex flex-col gap-2">
-      <div className="flex items-center gap-2 text-sm text-[#94A3B8]">
-        <Icon icon={icon} className={`w-4 h-4 ${iconColor}`} aria-hidden />
+    <div className="flex flex-col gap-2 rounded-xl border border-border bg-card p-4">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <Icon icon={icon} className={`size-4 ${iconColor}`} aria-hidden />
         <span>{label}</span>
       </div>
       <div className="flex items-end gap-2">
-        <span className="text-2xl font-bold text-[#E2E8F0]">
+        <span className="text-2xl font-bold tabular-nums text-card-foreground">
           {displayValue}
         </span>
         <DeltaDisplay value={delta} compact isInt={isInt} />
@@ -139,7 +139,7 @@ export default function DeveloperDetailPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-5xl px-4 py-8">
-        <div className="flex flex-col items-center justify-center gap-4 py-16 text-[#64748B]">
+        <div className="flex flex-col items-center justify-center gap-4 py-16 text-muted-foreground">
           <Icon icon="mdi:loading" className="text-4xl animate-spin" aria-hidden />
           <p>{t('insight.loadingUser')}</p>
         </div>
@@ -150,10 +150,10 @@ export default function DeveloperDetailPage() {
   if (error || !ossMeta) {
     return (
       <div className="mx-auto max-w-5xl px-4 py-8">
-        <div className="flex flex-col items-center justify-center gap-4 py-16 text-[#94A3B8]">
+        <div className="flex flex-col items-center justify-center gap-4 py-16 text-muted-foreground">
           <Icon icon="mdi:database-off-outline" className="text-4xl" aria-hidden />
           <p className="text-center px-4">{t('insight.detailUserDataMissing')}</p>
-          <Link to={getInsightHomePath()} className="text-[#22C55E] hover:underline text-sm mt-2">
+          <Link to={getInsightHomePath()} className="mt-2 text-sm text-primary hover:underline">
             {t('insight.developerDetailBackToInsight')}
           </Link>
         </div>
@@ -164,9 +164,9 @@ export default function DeveloperDetailPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 space-y-6">
       {/* Developer info card */}
-      <div className="bg-[#1E293B] rounded-xl border border-[#475569] p-6">
+      <div className="rounded-xl border border-border bg-card p-6">
         <div className="flex items-start gap-4">
-          <div className="w-32 h-32 flex-shrink-0">
+          <div className="size-32 flex-shrink-0">
             <LeaderboardAvatar
               avatar={avatarUrl}
               displayName={displayName}
@@ -177,27 +177,27 @@ export default function DeveloperDetailPage() {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-xl font-bold text-[#E2E8F0]">{displayName}</h1>
-              <span className="text-[#94A3B8] text-sm">@{login}</span>
+              <h1 className="text-xl font-bold text-balance text-card-foreground">{displayName}</h1>
+              <span className="text-sm text-muted-foreground">@{login}</span>
             </div>
 
             {(profileLocation || profileCompany || profileBio) && (
-              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#94A3B8]">
+              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
                 {profileLocation && (
                   <span className="flex items-center gap-1">
-                    <Icon icon="mdi:map-marker" className="w-4 h-4 text-[#64748B]" aria-hidden />
+                    <Icon icon="mdi:map-marker" className="size-4 text-muted-foreground" aria-hidden />
                     {profileLocation}
                   </span>
                 )}
                 {profileCompany && (
                   <span className="flex items-center gap-1">
-                    <Icon icon="mdi:domain" className="w-4 h-4 text-[#64748B]" aria-hidden />
+                    <Icon icon="mdi:domain" className="size-4 text-muted-foreground" aria-hidden />
                     {profileCompany}
                   </span>
                 )}
                 {profileBio && (
                   <span className="flex items-center gap-1">
-                    <Icon icon="mdi:card-text-outline" className="w-4 h-4 text-[#64748B]" aria-hidden />
+                    <Icon icon="mdi:card-text-outline" className="size-4 text-muted-foreground" aria-hidden />
                     {profileBio}
                   </span>
                 )}
@@ -210,32 +210,32 @@ export default function DeveloperDetailPage() {
             href={profileUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border border-[#475569] rounded-lg text-[#E2E8F0] hover:bg-[#334155] transition-colors flex-shrink-0"
+            className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-secondary"
           >
             <RepoPlatformIcon platform={platform} size="sm" />
             <span>{t('insight.detailDeveloperProfile')}</span>
-            <Icon icon="mdi:open-in-new" className="w-3.5 h-3.5" aria-hidden />
+            <Icon icon="mdi:open-in-new" className="size-3.5" aria-hidden />
           </a>
         </div>
       </div>
 
       {/* Mode toggle */}
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-[#E2E8F0]">
+        <h2 className="text-sm font-semibold text-foreground">
           {t('insight.detailBasicStatsHeading')}
-          {timeKey && <span className="text-[#64748B] font-normal ml-2">({timeKey})</span>}
+          {timeKey && <span className="ml-2 font-normal text-muted-foreground">({timeKey})</span>}
         </h2>
         <div
-          className="flex rounded-lg bg-[#0F172A] border border-[#475569] p-0.5"
+          className="flex rounded-lg border border-border bg-muted p-0.5"
           role="group"
           aria-label={t('insight.detailTrendModeAria')}
         >
           <button
             type="button"
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+            className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
               trendMode === 'month'
-                ? 'bg-[#334155] text-[#E2E8F0] shadow-sm'
-                : 'text-[#94A3B8] hover:text-[#E2E8F0]'
+                ? 'bg-secondary text-secondary-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
             onClick={() => setTrendMode('month')}
           >
@@ -243,10 +243,10 @@ export default function DeveloperDetailPage() {
           </button>
           <button
             type="button"
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+            className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
               trendMode === 'year'
-                ? 'bg-[#334155] text-[#E2E8F0] shadow-sm'
-                : 'text-[#94A3B8] hover:text-[#E2E8F0]'
+                ? 'bg-secondary text-secondary-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
             onClick={() => setTrendMode('year')}
           >
@@ -310,8 +310,8 @@ export default function DeveloperDetailPage() {
       </div>
 
       {/* Trend charts */}
-      <div className="bg-[#1E293B] rounded-xl border border-[#475569] p-6">
-        <h3 className="text-sm font-semibold text-[#E2E8F0] mb-4">
+      <div className="rounded-xl border border-border bg-card p-6">
+        <h3 className="mb-4 text-sm font-semibold text-card-foreground">
           {t('insight.detailHistoricalTrendHeading')}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

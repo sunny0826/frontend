@@ -3,26 +3,29 @@ import { useLanguage } from "@/app/contexts/language-context";
 export function PlatformsSection() {
   const { t } = useLanguage();
   const platforms = [
-    { name: "GitHub", logo: "github", url: "https://github.com" },
-    { name: "GitLab", logo: "gitlab", url: "https://gitlab.com" },
-    { name: "Gitee", logo: "gitee", url: "https://gitee.com" },
-    { name: "AtomGit", logo: "atomgit", url: "https://atomgit.com" },
-    { name: "HuggingFace", logo: "huggingface", url: "https://huggingface.co" },
+    { name: "GitHub", logo: "github", url: "https://github.com", signal: "code/repo" },
+    { name: "GitLab", logo: "gitlab", url: "https://gitlab.com", signal: "merge/issue" },
+    { name: "Gitee", logo: "gitee", url: "https://gitee.com", signal: "cn/ecosystem" },
+    { name: "AtomGit", logo: "atomgit", url: "https://atomgit.com", signal: "project/hub" },
+    { name: "HuggingFace", logo: "huggingface", url: "https://huggingface.co", signal: "model/dataset" },
   ];
 
   return (
-    <section className="py-16 px-6 bg-[#1E293B] border-y border-[#475569]">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <p className="text-sm text-[#64748B] uppercase tracking-wider font-medium mb-4">
+    <section className="px-4 py-12 sm:px-6">
+      <div className="mx-auto max-w-7xl">
+        <div className="mx-auto mb-8 flex max-w-xl flex-col items-center gap-2 text-center">
+          <p className="font-mono text-xs font-semibold uppercase text-primary">
             {t("platforms.subtitle")}
           </p>
-          <h3 className="text-2xl font-semibold text-[#E2E8F0]">
+          <h3 className="text-balance text-xl font-semibold text-foreground sm:text-2xl">
             {t("platforms.title")}
           </h3>
+          <p className="max-w-md text-pretty text-sm leading-6 text-muted-foreground">
+            {t("platforms.description")}
+          </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 items-center">
+        <div className="flex flex-wrap items-start justify-center gap-6 sm:gap-10">
           {platforms.map((platform) => (
             <a
               key={platform.name}
@@ -30,24 +33,33 @@ export function PlatformsSection() {
               target="_blank"
               rel="noopener noreferrer"
               title={t("platforms.visitWebsite", { name: platform.name })}
-              className="group flex flex-col items-center justify-center gap-3 transition-transform duration-200 hover:scale-110"
+              className="group flex w-20 flex-col items-center gap-2 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <div className="w-12 h-12 bg-[#334155] rounded-lg flex items-center justify-center overflow-hidden">
+              <span className="flex size-14 items-center justify-center overflow-hidden rounded-lg border border-border bg-background p-2.5 transition-[border-color,background-color,box-shadow] duration-150 group-hover:border-primary/40 group-hover:bg-secondary/45 group-hover:shadow-sm">
                 <img
                   src={`https://oss.open-digger.cn/logos/${platform.logo}.png`}
-                  alt={platform.name}
-                  className="w-8 h-8 object-contain"
+                  alt=""
+                  className="size-8 object-contain"
                   loading="lazy"
+                  decoding="async"
                   onError={(e) => {
                     (e.currentTarget as HTMLImageElement).style.display = "none";
                   }}
                 />
-              </div>
-              <span className="text-sm text-[#94A3B8] font-medium group-hover:text-[#22C55E]">
+              </span>
+              <span className="w-full truncate text-center text-xs font-medium text-muted-foreground">
                 {platform.name}
               </span>
             </a>
           ))}
+          <div className="flex w-20 flex-col items-center gap-2" aria-hidden="true">
+            <div className="flex size-14 items-center justify-center rounded-lg border border-border/60 bg-background/55">
+              <span className="font-mono text-lg font-semibold text-muted-foreground">...</span>
+            </div>
+            <span className="w-full truncate text-center text-xs font-medium text-muted-foreground">
+              {t("platforms.more")}
+            </span>
+          </div>
         </div>
       </div>
     </section>

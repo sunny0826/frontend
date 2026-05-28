@@ -62,9 +62,8 @@ export function PointsBalanceCard({
                     <TooltipTrigger asChild>
                       <button
                         type="button"
-                        tabIndex={-1}
                         aria-label={t('points.cashPointsTooltip')}
-                        className="inline-flex items-center justify-center text-muted-foreground/70 hover:text-muted-foreground focus:outline-none"
+                        className="inline-flex size-7 items-center justify-center rounded-md text-muted-foreground/70 transition-colors hover:bg-secondary hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <HelpCircle className="size-3.5" />
                       </button>

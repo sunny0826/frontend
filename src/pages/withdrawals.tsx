@@ -272,9 +272,8 @@ export default function WithdrawalsPage() {
                   <TooltipTrigger asChild>
                     <button
                       type="button"
-                      tabIndex={-1}
                       aria-label={t('withdrawals.cashPointsTooltip')}
-                      className="inline-flex items-center justify-center text-muted-foreground/70 hover:text-muted-foreground focus:outline-none"
+                      className="inline-flex size-7 items-center justify-center rounded-md text-muted-foreground/70 transition-colors hover:bg-secondary hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <HelpCircle className="size-3.5" />
                     </button>
@@ -412,9 +411,8 @@ export default function WithdrawalsPage() {
                     <TooltipTrigger asChild>
                       <button
                         type="button"
-                        tabIndex={-1}
                         aria-label={t('withdrawals.cashPointsTooltip')}
-                        className="inline-flex items-center justify-center text-muted-foreground/70 hover:text-muted-foreground focus:outline-none"
+                        className="inline-flex size-7 items-center justify-center rounded-md text-muted-foreground/70 transition-colors hover:bg-secondary hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <HelpCircle className="size-3.5" />
                       </button>
@@ -495,10 +493,15 @@ export default function WithdrawalsPage() {
               <Input
                 id="withdraw-amount"
                 type="number"
+                inputMode="numeric"
                 min={200}
                 max={cashBalance}
                 placeholder={t('withdrawals.withdrawAmountPlaceholder')}
                 value={withdrawAmount}
+                aria-invalid={!!amountError}
+                aria-describedby={
+                  amountError ? "withdraw-amount-help withdraw-amount-error" : "withdraw-amount-help"
+                }
                 onChange={(e) => {
                   setWithdrawAmount(e.target.value);
                   if (amountError) setAmountError("");
@@ -507,7 +510,7 @@ export default function WithdrawalsPage() {
                   if (withdrawAmount) validateAmount(withdrawAmount);
                 }}
               />
-              <p className="text-xs text-muted-foreground">
+              <p id="withdraw-amount-help" className="text-xs text-muted-foreground">
                 {t('withdrawals.minAmountTip')}
               </p>
               {(() => {
@@ -536,7 +539,9 @@ export default function WithdrawalsPage() {
                 );
               })()}
               {amountError && (
-                <p className="text-xs text-red-600">{amountError}</p>
+                <p id="withdraw-amount-error" className="text-xs text-destructive" aria-live="polite">
+                  {amountError}
+                </p>
               )}
             </div>
           </div>

@@ -1,5 +1,6 @@
 import { Github, Mail } from "lucide-react";
 import { useLanguage } from "@/app/contexts/language-context";
+import { Logo } from "@/app/components/logo";
 
 export function Footer() {
   const { t } = useLanguage();
@@ -10,21 +11,19 @@ export function Footer() {
   ];
 
   return (
-    <footer className="bg-[#0F172A] text-[#94A3B8] pt-16 pb-8 px-6 border-t border-[#475569]">
-      <div className="max-w-7xl mx-auto">
-        <div className="grid md:grid-cols-3 gap-12 mb-12">
+    <footer className="bg-background px-4 pb-8 pt-14 text-muted-foreground sm:px-6">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-12 grid gap-10 md:grid-cols-3">
           {/* Brand */}
           <div className="md:col-span-1">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-br from-[#22C55E] to-[#3B82F6] rounded-lg flex items-center justify-center">
-                <Github className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-semibold">
-                <span style={{ color: "#3B82F6" }}>Open</span>
-                <span style={{ color: "#22C55E" }}>Share</span>
+            <div className="mb-4 flex items-center gap-2">
+              <Logo className="size-8" />
+              <span className="text-lg font-semibold leading-none">
+                <span className="text-chart-2">Open</span>
+                <span className="text-primary">Share</span>
               </span>
             </div>
-            <p className="text-sm text-[#64748B] mb-6">
+            <p className="mb-6 max-w-sm text-sm text-muted-foreground">
               {t("footer.description")}
             </p>
             <div className="flex gap-4">
@@ -32,28 +31,30 @@ export function Footer() {
                 href="https://github.com/opensharehq"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 bg-[#1E293B] rounded-lg flex items-center justify-center hover:bg-[#334155] transition-colors"
+                className="flex size-9 items-center justify-center rounded-lg border border-border bg-card outline-none transition-colors hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label="GitHub"
               >
-                <Github className="w-4 h-4" />
+                <Github className="size-4" strokeWidth={1.5} />
               </a>
               <a
                 href="mailto:contact@open-share.cn"
-                className="w-9 h-9 bg-[#1E293B] rounded-lg flex items-center justify-center hover:bg-[#334155] transition-colors"
+                className="flex size-9 items-center justify-center rounded-lg border border-border bg-card outline-none transition-colors hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label="Email"
               >
-                <Mail className="w-4 h-4" />
+                <Mail className="size-4" strokeWidth={1.5} />
               </a>
             </div>
           </div>
 
           {/* Products */}
           <div>
-            <h4 className="text-[#E2E8F0] font-semibold mb-4">{t("footer.products")}</h4>
+            <h4 className="mb-4 font-semibold text-foreground">{t("footer.products")}</h4>
             <ul className="space-y-3">
               {productLinks.map((link) => (
                 <li key={link.href}>
                   <a
                     href={link.href}
-                    className="text-sm text-[#64748B] hover:text-[#22C55E] transition-colors"
+                    className="text-sm text-muted-foreground transition-colors hover:text-primary"
                   >
                     {link.label}
                   </a>
@@ -64,12 +65,12 @@ export function Footer() {
 
           {/* Company */}
           <div>
-            <h4 className="text-[#E2E8F0] font-semibold mb-4">{t("footer.company")}</h4>
+            <h4 className="mb-4 font-semibold text-foreground">{t("footer.company")}</h4>
             <ul className="space-y-3">
               <li>
                 <a
                   href="mailto:contact@open-share.cn"
-                  className="text-sm text-[#64748B] hover:text-[#22C55E] transition-colors"
+                  className="text-sm text-muted-foreground transition-colors hover:text-primary"
                 >
                   {t("footer.company.contact")}
                 </a>
@@ -78,20 +79,20 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="pt-8 border-t border-[#475569]">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-[#64748B]">
+        <div className="border-t border-border pt-8">
+          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+            <p className="text-sm text-muted-foreground">
               {t("footer.copyright")}
             </p>
             <a
               href="https://beian.miit.gov.cn/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-[#64748B] hover:text-[#94A3B8] transition-colors"
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
               浙ICP备2025189350号
             </a>
-            <p className="text-sm text-[#64748B]">
+            <p className="text-sm text-muted-foreground">
               {t("footer.slogan")}
             </p>
           </div>

@@ -11,7 +11,13 @@
     "default": "默认",
     "present": "至今",
     "close": "关闭",
-    "comingSoon": "功能开发中"
+    "comingSoon": "功能开发中",
+    "retry": "重试",
+    "selectMonth": "选择月份",
+    "previousYear": "上一年",
+    "nextYear": "下一年",
+    "monthYear": "{{year}}年{{month}}",
+    "months": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"]
   },
   "nav": {
     "profile": "个人中心",
@@ -21,6 +27,7 @@
     "organizations": "我的组织",
     "messages": "消息中心",
     "settings": "设置",
+    "settingsGeneral": "常规",
     "settingsEmail": "修改邮箱",
     "settingsPassword": "修改密码",
     "settingsAddresses": "收货地址",
@@ -32,11 +39,20 @@
     "talentReach": "人才触达"
   },
   "header": {
-    "login": "登录"
+    "login": "登录",
+    "menu": "导航菜单",
+    "openMenu": "打开菜单"
+  },
+  "theme": {
+    "switchToLight": "切换到亮色模式",
+    "switchToDark": "切换到暗色模式"
   },
   "hero": {
+    "kicker": "开源价值网络",
     "title.line1": "开源的世界里",
     "title.line2": "每一份贡献都值得回报",
+    "description": "OpenShare 把跨平台贡献、开发者能力、组织需求与积分激励连接成一条可验证的价值协议，让开源影响力可以被发现、评估、连接并回馈。",
+    "search.ariaLabel": "搜索仓库、开发者和标签",
     "search.placeholder": "搜索仓库、开发者、标签名等查看数据洞察",
     "search.placeholder.unauthenticated": "登录后搜索仓库、开发者、标签名等查看数据洞察",
     "search.typeRepo": "仓库",
@@ -44,16 +60,38 @@
     "search.typeLabel": "标签",
     "search.noResults": "未找到相关仓库或开发者",
     "stats.platforms": "主流平台接入",
+    "stats.platforms.description": "统一接入 GitHub、Gitee、GitLab 等开源数据源",
     "stats.developers": "开发者画像",
+    "stats.developers.description": "沉淀贡献者能力、协作质量与成长轨迹",
     "stats.developers.count": "2000万+",
     "stats.projects": "项目分析",
+    "stats.projects.description": "识别项目活跃度、技术影响力与生态位置",
     "stats.projects.count": "4000万+",
     "stats.accuracy": "积分分配",
-    "stats.accuracy.count": "1000万+"
+    "stats.accuracy.description": "把贡献认可转化为可持续的激励回流",
+    "stats.accuracy.count": "1000万+",
+    "protocol.title": "贡献价值协议",
+    "protocol.subtitle": "从公开活动到真实回报",
+    "protocol.live": "运行中",
+    "protocol.ledger": "source/activity -> profile/value -> reach/reward",
+    "protocol.step1.title": "采集贡献信号",
+    "protocol.step1.description": "同步仓库、开发者、标签与社区活动，形成统一的开源活动底座。",
+    "protocol.step2.title": "生成能力画像",
+    "protocol.step2.description": "结合代码、协作、影响力与持续性，评估贡献者的真实价值。",
+    "protocol.step3.title": "匹配组织需求",
+    "protocol.step3.description": "把开发者、企业与社区需求放进同一张可搜索的价值网络。",
+    "protocol.step4.title": "完成激励回流",
+    "protocol.step4.description": "通过积分与触达机制，把贡献认可转化为持续参与的动力。"
   },
   "platforms": {
     "subtitle": "数据来源平台",
     "title": "汇聚全球主流开源生态数据",
+    "description": "跨平台活动被标准化为可追踪的价值信号，持续进入 OpenShare 的贡献图谱。",
+    "endpoint": "端点",
+    "signal": "信号类型",
+    "status": "状态",
+    "synced": "同步中",
+    "more": "更多",
     "visitWebsite": "访问 {{name}} 官网"
   },
   "products": {
@@ -113,15 +151,20 @@
     "talent.highlight1": "人才画像",
     "talent.highlight2": "供需分析",
     "talent.highlight3": "价值趋势",
+    "stat1.value": "10+",
     "stat1": "年度报告发布",
+    "stat2.value": "500+",
     "stat2": "企业参考使用",
+    "stat3.value": "20+",
     "stat3": "政府部门引用",
+    "stat4.value": "100万+",
     "stat4": "报告下载量"
   },
   "ecosystem": {
     "badge": "生态价值",
     "title": "多方共赢的价值网络",
     "description": "连接开发者、企业与社区，构建开源人才经济的良性循环",
+    "nodes": "生态节点",
     "developers.title": "开源开发者",
     "developers.description": "技术能力被精准量化与认可",
     "developers.benefit1": "多维能力画像与排名",
@@ -152,7 +195,10 @@
     "badge": "开启开源人才新篇章",
     "title.line1": "让每一份开源贡献",
     "title.line2": "都获得应有的价值",
-    "description": "加入 OpenShare 生态，与全球千万开发者、数千家企业一起，共建开源人才经济的美好未来"
+    "description": "加入 OpenShare 生态，与全球千万开发者、数千家企业一起，共建开源人才经济的美好未来",
+    "flow.signal": "贡献信号",
+    "flow.value": "价值画像",
+    "flow.reward": "激励回流"
   },
   "footer": {
     "description": "开源人才价值发现与生态激励平台",
@@ -604,6 +650,10 @@
     "operator": "操作人"
   },
   "settings": {
+    "general": "常规",
+    "generalDesc": "管理后台界面的语言与显示模式。",
+    "preferences": "界面偏好",
+    "preferencesDesc": "这些设置会立即应用到当前浏览器。",
     "changeEmail": "修改邮箱",
     "currentEmail": "当前邮箱：{{email}}",
     "currentPassword": "当前密码",
@@ -625,6 +675,11 @@
     "notSet": "未设置",
     "language": "语言设置",
     "languageDesc": "切换界面显示语言",
+    "theme": "显示模式",
+    "lightMode": "亮色模式",
+    "darkMode": "暗色模式",
+    "lightModeDesc": "适合明亮环境下查看后台页面",
+    "darkModeDesc": "适合低光环境下查看后台页面",
     "zh": "中文",
     "en": "English"
   },
@@ -733,6 +788,7 @@
     "searchTagLabel": "搜索项目标签",
     "searchTagPlaceholder": "输入关键词搜索项目...",
     "selectedTags": "已选标签",
+    "removeTag": "移除 {{name}} 标签",
     "operation": "运算方式",
     "step3Title": "步骤 3 - 选择时间区间",
     "startMonth": "开始月份",
@@ -744,10 +800,12 @@
     "totalPoints": "总积分",
     "totalPointsRoundingTip": "总积分为每个账号最终分发金额的精确合计，与本次分配执行后从积分池扣减的金额完全一致。",
     "scaledHint": "已按比例缩减至积分池可用上限",
+    "sufficientBalanceHint": "积分池余额充足",
     "insufficientBalanceHint": "积分池余额不足以覆盖理论全额，已按最大比例分配",
     "exceedTotal": "超过发放总量!",
     "exceedBalance": "超过积分池可用余额!",
     "globalRatio": "全局调整比例",
+    "globalRatioTip": "通过滑块调整全局发放比例，后续可对特定开发者发放数量进行精调",
     "resetToRatioOne": "重置为比例 1",
     "resetToRatioOneTip": "将发放总量重置为尽可能接近比例 1 的状态，并清除所有对特定开发者的手动调整。若积分池余额不足以覆盖理论全额，则按可达到的最大比例重置。",
     "contributorList": "贡献者列表",

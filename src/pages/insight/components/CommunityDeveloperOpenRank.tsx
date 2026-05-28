@@ -80,7 +80,7 @@ export function CommunityDeveloperOpenRank({
   return (
     <div className="mb-6">
       <div className="flex flex-wrap items-start sm:items-center justify-between gap-3 mb-3">
-        <h4 className="text-sm font-mono font-semibold text-[#E2E8F0]">{t('insight.detailCommunityDevelopersHeading')}</h4>
+        <h4 className="text-sm font-mono font-semibold text-card-foreground">{t('insight.detailCommunityDevelopersHeading')}</h4>
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto sm:justify-end">
           <div className="min-w-[9rem] w-40 sm:min-w-[9.5rem] sm:w-44 flex-shrink-0">
             <TimeRangePicker
@@ -110,49 +110,49 @@ export function CommunityDeveloperOpenRank({
           ) : null}
         </div>
       </div>
-      <div className="rounded-lg border border-[#475569] bg-[#1E293B]">
+      <div className="rounded-lg border border-border bg-card">
         {rows.length === 0 ? (
-          <p className="text-[#64748B] text-sm py-8 text-center font-mono">{t('insight.noData')}</p>
+          <p className="py-8 text-center text-sm font-mono text-muted-foreground">{t('insight.noData')}</p>
         ) : (
-          <div className="divide-y divide-[#475569]/50">
+          <div className="divide-y divide-border/60">
             <div
-              className="flex items-center gap-2 py-2 px-2 bg-[#0F172A]"
+              className="flex items-center gap-2 bg-background px-2 py-2"
               role="row"
             >
               <div
-                className="flex-shrink-0 w-[4.25rem] text-[10px] sm:text-xs font-mono font-semibold text-[#94A3B8] text-center leading-tight"
+                className="w-[4.25rem] flex-shrink-0 text-center font-mono text-[10px] font-semibold leading-tight text-muted-foreground sm:text-xs"
                 role="columnheader"
               >
                 {t('insight.detailCommunityColRank')}
               </div>
               <span
-                className="flex-shrink-0 flex w-8 h-6 items-center justify-center text-[10px] sm:text-xs font-mono font-semibold text-[#94A3B8] text-center leading-tight"
+                className="flex h-6 w-8 flex-shrink-0 items-center justify-center text-center font-mono text-[10px] font-semibold leading-tight text-muted-foreground sm:text-xs"
                 role="columnheader"
               >
                 {t('insight.detailCommunityColPlatform')}
               </span>
               <div className="w-7 flex-shrink-0" aria-hidden />
               <div
-                className="flex-1 min-w-0 text-[10px] sm:text-xs font-mono font-semibold text-[#94A3B8]"
+                className="min-w-0 flex-1 font-mono text-[10px] font-semibold text-muted-foreground sm:text-xs"
                 role="columnheader"
               >
                 {t('insight.headerName')}
               </div>
               <div
-                className="w-24 sm:w-28 flex-shrink-0 text-center text-[10px] sm:text-xs font-mono font-semibold text-[#94A3B8] leading-tight px-0.5"
+                className="w-24 flex-shrink-0 px-0.5 text-center font-mono text-[10px] font-semibold leading-tight text-muted-foreground sm:w-28 sm:text-xs"
                 role="columnheader"
               >
                 {t('insight.detailCommunityColUserDashboard')}
               </div>
               <div className="flex-shrink-0 flex items-center justify-end gap-3" role="presentation">
                 <div
-                  className="w-28 text-right shrink-0 text-[10px] sm:text-xs font-mono font-semibold text-[#94A3B8]"
+                  className="w-28 shrink-0 text-right font-mono text-[10px] font-semibold text-muted-foreground sm:text-xs"
                   role="columnheader"
                 >
                   {t('insight.headerOpenRank')}
                 </div>
                 <div
-                  className="w-24 text-right shrink-0 text-[10px] sm:text-xs font-mono font-semibold text-[#94A3B8]"
+                  className="w-24 shrink-0 text-right font-mono text-[10px] font-semibold text-muted-foreground sm:text-xs"
                   role="columnheader"
                 >
                   {t('insight.detailCommunityColChange')}
@@ -161,14 +161,14 @@ export function CommunityDeveloperOpenRank({
             </div>
             {pageRows.map((r) => {
               const profileUrl = getDeveloperProfileUrlByPlatform(r.platform, r.login);
-              const nameCls = 'font-medium text-xs text-[#E2E8F0] truncate block leading-tight';
+              const nameCls = 'block truncate text-xs font-medium leading-tight text-foreground';
               return (
                 <div
                   key={`${r.platform}-${r.id}-${r.login}`}
-                  className="flex items-center gap-2 py-1 px-2 min-h-0 hover:bg-[#334155] transition-colors"
+                  className="flex min-h-0 items-center gap-2 px-2 py-1 transition-colors hover:bg-secondary/70"
                 >
                   <div className="flex-shrink-0 flex items-center gap-1 w-[4.25rem]">
-                    <span className="text-xs font-mono font-bold text-[#94A3B8] w-6 text-center tabular-nums">
+                    <span className="w-6 text-center font-mono text-xs font-bold tabular-nums text-muted-foreground">
                       {r.rank}
                     </span>
                     <DeltaDisplay value={r.rankDelta} isInt compact />
@@ -217,14 +217,14 @@ export function CommunityDeveloperOpenRank({
                           avatar: r.avatarUrl,
                         })
                       }
-                      className="p-1.5 rounded-lg border border-[#475569] bg-[#334155] text-primary hover:bg-[#475569] hover:border-primary/50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="rounded-lg border border-border bg-secondary p-1.5 text-primary transition-colors hover:border-primary/50 hover:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <Icon icon="mdi:view-dashboard-outline" className="text-lg" aria-hidden />
                     </button>
                   </div>
                   <div className="flex-shrink-0 flex items-center justify-end gap-3">
                     <div className="w-28 text-right shrink-0">
-                      <span className="text-sm font-mono font-bold text-[#E2E8F0] tabular-nums leading-none">
+                      <span className="font-mono text-sm font-bold leading-none tabular-nums text-foreground">
                         {r.score.toFixed(1)}
                       </span>
                     </div>

@@ -1,10 +1,10 @@
 import {
+  ArrowRight,
   Building2,
-  Users,
-  Layers,
   CheckCircle2,
+  Layers,
+  Users,
 } from "lucide-react";
-import { Card } from "@/app/components/ui/card";
 import { useLanguage } from "@/app/contexts/language-context";
 
 export function EcosystemSection() {
@@ -20,7 +20,7 @@ export function EcosystemSection() {
         t("ecosystem.developers.benefit3"),
         t("ecosystem.developers.benefit4"),
       ],
-      color: "blue",
+      tone: "text-chart-2",
     },
     {
       icon: Building2,
@@ -32,7 +32,7 @@ export function EcosystemSection() {
         t("ecosystem.enterprises.benefit3"),
         t("ecosystem.enterprises.benefit4"),
       ],
-      color: "indigo",
+      tone: "text-primary",
     },
     {
       icon: Layers,
@@ -44,79 +44,103 @@ export function EcosystemSection() {
         t("ecosystem.communities.benefit3"),
         t("ecosystem.communities.benefit4"),
       ],
-      color: "purple",
+      tone: "text-chart-4",
+    },
+  ];
+  const flowSteps = [
+    {
+      title: t("ecosystem.flow.step1.title"),
+      description: t("ecosystem.flow.step1.description"),
+    },
+    {
+      title: t("ecosystem.flow.step2.title"),
+      description: t("ecosystem.flow.step2.description"),
+    },
+    {
+      title: t("ecosystem.flow.step3.title"),
+      description: t("ecosystem.flow.step3.description"),
     },
   ];
 
-  const colorMap = {
-    blue: {
-      bg: "bg-blue-500/20",
-      icon: "text-blue-400",
-      check: "text-[#22C55E]",
-    },
-    indigo: {
-      bg: "bg-indigo-500/20",
-      icon: "text-indigo-400",
-      check: "text-[#22C55E]",
-    },
-    purple: {
-      bg: "bg-purple-500/20",
-      icon: "text-purple-400",
-      check: "text-[#22C55E]",
-    },
-  };
-
   return (
-    <section id="ecosystem" className="py-24 px-6 bg-[#0F172A]">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-[rgba(34,197,94,0.15)] rounded-full mb-6">
-            <Layers className="w-4 h-4 text-[#22C55E]" />
-            <span className="text-sm text-[#22C55E] font-medium">{t("ecosystem.badge")}</span>
+    <section id="ecosystem" className="px-4 py-20 sm:px-6">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-12 max-w-3xl">
+          <div className="mb-6 inline-flex h-8 items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3">
+            <Layers className="size-4 text-primary" strokeWidth={1.5} aria-hidden="true" />
+            <span className="text-sm font-medium text-primary">{t("ecosystem.badge")}</span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-[#E2E8F0] mb-6">
+          <h2 className="mb-5 text-balance text-3xl font-semibold text-foreground md:text-4xl">
             {t("ecosystem.title")}
           </h2>
-          <p className="text-lg text-[#94A3B8] max-w-2xl mx-auto">
+          <p className="max-w-xl text-pretty text-base leading-7 text-muted-foreground">
             {t("ecosystem.description")}
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
-          {participants.map((participant) => {
-            const Icon = participant.icon;
-            const colors =
-              colorMap[participant.color as keyof typeof colorMap];
-
-            return (
-              <Card
-                key={participant.title}
-                className="dark-card dark-card-hover p-8"
-              >
-                <div
-                  className={`w-14 h-14 ${colors.bg} rounded-2xl flex items-center justify-center mb-6`}
-                >
-                  <Icon className={`w-7 h-7 ${colors.icon}`} />
+        <div className="relative">
+          <div className="mb-10 flex flex-col items-start gap-4 rounded-lg border border-border bg-card/40 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-foreground">{t("ecosystem.flow.title")}</p>
+              <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
+                {flowSteps.map((step) => step.title).join(" / ")}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {flowSteps.map((step, index) => (
+                <div key={step.title} className="flex items-center gap-2">
+                  <span className="inline-flex h-9 items-center rounded-full border border-border bg-background px-3 text-xs font-medium text-muted-foreground">
+                    {step.title}
+                  </span>
+                  {index < flowSteps.length - 1 ? (
+                    <ArrowRight className="hidden size-4 text-muted-foreground sm:block" strokeWidth={1.5} aria-hidden="true" />
+                  ) : null}
                 </div>
+              ))}
+            </div>
+          </div>
 
-                <h3 className="text-2xl font-bold text-[#E2E8F0] mb-2">
-                  {participant.title}
-                </h3>
-                <p className="text-[#94A3B8] mb-6">{participant.description}</p>
+          <div className="grid gap-5 lg:grid-cols-3">
+            {participants.map((participant) => {
+              const Icon = participant.icon;
 
-                <ul className="space-y-3">
-                  {participant.benefits.map((benefit) => (
-                    <li key={benefit} className="flex items-start gap-3">
-                      <CheckCircle2
-                        className={`w-5 h-5 ${colors.check} flex-shrink-0 mt-0.5`}
-                      />
-                      <span className="text-sm text-[#94A3B8]">{benefit}</span>
-                    </li>
-                  ))}
-                </ul>
-              </Card>
-            );
-          })}
+              return (
+                <article
+                  key={participant.title}
+                  className="relative rounded-lg border border-border bg-card/35 p-5"
+                >
+                  <div className="mb-5 flex items-start justify-between gap-4">
+                    <div className="flex min-w-0 items-start gap-4">
+                      <div className="flex size-11 shrink-0 items-center justify-center rounded-lg border border-border bg-background">
+                        <Icon className={`size-5 ${participant.tone}`} strokeWidth={1.5} aria-hidden="true" />
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="text-xl font-semibold tracking-tight text-foreground">
+                          {participant.title}
+                        </h3>
+                        <p className="mt-2 text-pretty text-sm leading-6 text-muted-foreground">
+                          {participant.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <ul className="flex flex-wrap gap-2">
+                    {participant.benefits.map((benefit) => (
+                      <li key={benefit} className="inline-flex min-h-9 items-center gap-2 rounded-full border border-border bg-background/75 px-3 text-sm text-muted-foreground">
+                        <CheckCircle2
+                          className={`size-4 shrink-0 ${participant.tone}`}
+                          strokeWidth={1.5}
+                          aria-hidden="true"
+                        />
+                        <span>{benefit}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>

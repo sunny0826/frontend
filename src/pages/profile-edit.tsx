@@ -311,7 +311,7 @@ export default function ProfileEditPage() {
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       {/* 页面标题 */}
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/profile')}>
+        <Button variant="ghost" size="icon" aria-label={t('common.back')} onClick={() => navigate('/profile')}>
           <ArrowLeft className="size-4" />
         </Button>
         <h1 className="text-2xl font-bold">{t('profileEdit.title')}</h1>
@@ -412,10 +412,10 @@ export default function ProfileEditPage() {
                     )}
                   </div>
                   <div className="flex items-center gap-1">
-                    <Button type="button" size="icon" variant="ghost" onClick={() => openEditWork(exp)}>
+                    <Button type="button" size="icon" variant="ghost" aria-label={t('common.edit')} onClick={() => openEditWork(exp)}>
                       <Pencil className="size-4" />
                     </Button>
-                    <Button type="button" size="icon" variant="ghost" onClick={() => deleteWork(exp.id)}>
+                    <Button type="button" size="icon" variant="ghost" aria-label={t('common.delete')} onClick={() => deleteWork(exp.id)}>
                       <Trash2 className="size-4 text-destructive" />
                     </Button>
                   </div>
@@ -453,10 +453,10 @@ export default function ProfileEditPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Button type="button" size="icon" variant="ghost" onClick={() => openEditEdu(edu)}>
+                    <Button type="button" size="icon" variant="ghost" aria-label={t('common.edit')} onClick={() => openEditEdu(edu)}>
                       <Pencil className="size-4" />
                     </Button>
-                    <Button type="button" size="icon" variant="ghost" onClick={() => deleteEdu(edu.id)}>
+                    <Button type="button" size="icon" variant="ghost" aria-label={t('common.delete')} onClick={() => deleteEdu(edu.id)}>
                       <Trash2 className="size-4 text-destructive" />
                     </Button>
                   </div>
