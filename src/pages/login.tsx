@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import { Github, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
-import api, { getApiError } from '@/lib/api';
+import { getApiError } from '@/lib/api';
 import { resolveApiErrorMessage } from '@/lib/auth-errors';
 import { readRedirectFromParams, stashSocialRedirect } from '@/lib/redirect';
 import { Button } from '@/app/components/ui/button';
@@ -24,20 +24,13 @@ import {
 import { Separator } from '@/app/components/ui/separator';
 import { AgreementCheckbox } from '@/components/agreement-checkbox';
 
-// 仅展示 GitHub 与 Gitee；顺序与数组一致
+// 登录页支持的三方登录提供商：静态硬编码，避免首屏等待接口请求。
+// 增减项需同步：
+//   1) backend/accounts/api_v1.py:SOCIAL_PROVIDERS
+//   2) backend/config/settings.py 中对应平台的 KEY/SECRET 环境变量
+//   3) 下方 getProviderDisplayName / getProviderIcon / getProviderLabel / getProviderClassName
 const ENABLED_SOCIAL_PROVIDERS = ['github', 'gitee'] as const;
 type EnabledSocialProvider = (typeof ENABLED_SOCIAL_PROVIDERS)[number];
-
-type SocialProvider = {
-  provider: string;
-  name: string;
-  icon: string;
-  start_url: string;
-};
-
-function isEnabledProvider(p: string): p is EnabledSocialProvider {
-  return (ENABLED_SOCIAL_PROVIDERS as readonly string[]).includes(p);
-}
 
 function GiteeIcon({ className }: { className?: string }) {
   return (
@@ -59,7 +52,6 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
-  const [providers, setProviders] = useState<SocialProvider[]>([]);
   const [agreed, setAgreed] = useState(false);
   const [socialLoading, setSocialLoading] = useState<EnabledSocialProvider | null>(null);
 
@@ -87,20 +79,7 @@ export default function LoginPage() {
     return () => window.removeEventListener('pageshow', handlePageShow);
   }, []);
 
-  useEffect(() => {
-    api.get<{ providers: SocialProvider[] }>('/auth/social/providers')
-      .then(({ data }) => {
-        const list = (data?.providers ?? [])
-          .filter((p) => isEnabledProvider(p.provider))
-          .sort(
-            (a, b) =>
-              ENABLED_SOCIAL_PROVIDERS.indexOf(a.provider as EnabledSocialProvider) -
-              ENABLED_SOCIAL_PROVIDERS.indexOf(b.provider as EnabledSocialProvider),
-          );
-        setProviders(list);
-      })
-      .catch(() => {/* 忽略加载失败 */});
-  }, []);
+
 
   async function onSubmit(values: LoginFormValues) {
     if (!agreed) {
@@ -229,40 +208,35 @@ export default function LoginPage() {
         </Link>
       </div>
 
-      {providers.length > 0 && (
-        <>
-          <div className="relative">
-            <Separator />
-            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap bg-card px-2 text-xs text-muted-foreground">
-              {t('auth.orSocialLogin')}
-            </span>
-          </div>
+      <div className="relative">
+        <Separator />
+        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap bg-card px-2 text-xs text-muted-foreground">
+          {t('auth.orSocialLogin')}
+        </span>
+      </div>
 
-          <div className="grid gap-2">
-            {providers.map((provider) => {
-              const id = provider.provider as EnabledSocialProvider;
-              const isCurrentLoading = socialLoading === id;
-              return (
-                <Button
-                  key={id}
-                  type="button"
-                  variant="outline"
-                  className={getProviderClassName(id)}
-                  onClick={() => handleSocialLogin(id)}
-                  disabled={socialLoading !== null}
-                >
-                  {isCurrentLoading ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    getProviderIcon(id)
-                  )}
-                  {getProviderLabel(id)}
-                </Button>
-              );
-            })}
-          </div>
-        </>
-      )}
+      <div className="grid gap-2">
+        {ENABLED_SOCIAL_PROVIDERS.map((id) => {
+          const isCurrentLoading = socialLoading === id;
+          return (
+            <Button
+              key={id}
+              type="button"
+              variant="outline"
+              className={getProviderClassName(id)}
+              onClick={() => handleSocialLogin(id)}
+              disabled={socialLoading !== null}
+            >
+              {isCurrentLoading ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                getProviderIcon(id)
+              )}
+              {getProviderLabel(id)}
+            </Button>
+          );
+        })}
+      </div>
 
       {socialLoading && (
         <div
