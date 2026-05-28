@@ -186,6 +186,7 @@ export function AppLayout() {
                 {item.children ? (
                   <div>
                     <button
+                      type="button"
                       onClick={() => setSettingsOpen(!settingsOpen)}
                       className={navItemClass(active)}
                       aria-expanded={settingsOpen}
@@ -242,6 +243,7 @@ export function AppLayout() {
 
       <div className="border-t border-sidebar-border/70 px-3 py-3">
         <button
+          type="button"
           onClick={handleLogout}
           className="group flex min-h-11 w-full items-center gap-3 rounded-xl border border-transparent px-2.5 py-2 text-sm font-medium text-destructive outline-none transition-[background-color,border-color,color] duration-150 hover:border-destructive/30 hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-destructive/30"
         >
@@ -258,7 +260,7 @@ export function AppLayout() {
     <div className="flex h-dvh bg-background">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:border-r lg:border-sidebar-border lg:bg-sidebar lg:shadow-sm">
-        <SidebarContent />
+        {SidebarContent()}
       </aside>
 
       {/* Mobile Sidebar Overlay */}
@@ -269,7 +271,7 @@ export function AppLayout() {
             onClick={() => setSidebarOpen(false)}
           />
           <aside className="fixed inset-y-0 left-0 z-50 w-72 border-r border-sidebar-border bg-sidebar shadow-xl">
-            <SidebarContent />
+            {SidebarContent()}
           </aside>
         </div>
       )}
@@ -279,6 +281,7 @@ export function AppLayout() {
         {/* Top Bar (mobile only - menu trigger) */}
         <header className="flex h-16 items-center justify-between border-b border-border bg-card/95 px-4 lg:hidden">
           <button
+            type="button"
             onClick={() => setSidebarOpen(true)}
             className="flex size-11 items-center justify-center rounded-lg text-foreground outline-none transition-colors hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring"
             aria-label={t('header.openMenu')}
