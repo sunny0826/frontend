@@ -250,7 +250,12 @@ export default function ProfilePage() {
     setProvidersLoading(true);
     try {
       const { data: providersData } = await api.get('/auth/social/providers');
-      setAvailableProviders(providersData?.providers ?? []);
+      // 仅展示 GitHub 与 AtomGit；其它后端虽配置保留，但前端不再作为可绑定平台暴露
+      const allowed = new Set(['github', 'atomgit']);
+      const items: SocialProviderItem[] = (providersData?.providers ?? []).filter(
+        (p: SocialProviderItem) => allowed.has(p.provider),
+      );
+      setAvailableProviders(items);
       setProvidersLoaded(true);
     } catch (error) {
       const apiError = getApiError(error);
@@ -265,7 +270,7 @@ export default function ProfilePage() {
   }, [loadProfile]);
 
   const socialAvatarUrl = useMemo(() => {
-    const priority = ['gitee', 'atomgit', 'github', 'gitlab'];
+    const priority = ['github', 'atomgit'];
     for (const provider of priority) {
       const conn = socialConnections.find(
         (c) => c.is_connected && c.provider === provider && (c.username || c.uid),

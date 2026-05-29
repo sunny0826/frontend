@@ -42,8 +42,6 @@ const navItems: NavItem[] = [
     icon: <Settings className="size-4" strokeWidth={1.5} />,
     children: [
       { labelKey: 'nav.settingsGeneral', path: '/settings/general' },
-      { labelKey: 'nav.settingsEmail', path: '/settings/email' },
-      { labelKey: 'nav.settingsPassword', path: '/settings/password' },
       { labelKey: 'nav.settingsAddresses', path: '/settings/addresses' },
       { labelKey: 'nav.settingsWithdrawalAccounts', path: '/settings/withdrawal-accounts' },
       { labelKey: 'nav.settingsMerge', path: '/settings/merge' },

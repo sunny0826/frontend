@@ -12,8 +12,6 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (account: string, password: string) => Promise<void>;
-  register: (username: string, email: string, password1: string, password2: string) => Promise<void>;
   logout: () => Promise<void>;
   setTokens: (accessToken: string, refreshToken: string) => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -42,20 +40,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refreshUser().finally(() => setIsLoading(false));
   }, [refreshUser]);
 
-  const login = async (account: string, password: string) => {
-    const { data } = await api.post('/auth/login', { account, password });
-    localStorage.setItem('access_token', data.access_token);
-    localStorage.setItem('refresh_token', data.refresh_token);
-    setUser(data.user);
-  };
-
-  const register = async (username: string, email: string, password1: string, password2: string) => {
-    const { data } = await api.post('/auth/register', { username, email, password1, password2 });
-    localStorage.setItem('access_token', data.access_token);
-    localStorage.setItem('refresh_token', data.refresh_token);
-    setUser(data.user);
-  };
-
   const logout = async () => {
     try {
       const refreshToken = localStorage.getItem('refresh_token');
@@ -76,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, register, logout, setTokens, refreshUser }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, logout, setTokens, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

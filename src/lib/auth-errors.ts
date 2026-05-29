@@ -13,7 +13,6 @@ import type { ApiError } from './api';
 /** 顶层 code → i18n key。 */
 const TOP_LEVEL_ERROR_I18N: Record<string, string> = {
   // 登录相关
-  invalid_credentials: 'errors.invalid_credentials',
   account_disabled: 'errors.account_disabled',
   account_merged: 'errors.account_merged',
 
@@ -45,27 +44,12 @@ const TOP_LEVEL_ERROR_I18N: Record<string, string> = {
 
 /** 字段级 code → i18n key（Django 内置 + 项目自定义）。 */
 const FIELD_ERROR_I18N: Record<string, string> = {
-  // Django 内置密码校验器
-  password_too_short: 'errors.password_too_short',
-  password_too_common: 'errors.password_too_common',
-  password_too_similar: 'errors.password_too_similar',
-  password_entirely_numeric: 'errors.password_entirely_numeric',
-  password_mismatch: 'errors.password_mismatch',
-
   // Django 字段层级内置
   unique: 'errors.field_unique',
   required: 'errors.field_required',
   invalid: 'errors.field_invalid',
   max_length: 'errors.field_max_length',
   min_length: 'errors.field_min_length',
-
-  // 邮箱
-  email_already_registered: 'errors.email_already_registered',
-  email_already_in_use: 'errors.email_already_in_use',
-  email_same_as_current: 'errors.email_same_as_current',
-
-  // 密码
-  password_incorrect: 'errors.password_incorrect',
 
   // 账户合并（表单级 code 也可能出现在 detail.__all__ 中）
   merge_target_required: 'errors.merge_target_required',

@@ -10,9 +10,6 @@ import App from '@/app/App';
 
 // Public pages
 const LoginPage = lazy(() => import('@/pages/login'));
-const SignupPage = lazy(() => import('@/pages/signup'));
-const PasswordResetPage = lazy(() => import('@/pages/password-reset'));
-const PasswordResetConfirmPage = lazy(() => import('@/pages/password-reset-confirm'));
 const SocialCallbackPage = lazy(() => import('@/pages/social-callback'));
 const PublicProfilePage = lazy(() => import('@/pages/public-profile'));
 
@@ -33,8 +30,6 @@ const OrganizationMembersPage = lazy(() => import('@/pages/organization-members'
 const OrganizationSettingsPage = lazy(() => import('@/pages/organization-settings'));
 const OrganizationTransactionsPage = lazy(() => import('@/pages/organization-transactions'));
 const SettingsGeneralPage = lazy(() => import('@/pages/settings-general'));
-const ChangeEmailPage = lazy(() => import('@/pages/change-email'));
-const ChangePasswordPage = lazy(() => import('@/pages/change-password'));
 const AddressesPage = lazy(() => import('@/pages/addresses'));
 const WithdrawalAccountsPage = lazy(() => import('@/pages/withdrawal-accounts'));
 const AccountMergePage = lazy(() => import('@/pages/account-merge'));
@@ -82,9 +77,6 @@ export const router = createBrowserRouter([
         element: <AuthLayout />,
         children: [
           { path: '/login', element: lazyElement(<LoginPage />) },
-          { path: '/signup', element: lazyElement(<SignupPage />) },
-          { path: '/password-reset', element: lazyElement(<PasswordResetPage />) },
-          { path: '/password-reset/confirm', element: lazyElement(<PasswordResetConfirmPage />) },
         ],
       },
 
@@ -116,8 +108,6 @@ export const router = createBrowserRouter([
           { path: '/insight', element: lazyElement(<InsightPage />) },
           { path: '/insight/*', element: lazyElement(<InsightDispatcher />) },
           { path: '/settings/general', element: lazyElement(<SettingsGeneralPage />) },
-          { path: '/settings/email', element: lazyElement(<ChangeEmailPage />) },
-          { path: '/settings/password', element: lazyElement(<ChangePasswordPage />) },
           { path: '/settings/addresses', element: lazyElement(<AddressesPage />) },
           { path: '/settings/withdrawal-accounts', element: lazyElement(<WithdrawalAccountsPage />) },
           { path: '/settings/merge', element: lazyElement(<AccountMergePage />) },

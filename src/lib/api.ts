@@ -16,7 +16,7 @@ api.interceptors.request.use((config) => {
 });
 
 // 响应拦截器：401 时自动刷新（登录/注册/刷新等认证端点除外，避免掩盖凭证错误）
-const AUTH_ENDPOINTS_SKIP_REFRESH = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/social/exchange'];
+const AUTH_ENDPOINTS_SKIP_REFRESH = ['/auth/refresh', '/auth/social/exchange'];
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
