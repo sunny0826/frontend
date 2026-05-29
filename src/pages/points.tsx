@@ -9,6 +9,7 @@ import {
   Loader2,
 } from "lucide-react";
 import api, { getApiError } from "@/lib/api";
+import { getIsMainlandCn } from "@/lib/geo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
 import {
@@ -27,6 +28,7 @@ export default function PointsPage() {
   const { t } = useTranslation();
   const [balance, setBalance] = useState<PointsBalanceData | null>(null);
   const [loading, setLoading] = useState(true);
+  const isMainlandCn = getIsMainlandCn();
 
   useEffect(() => {
     async function fetchBalance() {
@@ -74,12 +76,14 @@ export default function PointsPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <Button variant="outline" className="h-auto py-4 flex-col gap-2" asChild>
-              <Link to="/points/withdrawals">
-                <ArrowUpRight className="size-5" />
-                <span>{t('points.withdrawRequest')}</span>
-              </Link>
-            </Button>
+            {isMainlandCn && (
+              <Button variant="outline" className="h-auto py-4 flex-col gap-2" asChild>
+                <Link to="/points/withdrawals">
+                  <ArrowUpRight className="size-5" />
+                  <span>{t('points.withdrawRequest')}</span>
+                </Link>
+              </Button>
+            )}
             <Button variant="outline" className="h-auto py-4 flex-col gap-2" asChild>
               <Link to="/shop">
                 <ShoppingBag className="size-5" />

@@ -9,10 +9,10 @@ import {
   Wallet,
   Plus,
   Trash2,
-  ArrowLeft,
   AlertTriangle,
 } from 'lucide-react';
 import api, { getApiError } from '@/lib/api';
+import { getIsMainlandCn } from '@/lib/geo';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Badge } from '@/app/components/ui/badge';
@@ -47,35 +47,25 @@ import {
   FormControl,
   FormMessage,
 } from '@/app/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/app/components/ui/select';
 import { Alert, AlertDescription } from '@/app/components/ui/alert';
-
-type AccountType = 'domestic' | 'international';
 
 interface WithdrawalAccount {
   id: number;
-  account_type: AccountType;
+  account_type: string;
   real_name: string;
   created_at: string;
   // domestic
   id_card?: string;
   phone?: string;
   bank_card?: string;
-  // international
+  // international (legacy, display only)
   currency?: string;
   swift_account?: string;
 }
 
-type DialogStep = 'select' | 'domestic' | 'international';
-
 export default function WithdrawalAccountsPage() {
   const { t } = useTranslation();
+  const isMainlandCn = getIsMainlandCn();
 
   const domesticSchema = z.object({
     real_name: z.string().min(1, t('withdrawalAccounts.fieldRequired')),
@@ -87,19 +77,11 @@ export default function WithdrawalAccountsPage() {
       .regex(/^\d+$/, t('withdrawalAccounts.bankCardDigitsOnly')),
   });
 
-  const internationalSchema = z.object({
-    real_name: z.string().min(1, t('withdrawalAccounts.fieldRequired')),
-    currency: z.string().min(1, t('withdrawalAccounts.fieldRequired')),
-    swift_account: z.string().min(1, t('withdrawalAccounts.fieldRequired')),
-  });
-
   type DomesticFormValues = z.infer<typeof domesticSchema>;
-  type InternationalFormValues = z.infer<typeof internationalSchema>;
 
   const [accounts, setAccounts] = useState<WithdrawalAccount[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [step, setStep] = useState<DialogStep>('select');
   const [deleteTarget, setDeleteTarget] = useState<WithdrawalAccount | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -110,15 +92,6 @@ export default function WithdrawalAccountsPage() {
       id_card: '',
       phone: '',
       bank_card: '',
-    },
-  });
-
-  const internationalForm = useForm<InternationalFormValues>({
-    resolver: zodResolver(internationalSchema),
-    defaultValues: {
-      real_name: '',
-      currency: 'USD',
-      swift_account: '',
     },
   });
 
@@ -139,26 +112,17 @@ export default function WithdrawalAccountsPage() {
   }, [fetchAccounts]);
 
   function openCreateDialog() {
-    setStep('select');
     domesticForm.reset({
       real_name: '',
       id_card: '',
       phone: '',
       bank_card: '',
     });
-    internationalForm.reset({
-      real_name: '',
-      currency: 'USD',
-      swift_account: '',
-    });
     setDialogOpen(true);
   }
 
   function handleDialogOpenChange(open: boolean) {
     setDialogOpen(open);
-    if (!open) {
-      setStep('select');
-    }
   }
 
   async function submitDomestic(values: DomesticFormValues) {
@@ -170,7 +134,6 @@ export default function WithdrawalAccountsPage() {
       });
       toast.success(t('withdrawalAccounts.addSuccess'));
       setDialogOpen(false);
-      setStep('select');
       await fetchAccounts();
     } catch (error: unknown) {
       const apiError = getApiError(error);
@@ -179,25 +142,6 @@ export default function WithdrawalAccountsPage() {
       } else {
         toast.error(apiError.message || t('common.operationFailed'));
       }
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  async function submitInternational(values: InternationalFormValues) {
-    setIsSubmitting(true);
-    try {
-      await api.post('/me/withdrawal-accounts', {
-        account_type: 'international',
-        ...values,
-      });
-      toast.success(t('withdrawalAccounts.addSuccess'));
-      setDialogOpen(false);
-      setStep('select');
-      await fetchAccounts();
-    } catch (error: unknown) {
-      const apiError = getApiError(error);
-      toast.error(apiError.message || t('common.operationFailed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -213,6 +157,16 @@ export default function WithdrawalAccountsPage() {
       const apiError = getApiError(error);
       toast.error(apiError.message || t('withdrawalAccounts.deleteFailed'));
     }
+  }
+
+  if (!isMainlandCn) {
+    return (
+      <div className="mx-auto max-w-2xl py-16 px-4 text-center">
+        <Wallet className="mx-auto size-10 text-muted-foreground mb-3" />
+        <h1 className="text-xl font-semibold mb-2">{t('withdrawalAccounts.title')}</h1>
+        <p className="text-muted-foreground">{t('withdrawalAccounts.regionNotSupported')}</p>
+      </div>
+    );
   }
 
   if (isLoading) {
@@ -324,217 +278,94 @@ export default function WithdrawalAccountsPage() {
         </div>
       )}
 
-      {/* 添加账号 Dialog */}
+      {/* 添加国内提现账号 Dialog */}
       <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>
-              {step === 'select'
-                ? t('withdrawalAccounts.selectType')
-                : t('withdrawalAccounts.addAccount')}
-            </DialogTitle>
+            <DialogTitle>{t('withdrawalAccounts.addAccount')}</DialogTitle>
           </DialogHeader>
 
-          {step === 'select' && (
-            <div className="grid grid-cols-2 gap-3 py-2">
-              <button
-                type="button"
-                onClick={() => setStep('domestic')}
-                className="flex flex-col items-center justify-center gap-2 rounded-lg border border-border bg-card p-6 text-sm font-medium hover:border-primary hover:bg-primary/5 transition-colors"
-              >
-                <span className="text-base">{t('withdrawalAccounts.typeDomestic')}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setStep('international')}
-                className="flex flex-col items-center justify-center gap-2 rounded-lg border border-border bg-card p-6 text-sm font-medium hover:border-primary hover:bg-primary/5 transition-colors"
-              >
-                <span className="text-base">{t('withdrawalAccounts.typeInternational')}</span>
-              </button>
-            </div>
-          )}
-
-          {step === 'domestic' && (
-            <Form {...domesticForm}>
-              <form
-                onSubmit={domesticForm.handleSubmit(submitDomestic)}
-                className="space-y-4"
-              >
-                <p className="text-sm text-muted-foreground">
-                  {t('withdrawalAccounts.domesticNotice')}
-                </p>
-                <div className="flex justify-center">
-                  <img
-                    src="/withdraw-qrcode.png"
-                    alt="withdraw qrcode"
-                    className="size-40 rounded-md border"
-                  />
-                </div>
-                <FormField
-                  control={domesticForm.control}
-                  name="real_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('withdrawalAccounts.realName')}</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+          <Form {...domesticForm}>
+            <form
+              onSubmit={domesticForm.handleSubmit(submitDomestic)}
+              className="space-y-4"
+            >
+              <p className="text-sm text-muted-foreground">
+                {t('withdrawalAccounts.domesticNotice')}
+              </p>
+              <div className="flex justify-center">
+                <img
+                  src="/withdraw-qrcode.png"
+                  alt="withdraw qrcode"
+                  className="size-40 rounded-md border"
                 />
-                <FormField
-                  control={domesticForm.control}
-                  name="id_card"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('withdrawalAccounts.idCard')}</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={domesticForm.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('withdrawalAccounts.phone')}</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={domesticForm.control}
-                  name="bank_card"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('withdrawalAccounts.bankCard')}</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Alert variant="destructive">
-                  <AlertTriangle />
-                  <AlertDescription>
-                    {t('withdrawalAccounts.infoConsistencyWarning')}
-                  </AlertDescription>
-                </Alert>
-                <DialogFooter className="gap-2 sm:justify-between">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => setStep('select')}
-                  >
-                    <ArrowLeft className="size-4" />
-                    {t('withdrawalAccounts.back')}
-                  </Button>
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting && <Loader2 className="size-4 animate-spin" />}
-                    {t('withdrawalAccounts.submit')}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          )}
-
-          {step === 'international' && (
-            <Form {...internationalForm}>
-              <form
-                onSubmit={internationalForm.handleSubmit(submitInternational)}
-                className="space-y-4"
-              >
-                <p className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
-                  <span>{t('withdrawalAccounts.internationalNotice')}</span>
-                  <a
-                    href="#"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary underline underline-offset-2"
-                  >
-                    {t('withdrawalAccounts.goSign')}
-                  </a>
-                </p>
-                <FormField
-                  control={internationalForm.control}
-                  name="real_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('withdrawalAccounts.realName')}</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={internationalForm.control}
-                  name="currency"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('withdrawalAccounts.currency')}</FormLabel>
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="w-full">
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="USD">USD</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={internationalForm.control}
-                  name="swift_account"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('withdrawalAccounts.swiftAccount')}</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Alert variant="destructive">
-                  <AlertTriangle />
-                  <AlertDescription>
-                    {t('withdrawalAccounts.infoConsistencyWarning')}
-                  </AlertDescription>
-                </Alert>
-                <DialogFooter className="gap-2 sm:justify-between">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => setStep('select')}
-                  >
-                    <ArrowLeft className="size-4" />
-                    {t('withdrawalAccounts.back')}
-                  </Button>
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting && <Loader2 className="size-4 animate-spin" />}
-                    {t('withdrawalAccounts.submit')}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          )}
+              </div>
+              <FormField
+                control={domesticForm.control}
+                name="real_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('withdrawalAccounts.realName')}</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={domesticForm.control}
+                name="id_card"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('withdrawalAccounts.idCard')}</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={domesticForm.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('withdrawalAccounts.phone')}</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={domesticForm.control}
+                name="bank_card"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('withdrawalAccounts.bankCard')}</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Alert variant="destructive">
+                <AlertTriangle />
+                <AlertDescription>
+                  {t('withdrawalAccounts.infoConsistencyWarning')}
+                </AlertDescription>
+              </Alert>
+              <DialogFooter>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting && <Loader2 className="size-4 animate-spin" />}
+                  {t('withdrawalAccounts.submit')}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
 

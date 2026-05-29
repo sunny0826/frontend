@@ -429,7 +429,8 @@
     "withdrawalRecords": "提现记录",
     "amount": "金额",
     "status": "状态",
-    "createdAt": "申请时间"
+    "createdAt": "申请时间",
+    "regionNotSupported": "提现功能仅限中国大陆地区使用。"
   },
   "withdrawalAccounts": {
     "title": "提现账号",
@@ -459,7 +460,8 @@
         "bankCardDigitsOnly": "银行卡号只能包含数字，不能有空格或其他字符",
     "back": "返回",
     "submit": "保存",
-    "notSignedError": "尚未完成签约，请先签约。签约完成后五分钟方可进行绑定，请稍候。"
+    "notSignedError": "尚未完成签约，请先签约。签约完成后五分钟方可进行绑定，请稍候。",
+    "regionNotSupported": "提现账号功能仅限中国大陆地区使用。"
   },
   "shop": {
     "title": "积分商城",
@@ -663,7 +665,8 @@
     "enterDistrict": "请输入区/县",
     "enterAddress": "请输入详细地址",
     "saveBtn": "保存修改",
-    "addBtn": "添加"
+    "addBtn": "添加",
+    "regionNotSupported": "收货地址功能仅限中国大陆地区使用。"
   },
   "accountMerge": {
     "title": "账号合并",

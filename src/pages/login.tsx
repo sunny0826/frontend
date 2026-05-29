@@ -4,17 +4,22 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Github, Loader2 } from 'lucide-react';
 import { readRedirectFromParams, stashSocialRedirect } from '@/lib/redirect';
+import { storeIsMainlandCn } from '@/lib/geo';
+import api from '@/lib/api';
 import { Button } from '@/app/components/ui/button';
 import { AgreementCheckbox } from '@/components/agreement-checkbox';
 
 // 登录页支持的三方登录提供商：仅保留 GitHub 与 AtomGit。
-// 其它后端配置仍然保留（用于已绑定历史账号），但登录入口仅展示这两个。
+// 默认仅展示 GitHub；若后端 /common/region 接口判定当前 IP 来自中国大陆，再额外展示 AtomGit。
 // 增减项需同步：
 //   1) backend/accounts/api_v1.py:SOCIAL_PROVIDERS
 //   2) backend/config/settings.py 中对应平台的 KEY/SECRET 环境变量
 //   3) 下方 getProviderDisplayName / getProviderIcon / getProviderLabel / getProviderClassName
-const ENABLED_SOCIAL_PROVIDERS = ['github', 'atomgit'] as const;
-type EnabledSocialProvider = (typeof ENABLED_SOCIAL_PROVIDERS)[number];
+const ALL_SOCIAL_PROVIDERS = ['github', 'atomgit'] as const;
+type EnabledSocialProvider = (typeof ALL_SOCIAL_PROVIDERS)[number];
+
+// 默认仅展示 GitHub；区域检测失败或非中国大陆 IP 时保持此默认。
+const DEFAULT_VISIBLE_PROVIDERS: readonly EnabledSocialProvider[] = ['github'];
 
 function AtomGitIcon({ className }: { className?: string }) {
   return (
@@ -32,7 +37,11 @@ export default function LoginPage() {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const [agreed, setAgreed] = useState(false);
+  const [agreementHighlight, setAgreementHighlight] = useState(false);
   const [socialLoading, setSocialLoading] = useState<EnabledSocialProvider | null>(null);
+  // 默认仅显示 GitHub；下方 useEffect 通过后端区域检测决定是否追加 AtomGit。
+  const [visibleProviders, setVisibleProviders] =
+    useState<readonly EnabledSocialProvider[]>(DEFAULT_VISIBLE_PROVIDERS);
 
   // 从 URL 参数读取登录后跳转目标；未提供或不合法时默认 /insight
   const redirectTarget = readRedirectFromParams(searchParams) ?? '/insight';
@@ -46,9 +55,34 @@ export default function LoginPage() {
     return () => window.removeEventListener('pageshow', handlePageShow);
   }, []);
 
+  // 后端基于 IP 判断是否为中国大陆访问者；命中时追加展示 AtomGit 入口。
+  // 接口不可用、非中国大陆、或网络错误时均保持默认（仅 GitHub）。
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .get<{ is_mainland_cn: boolean | null }>('/common/region')
+      .then((res) => {
+        if (cancelled) return;
+        const isMainland = res.data?.is_mainland_cn;
+        // 持久化到 localStorage，登录后其他页面据此决定是否展示提现功能
+        storeIsMainlandCn(isMainland ?? null);
+        if (isMainland === true) {
+          setVisibleProviders(['github', 'atomgit']);
+        }
+      })
+      .catch(() => {
+        // 静默失败：保持默认仅 GitHub
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   function handleSocialLogin(provider: EnabledSocialProvider) {
     if (!agreed) {
       toast.error(t('auth.agreementRequired'));
+      setAgreementHighlight(true);
+      setTimeout(() => setAgreementHighlight(false), 3000);
       return;
     }
     if (socialLoading) return;
@@ -94,10 +128,8 @@ export default function LoginPage() {
         <p className="text-sm text-muted-foreground">{t('auth.loginSubtitle')}</p>
       </div>
 
-      <AgreementCheckbox checked={agreed} onCheckedChange={setAgreed} />
-
       <div className="grid gap-2">
-        {ENABLED_SOCIAL_PROVIDERS.map((id) => {
+        {visibleProviders.map((id) => {
           const isCurrentLoading = socialLoading === id;
           return (
             <Button
@@ -118,6 +150,8 @@ export default function LoginPage() {
           );
         })}
       </div>
+
+      <AgreementCheckbox checked={agreed} onCheckedChange={setAgreed} highlight={agreementHighlight} />
 
       {socialLoading && (
         <div

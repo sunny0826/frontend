@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/auth-context';
 import { Logo } from '@/app/components/logo';
+import { getIsMainlandCn, hasGeoStored, storeIsMainlandCn } from '@/lib/geo';
 import api from '@/lib/api';
 import {
   User,
@@ -59,6 +60,37 @@ export function AppLayout() {
     location.pathname.startsWith('/settings')
   );
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isMainlandCn, setIsMainlandCn] = useState(() => getIsMainlandCn());
+
+  // 若 localStorage 中尚无地理信息（如部署前已登录的用户），主动获取一次
+  useEffect(() => {
+    if (hasGeoStored()) return;
+    api
+      .get<{ is_mainland_cn: boolean | null }>('/common/region')
+      .then((res) => {
+        const val = res.data?.is_mainland_cn ?? null;
+        storeIsMainlandCn(val);
+        setIsMainlandCn(val === true);
+      })
+      .catch(() => {
+        // 静默失败，默认不展示提现功能
+      });
+  }, []);
+
+  // 根据地理信息过滤导航项：非大陆 IP 时隐藏提现账号和收货地址入口
+  const filteredNavItems = useMemo(() => {
+    if (isMainlandCn) return navItems;
+    const hiddenPaths = ['/settings/withdrawal-accounts', '/settings/addresses'];
+    return navItems.map((item) => {
+      if (!item.children) return item;
+      return {
+        ...item,
+        children: item.children.filter(
+          (child) => !hiddenPaths.includes(child.path)
+        ),
+      };
+    });
+  }, [isMainlandCn]);
 
 
   useEffect(() => {
@@ -176,7 +208,7 @@ export function AppLayout() {
       {/* Navigation */}
       <nav className="dark-scrollbar flex-1 overflow-y-auto px-3 py-4" aria-label={t('header.menu')}>
         <ul className="space-y-1.5">
-          {navItems.map((item) => {
+          {filteredNavItems.map((item) => {
             const active = isActive(item.path);
 
             return (

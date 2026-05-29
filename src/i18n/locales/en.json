@@ -429,7 +429,8 @@
     "withdrawalRecords": "Withdrawal Records",
     "amount": "Amount",
     "status": "Status",
-    "createdAt": "Applied At"
+    "createdAt": "Applied At",
+    "regionNotSupported": "Withdrawals are only available in mainland China."
   },
   "withdrawalAccounts": {
     "title": "Withdrawal Accounts",
@@ -459,7 +460,8 @@
         "bankCardDigitsOnly": "Bank card number must contain only digits, no spaces or other characters",
     "back": "Back",
     "submit": "Save",
-    "notSignedError": "You have not completed signing. Please sign up first. Binding is available 5 minutes after signing, please wait."
+    "notSignedError": "You have not completed signing. Please sign up first. Binding is available 5 minutes after signing, please wait.",
+    "regionNotSupported": "Withdrawal accounts are only available in mainland China."
   },
   "shop": {
     "title": "Points Shop",
@@ -663,7 +665,8 @@
     "enterDistrict": "Please enter district",
     "enterAddress": "Please enter detailed address",
     "saveBtn": "Save Changes",
-    "addBtn": "Add"
+    "addBtn": "Add",
+    "regionNotSupported": "Shipping addresses are only available in mainland China."
   },
   "accountMerge": {
     "title": "Account Merge",
