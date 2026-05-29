@@ -1,16 +1,18 @@
-import { lazy, Suspense, useEffect, type ReactNode } from 'react';
-import { createBrowserRouter, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { AuthProvider } from '@/contexts/auth-context';
+import { lazy, type ReactNode } from 'react';
+import { createBrowserRouter } from 'react-router-dom';
 import { ProtectedRoute } from '@/components/protected-route';
 import { AuthLayout } from '@/layouts/auth-layout';
 import { AppLayout } from '@/layouts/app-layout';
-import { initLocalhostGeoOverride, hasLocalhostOverride } from '@/lib/geo';
+import { RootLayout, LazyElement } from '@/app/router-elements';
 
 // Landing page
 import App from '@/app/App';
 
+// 登录页是认证入口，几乎所有未登录用户都会经过；同步加载避免 Suspense fallback
+// 在 AuthLayout 卡片内渲染高度为 min-h-dvh 的 PageLoader，从而撑出过高的占位框。
+import LoginPage from '@/pages/login';
+
 // Public pages
-const LoginPage = lazy(() => import('@/pages/login'));
 const SocialCallbackPage = lazy(() => import('@/pages/social-callback'));
 const PublicProfilePage = lazy(() => import('@/pages/public-profile'));
 
@@ -39,49 +41,8 @@ const TalentReachPage = lazy(() => import('@/pages/talent-reach'));
 const InsightPage = lazy(() => import('../pages/insight/index'));
 const InsightDispatcher = lazy(() => import('../pages/insight/insight-dispatcher'));
 
-// Root layout with AuthProvider
-function RootLayout() {
-  // 初始化 localhost 开发覆盖（仅首次渲染时检测 URL 参数）
-  initLocalhostGeoOverride();
-
-  return (
-    <AuthProvider>
-      <GeoParamSync />
-      <Outlet />
-    </AuthProvider>
-  );
-}
-
-/**
- * 开发环境专用：在 localhost 上当 is_mainland_cn 覆盖生效时，
- * 每次路由变化自动将 ?is_mainland_cn=1 追加到 URL，防止导航后参数丢失。
- * 生产环境不渲染任何内容。
- */
-function GeoParamSync() {
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!hasLocalhostOverride()) return;
-    const params = new URLSearchParams(location.search);
-    if (params.get('is_mainland_cn') === '1') return; // 已存在，无需操作
-    params.set('is_mainland_cn', '1');
-    navigate(`${location.pathname}?${params.toString()}${location.hash}`, { replace: true });
-  }, [location.pathname, location.search, location.hash, navigate]);
-
-  return null;
-}
-
-function PageLoader() {
-  return (
-    <div className="flex min-h-dvh items-center justify-center bg-background text-sm text-muted-foreground">
-      Loading...
-    </div>
-  );
-}
-
 function lazyElement(element: ReactNode) {
-  return <Suspense fallback={<PageLoader />}>{element}</Suspense>;
+  return <LazyElement>{element}</LazyElement>;
 }
 
 export const router = createBrowserRouter([
@@ -101,7 +62,7 @@ export const router = createBrowserRouter([
       {
         element: <AuthLayout />,
         children: [
-          { path: '/login', element: lazyElement(<LoginPage />) },
+          { path: '/login', element: <LoginPage /> },
         ],
       },
 

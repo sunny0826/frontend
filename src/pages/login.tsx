@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Github, Loader2 } from 'lucide-react';
 import { readRedirectFromParams, stashSocialRedirect } from '@/lib/redirect';
-import { storeIsMainlandCn } from '@/lib/geo';
+import { storeIsMainlandCn, hasLocalhostOverride } from '@/lib/geo';
 import api from '@/lib/api';
 import { Button } from '@/app/components/ui/button';
 import { AgreementCheckbox } from '@/components/agreement-checkbox';
@@ -57,7 +57,15 @@ export default function LoginPage() {
 
   // 后端基于 IP 判断是否为中国大陆访问者；命中时追加展示 AtomGit 入口。
   // 接口不可用、非中国大陆、或网络错误时均保持默认（仅 GitHub）。
+  // localhost 环境下支持 ?is_mainland_cn=1 参数覆盖（见 geo.ts）。
   useEffect(() => {
+    // localhost 开发覆盖：直接展示 AtomGit，无需等待后端响应
+    if (hasLocalhostOverride()) {
+      setVisibleProviders(['github', 'atomgit']);
+      storeIsMainlandCn(true);
+      return;
+    }
+
     let cancelled = false;
     api
       .get<{ is_mainland_cn: boolean | null }>('/common/region')

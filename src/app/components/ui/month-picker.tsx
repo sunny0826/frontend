@@ -66,6 +66,7 @@ const MonthPicker = React.forwardRef<HTMLInputElement, MonthPickerProps>(
   ) => {
     const { t } = useTranslation();
     const [open, setOpen] = React.useState(false);
+    const [yearSelectMode, setYearSelectMode] = React.useState(false);
     const inputRef = React.useRef<HTMLInputElement>(null);
     const translatedMonthLabels = t("common.months", {
       returnObjects: true,
@@ -90,6 +91,12 @@ const MonthPicker = React.forwardRef<HTMLInputElement, MonthPickerProps>(
       return new Date().getFullYear();
     });
 
+    // 年份选择面板的起始年份（每页显示12年）
+    const YEAR_PAGE_SIZE = 12;
+    const [yearPageStart, setYearPageStart] = React.useState<number>(
+      () => displayYear - (displayYear % YEAR_PAGE_SIZE),
+    );
+
     // 当 value 变化时同步 displayYear
     React.useEffect(() => {
       if (value) {
@@ -97,6 +104,13 @@ const MonthPicker = React.forwardRef<HTMLInputElement, MonthPickerProps>(
         if (!isNaN(y)) setDisplayYear(y);
       }
     }, [value]);
+
+    // Popover 打开时重置为月份视图
+    React.useEffect(() => {
+      if (open) {
+        setYearSelectMode(false);
+      }
+    }, [open]);
 
     // 解析 min/max 为年月
     const minYear = min ? parseInt(min.split("-")[0], 10) : null;
@@ -113,6 +127,32 @@ const MonthPicker = React.forwardRef<HTMLInputElement, MonthPickerProps>(
     // 判断年份导航按钮是否禁用
     const isPrevYearDisabled = minYear !== null && displayYear <= minYear;
     const isNextYearDisabled = maxYear !== null && displayYear >= maxYear;
+
+    // 判断年份选择面板中某个年份是否禁用
+    const isYearDisabled = (year: number): boolean => {
+      if (minYear !== null && year < minYear) return true;
+      if (maxYear !== null && year > maxYear) return true;
+      return false;
+    };
+
+    // 年份选择面板翻页是否禁用
+    const isPrevYearPageDisabled =
+      minYear !== null && yearPageStart <= minYear;
+    const isNextYearPageDisabled =
+      maxYear !== null && yearPageStart + YEAR_PAGE_SIZE - 1 >= maxYear;
+
+    // 选择年份
+    const handleSelectYear = (year: number) => {
+      if (isYearDisabled(year)) return;
+      setDisplayYear(year);
+      setYearSelectMode(false);
+    };
+
+    // 进入年份选择模式
+    const enterYearSelectMode = () => {
+      setYearPageStart(displayYear - (displayYear % YEAR_PAGE_SIZE));
+      setYearSelectMode(true);
+    };
 
     // 当前选中的年月
     const selectedYear = value ? parseInt(value.split("-")[0], 10) : null;
@@ -218,62 +258,132 @@ const MonthPicker = React.forwardRef<HTMLInputElement, MonthPickerProps>(
           </PopoverTrigger>
 
           <PopoverContent className="w-64 p-3" align="start">
-            {/* 年份导航 */}
-            <div className="flex items-center justify-between mb-3">
-              <button
-                type="button"
-                disabled={isPrevYearDisabled}
-                onClick={() => setDisplayYear((y) => y - 1)}
-                className="flex size-10 items-center justify-center rounded-md transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50"
-                aria-label={t("common.previousYear")}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-              <span className="text-sm font-medium">{displayYear}</span>
-              <button
-                type="button"
-                disabled={isNextYearDisabled}
-                onClick={() => setDisplayYear((y) => y + 1)}
-                className="flex size-10 items-center justify-center rounded-md transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50"
-                aria-label={t("common.nextYear")}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            </div>
-
-            {/* 3x4 月份网格 */}
-            <div className="grid grid-cols-3 gap-1.5">
-              {monthLabels.map((label, i) => {
-                const month = i + 1;
-                const isDisabled = isMonthDisabled(month);
-                const isSelected =
-                  selectedYear === displayYear && selectedMonth === month;
-                const monthLabel = t("common.monthYear", {
-                  year: displayYear,
-                  month: label,
-                });
-
-                return (
+            {yearSelectMode ? (
+              <>
+                {/* 年份选择面板 - 导航 */}
+                <div className="flex items-center justify-between mb-3">
                   <button
-                    key={month}
                     type="button"
-                    disabled={isDisabled}
-                    onClick={() => handleSelectMonth(month)}
-                    aria-label={monthLabel}
-                    className={cn(
-                      "min-h-10 rounded-md text-sm transition-colors cursor-pointer",
-                      "hover:bg-accent hover:text-accent-foreground",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      "disabled:pointer-events-none disabled:opacity-50",
-                      isSelected &&
-                        "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground",
-                    )}
+                    disabled={isPrevYearPageDisabled}
+                    onClick={() =>
+                      setYearPageStart((s) => s - YEAR_PAGE_SIZE)
+                    }
+                    className="flex size-10 items-center justify-center rounded-md transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50"
+                    aria-label={t("common.previousYear")}
                   >
-                    {label}
+                    <ChevronLeft className="h-4 w-4" />
                   </button>
-                );
-              })}
-            </div>
+                  <span className="text-sm font-medium">
+                    {yearPageStart} - {yearPageStart + YEAR_PAGE_SIZE - 1}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={isNextYearPageDisabled}
+                    onClick={() =>
+                      setYearPageStart((s) => s + YEAR_PAGE_SIZE)
+                    }
+                    className="flex size-10 items-center justify-center rounded-md transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50"
+                    aria-label={t("common.nextYear")}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+
+                {/* 3x4 年份网格 */}
+                <div className="grid grid-cols-3 gap-1.5">
+                  {Array.from({ length: YEAR_PAGE_SIZE }, (_, i) => {
+                    const year = yearPageStart + i;
+                    const isDisabled = isYearDisabled(year);
+                    const isSelected = displayYear === year;
+
+                    return (
+                      <button
+                        key={year}
+                        type="button"
+                        disabled={isDisabled}
+                        onClick={() => handleSelectYear(year)}
+                        aria-label={String(year)}
+                        className={cn(
+                          "min-h-10 rounded-md text-sm transition-colors cursor-pointer",
+                          "hover:bg-accent hover:text-accent-foreground",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          "disabled:pointer-events-none disabled:opacity-50",
+                          isSelected &&
+                            "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground",
+                        )}
+                      >
+                        {year}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            ) : (
+              <>
+                {/* 年份导航 */}
+                <div className="flex items-center justify-between mb-3">
+                  <button
+                    type="button"
+                    disabled={isPrevYearDisabled}
+                    onClick={() => setDisplayYear((y) => y - 1)}
+                    className="flex size-10 items-center justify-center rounded-md transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50"
+                    aria-label={t("common.previousYear")}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={enterYearSelectMode}
+                    className="text-sm font-medium rounded-md px-2 py-1 transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                  >
+                    {displayYear}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isNextYearDisabled}
+                    onClick={() => setDisplayYear((y) => y + 1)}
+                    className="flex size-10 items-center justify-center rounded-md transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50"
+                    aria-label={t("common.nextYear")}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+
+                {/* 3x4 月份网格 */}
+                <div className="grid grid-cols-3 gap-1.5">
+                  {monthLabels.map((label, i) => {
+                    const month = i + 1;
+                    const isDisabled = isMonthDisabled(month);
+                    const isSelected =
+                      selectedYear === displayYear && selectedMonth === month;
+                    const monthLabel = t("common.monthYear", {
+                      year: displayYear,
+                      month: label,
+                    });
+
+                    return (
+                      <button
+                        key={month}
+                        type="button"
+                        disabled={isDisabled}
+                        onClick={() => handleSelectMonth(month)}
+                        aria-label={monthLabel}
+                        className={cn(
+                          "min-h-10 rounded-md text-sm transition-colors cursor-pointer",
+                          "hover:bg-accent hover:text-accent-foreground",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          "disabled:pointer-events-none disabled:opacity-50",
+                          isSelected &&
+                            "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground",
+                        )}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </PopoverContent>
         </Popover>
       </>
