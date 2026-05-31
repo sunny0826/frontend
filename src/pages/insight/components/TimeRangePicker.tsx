@@ -10,6 +10,9 @@ const MONTH_SHORT_NAMES: Record<Lang, readonly string[]> = {
   en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
 };
 
+/** Number of years displayed per page in the year-grid quick-select view */
+const YEAR_PAGE_SIZE = 12;
+
 type Props = {
   meta: LeaderboardMeta | null;
   timeType: 'month' | 'year';
@@ -53,6 +56,36 @@ export function TimeRangePicker({
 
   const bounds: TimeBounds = boundsOverride ?? getTimeBounds(meta);
 
+  // Year currently associated with the committed timeValue
+  const valueYear = (() => {
+    const raw =
+      timeType === 'year'
+        ? parseInt(timeValue || String(bounds.maxYear), 10)
+        : parseInt((timeValue || bounds.maxMonth).split('-')[0], 10);
+    return Number.isFinite(raw) ? raw : bounds.maxYear;
+  })();
+
+  // displayYear: the year shown inside the dropdown's month/year grids.
+  // Internal navigation only updates this state, NOT the committed timeValue,
+  // so panel browsing does NOT trigger a leaderboard refresh.
+  const [displayYear, setDisplayYear] = useState<number>(valueYear);
+  // Whether the dropdown body shows the year-grid quick-select view
+  const [yearSelectMode, setYearSelectMode] = useState<boolean>(timeType === 'year');
+  // Leftmost year of the current year-grid page (12 years per page)
+  const [yearPageStart, setYearPageStart] = useState<number>(
+    () => valueYear - (((valueYear % YEAR_PAGE_SIZE) + YEAR_PAGE_SIZE) % YEAR_PAGE_SIZE),
+  );
+
+  // Re-sync internal picker state whenever the dropdown opens, so reopening
+  // always starts from the currently committed value (not stale browsing state).
+  useEffect(() => {
+    if (!open) return;
+    setDisplayYear(valueYear);
+    setYearPageStart(valueYear - (((valueYear % YEAR_PAGE_SIZE) + YEAR_PAGE_SIZE) % YEAR_PAGE_SIZE));
+    setYearSelectMode(timeType === 'year');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
   const closeOnOutside = useCallback(
     (e: MouseEvent) => {
       const wrap = wrapRef.current;
@@ -72,9 +105,10 @@ export function TimeRangePicker({
     return () => document.removeEventListener('click', closeOnOutside, true);
   }, [open, closeOnOutside]);
 
+  // Outer arrows next to the display: keep the existing "step + commit" UX.
   const stepTime = (delta: number) => {
     if (timeType === 'year') {
-      const y = parseInt(timeValue || String(bounds.maxYear), 10);
+      const y = valueYear;
       if ((delta < 0 && y <= bounds.minYear) || (delta > 0 && y >= bounds.maxYear)) return;
       const ny = Math.max(bounds.minYear, Math.min(bounds.maxYear, y + delta));
       onValueChange(String(ny));
@@ -92,53 +126,74 @@ export function TimeRangePicker({
     onCommit();
   };
 
+  // Inner year arrows in month-grid header: only mutate displayYear, no commit.
   const stepYearInPicker = (delta: number) => {
-    if (timeType === 'year') {
-      const y = parseInt(timeValue || String(bounds.maxYear), 10);
-      if ((delta < 0 && y <= bounds.minYear) || (delta > 0 && y >= bounds.maxYear)) return;
-      const ny = Math.max(bounds.minYear, Math.min(bounds.maxYear, y + delta));
-      onValueChange(String(ny));
-    } else {
-      const [y, m] = (timeValue || bounds.maxMonth).split('-').map(Number);
-      if ((delta < 0 && y <= bounds.minYear) || (delta > 0 && y >= bounds.maxYear)) return;
-      const ny = Math.max(bounds.minYear, Math.min(bounds.maxYear, y + delta));
-      let val = `${ny}-${String(m).padStart(2, '0')}`;
-      if (val > bounds.maxMonth) val = bounds.maxMonth;
-      if (val < bounds.minMonth) val = bounds.minMonth;
-      onValueChange(val);
-    }
-    onCommit();
+    const ny = Math.max(bounds.minYear, Math.min(bounds.maxYear, displayYear + delta));
+    if (ny === displayYear) return;
+    setDisplayYear(ny);
   };
 
+  // Year-grid pagination (one page = 12 years), no commit.
+  const stepYearPage = (delta: number) => {
+    setYearPageStart((s) => s + delta * YEAR_PAGE_SIZE);
+  };
+
+  // Toggle from month-grid into year-grid quick-select, no commit.
+  const enterYearSelectMode = () => {
+    setYearPageStart(displayYear - (((displayYear % YEAR_PAGE_SIZE) + YEAR_PAGE_SIZE) % YEAR_PAGE_SIZE));
+    setYearSelectMode(true);
+  };
+
+  // Click a month in the month-grid: this is the commit point for month-type.
   const selectMonth = (month: number) => {
-    const year = (timeValue || bounds.maxMonth).split('-')[0];
     const m = String(month).padStart(2, '0');
-    const val = `${year}-${m}`;
+    const val = `${displayYear}-${m}`;
     if (val < bounds.minMonth || val > bounds.maxMonth) return;
     onValueChange(val);
     setOpen(false);
     onCommit();
   };
 
+  // Click a year in the year-grid:
+  //   - year-type: commit immediately (year is the final value)
+  //   - month-type: only update displayYear, return to month-grid (no commit)
+  const selectYearInGrid = (year: number) => {
+    if (year < bounds.minYear || year > bounds.maxYear) return;
+    if (timeType === 'year') {
+      onValueChange(String(year));
+      setOpen(false);
+      onCommit();
+    } else {
+      setDisplayYear(year);
+      setYearSelectMode(false);
+    }
+  };
+
   const prevDisabled =
     timeType === 'year'
-      ? parseInt(timeValue || String(bounds.maxYear), 10) <= bounds.minYear
+      ? valueYear <= bounds.minYear
       : (timeValue || bounds.maxMonth) <= bounds.minMonth;
-
   const nextDisabled =
     timeType === 'year'
-      ? parseInt(timeValue || String(bounds.maxYear), 10) >= bounds.maxYear
+      ? valueYear >= bounds.maxYear
       : (timeValue || bounds.maxMonth) >= bounds.maxMonth;
 
-  const pickerYear = timeType === 'year' ? timeValue : (timeValue || bounds.maxMonth).split('-')[0];
-  const yNum = parseInt(pickerYear, 10);
-  const prevYearDisabled = yNum <= bounds.minYear;
-  const nextYearDisabled = yNum >= bounds.maxYear;
+  // Inner header arrow disabled state depends on which view is shown
+  const prevYearDisabled = displayYear <= bounds.minYear;
+  const nextYearDisabled = displayYear >= bounds.maxYear;
+  const prevYearPageDisabled = yearPageStart <= bounds.minYear;
+  const nextYearPageDisabled = yearPageStart + YEAR_PAGE_SIZE - 1 >= bounds.maxYear;
 
   const monthNames = MONTH_SHORT_NAMES[normalizedLang] ?? MONTH_SHORT_NAMES.en;
   const currentMonth =
     timeType === 'month' ? parseInt((timeValue || '').split('-')[1] || '0', 10) || 0 : 0;
-  const yearForGrid = (timeValue || bounds.maxMonth).split('-')[0];
+  // Selected year used for highlighting in the year-grid / month-grid
+  const selectedYearForHighlight = timeValue
+    ? timeType === 'year'
+      ? parseInt(timeValue, 10) || null
+      : parseInt(timeValue.split('-')[0], 10) || null
+    : null;
+  const yearGridYears = Array.from({ length: YEAR_PAGE_SIZE }, (_, i) => yearPageStart + i);
 
   return (
     <div>
@@ -213,60 +268,110 @@ export function TimeRangePicker({
             <button
               type="button"
               aria-label={t('insight.ariaPickerPreviousYear')}
-              disabled={prevYearDisabled}
+              disabled={yearSelectMode ? prevYearPageDisabled : prevYearDisabled}
               onClick={(e) => {
                 e.stopPropagation();
-                stepYearInPicker(-1);
+                if (yearSelectMode) stepYearPage(-1);
+                else stepYearInPicker(-1);
               }}
               className={`time-picker-arrow flex cursor-pointer items-center justify-center rounded text-muted-foreground transition-colors hover:bg-secondary hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring ${dense ? 'size-9 sm:size-6' : 'size-8'}`}
             >
               <Icon icon="mdi:chevron-left" className={dense ? 'text-sm' : 'text-lg'} aria-hidden />
             </button>
-            <span className={`flex-1 text-center font-medium text-foreground ${dense ? 'text-xs' : 'text-sm'}`}>
-              {timeType === 'year' ? timeValue : (timeValue || bounds.maxMonth).split('-')[0]}
-            </span>
+            {yearSelectMode ? (
+              <span
+                className={`flex-1 text-center font-medium text-foreground ${dense ? 'text-xs' : 'text-sm'}`}
+              >
+                {`${yearPageStart} - ${yearPageStart + YEAR_PAGE_SIZE - 1}`}
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  enterYearSelectMode();
+                }}
+                className={`flex-1 cursor-pointer rounded text-center font-medium text-foreground transition-colors hover:bg-secondary hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring ${dense ? 'py-1 text-xs' : 'py-1 text-sm'}`}
+              >
+                {displayYear}
+              </button>
+            )}
             <button
               type="button"
               aria-label={t('insight.ariaPickerNextYear')}
-              disabled={nextYearDisabled}
+              disabled={yearSelectMode ? nextYearPageDisabled : nextYearDisabled}
               onClick={(e) => {
                 e.stopPropagation();
-                stepYearInPicker(1);
+                if (yearSelectMode) stepYearPage(1);
+                else stepYearInPicker(1);
               }}
               className={`time-picker-arrow flex cursor-pointer items-center justify-center rounded text-muted-foreground transition-colors hover:bg-secondary hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring ${dense ? 'size-9 sm:size-6' : 'size-8'}`}
             >
               <Icon icon="mdi:chevron-right" className={dense ? 'text-sm' : 'text-lg'} aria-hidden />
             </button>
           </div>
-          {timeType === 'month' && (
-            <div className="flex flex-wrap gap-1">
-              {monthNames.map((nm, i) => {
-                const month = i + 1;
-                const val = `${yearForGrid}-${String(month).padStart(2, '0')}`;
-                const isInRange = val >= bounds.minMonth && val <= bounds.maxMonth;
-                const isActive = month === currentMonth;
+          {yearSelectMode ? (
+            <div className="grid grid-cols-3 gap-1">
+              {yearGridYears.map((y) => {
+                const inRange = y >= bounds.minYear && y <= bounds.maxYear;
+                const isActive =
+                  selectedYearForHighlight !== null && y === selectedYearForHighlight;
                 return (
                   <button
-                    key={month}
+                    key={y}
                     type="button"
-                    disabled={!isInRange}
+                    disabled={!inRange}
                     aria-pressed={isActive}
                     onClick={(e) => {
                       e.stopPropagation();
-                      selectMonth(month);
+                      selectYearInGrid(y);
                     }}
                     className={
-                      'time-picker-month-btn cursor-pointer rounded focus:outline-none focus:ring-2 focus:ring-ring transition-colors duration-150 ' +
+                      'time-picker-year-btn cursor-pointer rounded focus:outline-none focus:ring-2 focus:ring-ring transition-colors duration-150 ' +
                       (isActive
                         ? 'border border-primary/50 bg-primary/10 text-primary'
                         : 'border border-border bg-background text-muted-foreground hover:bg-secondary hover:text-primary')
                     }
                   >
-                    {nm}
+                    {y}
                   </button>
                 );
               })}
             </div>
+          ) : (
+            timeType === 'month' && (
+              <div className="flex flex-wrap gap-1">
+                {monthNames.map((nm, i) => {
+                  const month = i + 1;
+                  const val = `${displayYear}-${String(month).padStart(2, '0')}`;
+                  const isInRange = val >= bounds.minMonth && val <= bounds.maxMonth;
+                  const isActive =
+                    month === currentMonth &&
+                    selectedYearForHighlight !== null &&
+                    displayYear === selectedYearForHighlight;
+                  return (
+                    <button
+                      key={month}
+                      type="button"
+                      disabled={!isInRange}
+                      aria-pressed={isActive}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        selectMonth(month);
+                      }}
+                      className={
+                        'time-picker-month-btn cursor-pointer rounded focus:outline-none focus:ring-2 focus:ring-ring transition-colors duration-150 ' +
+                        (isActive
+                          ? 'border border-primary/50 bg-primary/10 text-primary'
+                          : 'border border-border bg-background text-muted-foreground hover:bg-secondary hover:text-primary')
+                      }
+                    >
+                      {nm}
+                    </button>
+                  );
+                })}
+              </div>
+            )
           )}
         </div>
       </div>
