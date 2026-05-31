@@ -1,5 +1,5 @@
 import { Icon } from '@iconify/react/offline';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import type { Lang, LeaderboardMeta } from '../types/api';
 import { normalizeInsightLang } from '../domain/lang';
 import { formatTimeDisplay, getTimeBounds, type TimeBounds } from '../domain/timeRange';
@@ -43,6 +43,8 @@ export function TimeRangePicker({
 }: Props) {
   const normalizedLang = normalizeInsightLang(lang);
   const [open, setOpen] = useState(false);
+  const dropdownId = useId();
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     onOpenChange?.(open);
@@ -148,7 +150,16 @@ export function TimeRangePicker({
           <span>{t('insight.timeSelection')}</span>
         </label>
       ) : null}
-      <div ref={wrapRef} className="relative">
+      <div
+        ref={wrapRef}
+        className="relative"
+        onKeyDown={(e) => {
+          if (e.key !== 'Escape' || !open) return;
+          e.stopPropagation();
+          setOpen(false);
+          triggerRef.current?.focus();
+        }}
+      >
         <div
           className={`flex items-center overflow-hidden border border-border bg-background ${dense ? 'rounded-md' : 'rounded-lg'}`}
         >
@@ -160,17 +171,22 @@ export function TimeRangePicker({
               e.stopPropagation();
               stepTime(-1);
             }}
-            className={`time-picker-arrow flex flex-shrink-0 cursor-pointer items-center justify-center text-muted-foreground transition-colors hover:bg-secondary hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset ${dense ? 'size-7' : 'h-10 w-9'}`}
+            className={`time-picker-arrow flex flex-shrink-0 cursor-pointer items-center justify-center text-muted-foreground transition-colors hover:bg-secondary hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset ${dense ? 'size-10 sm:size-7' : 'h-10 w-9'}`}
           >
             <Icon icon="mdi:chevron-left" className={dense ? 'text-sm' : 'text-lg'} aria-hidden />
           </button>
           <button
+            ref={triggerRef}
             type="button"
+            aria-label={t('insight.timeSelection')}
+            aria-haspopup="dialog"
+            aria-expanded={open}
+            aria-controls={dropdownId}
             onClick={(e) => {
               e.stopPropagation();
               setOpen((o) => !o);
             }}
-            className={`flex min-w-0 flex-1 cursor-pointer items-center justify-center text-foreground transition-colors hover:bg-secondary/60 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset ${dense ? 'px-2 py-1 text-xs' : 'px-3 py-2.5 text-sm'}`}
+            className={`flex min-w-0 flex-1 cursor-pointer items-center justify-center text-foreground transition-colors hover:bg-secondary/60 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset ${dense ? 'min-h-10 px-2 py-1 text-xs sm:min-h-7' : 'px-3 py-2.5 text-sm'}`}
           >
             <span className="truncate">{formatTimeDisplay(timeValue, timeType, normalizedLang)}</span>
           </button>
@@ -182,12 +198,17 @@ export function TimeRangePicker({
               e.stopPropagation();
               stepTime(1);
             }}
-            className={`time-picker-arrow flex flex-shrink-0 cursor-pointer items-center justify-center text-muted-foreground transition-colors hover:bg-secondary hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset ${dense ? 'size-7' : 'h-10 w-9'}`}
+            className={`time-picker-arrow flex flex-shrink-0 cursor-pointer items-center justify-center text-muted-foreground transition-colors hover:bg-secondary hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset ${dense ? 'size-10 sm:size-7' : 'h-10 w-9'}`}
           >
             <Icon icon="mdi:chevron-right" className={dense ? 'text-sm' : 'text-lg'} aria-hidden />
           </button>
         </div>
-        <div className={`time-picker-dropdown ${open ? 'show' : ''}${dense ? ' time-picker-dropdown--dense' : ''}`}>
+        <div
+          id={dropdownId}
+          className={`time-picker-dropdown ${open ? 'show' : ''}${dense ? ' time-picker-dropdown--dense' : ''}`}
+          role="dialog"
+          aria-label={t('insight.timeSelection')}
+        >
           <div className={`flex items-center justify-between gap-2 ${dense ? 'mb-2' : 'mb-3'}`}>
             <button
               type="button"
@@ -197,7 +218,7 @@ export function TimeRangePicker({
                 e.stopPropagation();
                 stepYearInPicker(-1);
               }}
-              className={`time-picker-arrow flex cursor-pointer items-center justify-center rounded text-muted-foreground transition-colors hover:bg-secondary hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring ${dense ? 'size-6' : 'size-8'}`}
+              className={`time-picker-arrow flex cursor-pointer items-center justify-center rounded text-muted-foreground transition-colors hover:bg-secondary hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring ${dense ? 'size-9 sm:size-6' : 'size-8'}`}
             >
               <Icon icon="mdi:chevron-left" className={dense ? 'text-sm' : 'text-lg'} aria-hidden />
             </button>
@@ -212,7 +233,7 @@ export function TimeRangePicker({
                 e.stopPropagation();
                 stepYearInPicker(1);
               }}
-              className={`time-picker-arrow flex cursor-pointer items-center justify-center rounded text-muted-foreground transition-colors hover:bg-secondary hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring ${dense ? 'size-6' : 'size-8'}`}
+              className={`time-picker-arrow flex cursor-pointer items-center justify-center rounded text-muted-foreground transition-colors hover:bg-secondary hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring ${dense ? 'size-9 sm:size-6' : 'size-8'}`}
             >
               <Icon icon="mdi:chevron-right" className={dense ? 'text-sm' : 'text-lg'} aria-hidden />
             </button>
@@ -229,6 +250,7 @@ export function TimeRangePicker({
                     key={month}
                     type="button"
                     disabled={!isInRange}
+                    aria-pressed={isActive}
                     onClick={(e) => {
                       e.stopPropagation();
                       selectMonth(month);

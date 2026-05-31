@@ -1,4 +1,4 @@
-import * as echarts from 'echarts';
+import type { ECharts, EChartsOption } from 'echarts';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from 'next-themes';
@@ -11,6 +11,17 @@ type Props = {
   contributions: ContributionRow[];
 };
 
+type EChartsModule = typeof import('./contributionMapEcharts');
+
+let echartsLoader: Promise<EChartsModule> | null = null;
+
+function loadECharts() {
+  if (!echartsLoader) {
+    echartsLoader = import('./contributionMapEcharts');
+  }
+  return echartsLoader;
+}
+
 function readThemeColor(name: string, fallback: string): string {
   const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   return value || fallback;
@@ -21,8 +32,9 @@ export function ContributionMap({ contributions }: Props) {
   const { resolvedTheme } = useTheme();
   const lang = normalizeInsightLang(i18n.language);
   const containerRef = useRef<HTMLDivElement>(null);
-  const chartRef = useRef<echarts.ECharts | null>(null);
-  const optionRef = useRef<echarts.EChartsOption | null>(null);
+  const chartRef = useRef<ECharts | null>(null);
+  const optionRef = useRef<EChartsOption | null>(null);
+  const [shouldLoadMap, setShouldLoadMap] = useState(false);
   const [mapReady, setMapReady] = useState(false);
   const [loadError, setLoadError] = useState(false);
 
@@ -30,14 +42,34 @@ export function ContributionMap({ contributions }: Props) {
   const hasData = processed.length > 0;
 
   useEffect(() => {
+    if (!hasData || shouldLoadMap) return;
+    const container = containerRef.current;
+    if (!container) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShouldLoadMap(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '360px 0px' },
+    );
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [hasData, shouldLoadMap]);
+
+  useEffect(() => {
     setMapReady(false);
     setLoadError(false);
     const proc = preprocessContributions(contributions);
-    if (proc.length === 0) return;
+    if (proc.length === 0 || !shouldLoadMap) return;
 
     const container = containerRef.current;
     if (!container) return;
     let cancelled = false;
+    let chart: ECharts | null = null;
+    let onResize: (() => void) | null = null;
 
     const mapData = proc.map((c) => ({
       name: c.mapName,
@@ -56,18 +88,18 @@ export function ContributionMap({ contributions }: Props) {
     const secondaryColor = readThemeColor('--secondary', '#334155');
     const primaryColor = readThemeColor('--primary', '#22C55E');
 
-    const chart = echarts.init(container);
-    chartRef.current = chart;
-
-    const onResize = () => chart.resize();
-    window.addEventListener('resize', onResize);
-
-    fetch(WORLD_GEOJSON_URL)
-      .then((res) => res.json())
-      .then((worldJson) => {
+    Promise.all([
+      loadECharts(),
+      fetch(WORLD_GEOJSON_URL).then((res) => res.json()),
+    ])
+      .then(([{ echarts }, worldJson]) => {
         if (cancelled) return;
         echarts.registerMap('world', worldJson);
-        const option: echarts.EChartsOption = {
+        chart = echarts.init(container);
+        chartRef.current = chart;
+        onResize = () => chart?.resize();
+        window.addEventListener('resize', onResize);
+        const option: EChartsOption = {
           backgroundColor: 'transparent',
           tooltip: {
             trigger: 'item',
@@ -144,12 +176,12 @@ export function ContributionMap({ contributions }: Props) {
 
     return () => {
       cancelled = true;
-      window.removeEventListener('resize', onResize);
-      chart.dispose();
+      if (onResize) window.removeEventListener('resize', onResize);
+      chart?.dispose();
       chartRef.current = null;
       optionRef.current = null;
     };
-  }, [contributions, lang, resolvedTheme, t]);
+  }, [contributions, lang, resolvedTheme, shouldLoadMap, t]);
 
   const resetMap = () => {
     const chart = chartRef.current;
@@ -161,7 +193,7 @@ export function ContributionMap({ contributions }: Props) {
   };
 
   return (
-    <div className="relative flex-1 min-w-0" style={{ width: '60%' }}>
+    <div className="relative min-w-0 flex-1">
       {!hasData && (
         <div
           id="contributionMapContainer"
