@@ -435,7 +435,6 @@ export default function ProfilePage() {
     const rowKey = conn.social_auth_id ?? `${conn.provider}-${conn.uid ?? ''}`;
     const canUnbind = conn.is_connected && conn.social_auth_id !== null;
     const isDisconnecting = disconnectingId === conn.social_auth_id;
-    const style = options.style ?? 'default';
     const row = (
 
       <div

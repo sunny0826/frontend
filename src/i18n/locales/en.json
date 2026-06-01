@@ -19,6 +19,16 @@
     "monthYear": "{{month}} {{year}}",
     "months": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
   },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "description": "Sorry, this page failed to load or render. You can try again, or go back to the Insight page to keep exploring.",
+    "chunkTitle": "Network issue: failed to load page resources",
+    "chunkDescription": "Your network may be unstable, or a new version has been deployed. Please refresh the page to load the latest assets.",
+    "reload": "Refresh page",
+    "backToInsight": "Back to Insight",
+    "chunkToastTitle": "Failed to load page resources",
+    "chunkToastDescription": "Your network may be unstable, or a new version has been deployed. Please refresh to retry."
+  },
   "nav": {
     "profile": "Profile",
     "points": "Points Wallet",

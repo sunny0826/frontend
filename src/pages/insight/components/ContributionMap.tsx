@@ -1,4 +1,5 @@
-import type { ECharts, EChartsOption } from 'echarts';
+import type { EChartsType } from 'echarts/core';
+import type { EChartsOption } from 'echarts';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from 'next-themes';
@@ -32,7 +33,7 @@ export function ContributionMap({ contributions }: Props) {
   const { resolvedTheme } = useTheme();
   const lang = normalizeInsightLang(i18n.language);
   const containerRef = useRef<HTMLDivElement>(null);
-  const chartRef = useRef<ECharts | null>(null);
+  const chartRef = useRef<EChartsType | null>(null);
   const optionRef = useRef<EChartsOption | null>(null);
   const [shouldLoadMap, setShouldLoadMap] = useState(false);
   const [mapReady, setMapReady] = useState(false);
@@ -68,7 +69,7 @@ export function ContributionMap({ contributions }: Props) {
     const container = containerRef.current;
     if (!container) return;
     let cancelled = false;
-    let chart: ECharts | null = null;
+    let chart: EChartsType | null = null;
     let onResize: (() => void) | null = null;
 
     const mapData = proc.map((c) => ({
@@ -95,9 +96,10 @@ export function ContributionMap({ contributions }: Props) {
       .then(([{ echarts }, worldJson]) => {
         if (cancelled) return;
         echarts.registerMap('world', worldJson);
-        chart = echarts.init(container);
-        chartRef.current = chart;
-        onResize = () => chart?.resize();
+        const instance = echarts.init(container);
+        chart = instance;
+        chartRef.current = instance;
+        onResize = () => instance.resize();
         window.addEventListener('resize', onResize);
         const option: EChartsOption = {
           backgroundColor: 'transparent',
@@ -167,7 +169,7 @@ export function ContributionMap({ contributions }: Props) {
           ],
         };
         optionRef.current = option;
-        chart.setOption(option);
+        instance.setOption(option);
         setMapReady(true);
       })
       .catch(() => {

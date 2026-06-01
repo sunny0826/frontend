@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { fetchItemMeta, fetchLabelTrendData } from './api/openDiggerTrend';
 import { fetchCommunityOpenRankDetails } from './api/communityOpenRankDetails';

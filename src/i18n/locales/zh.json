@@ -19,6 +19,16 @@
     "monthYear": "{{year}}年{{month}}",
     "months": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"]
   },
+  "errorBoundary": {
+    "title": "页面遇到了一些问题",
+    "description": "抱歉，当前页面在加载或运行时出现异常。你可以重试，或先回到数据洞察页继续浏览。",
+    "chunkTitle": "网络异常，页面资源加载失败",
+    "chunkDescription": "可能是网络不稳定或站点已发布新版本。请刷新页面以加载最新资源；若问题持续，请检查网络后再试。",
+    "reload": "刷新页面",
+    "backToInsight": "返回数据洞察",
+    "chunkToastTitle": "页面资源加载失败",
+    "chunkToastDescription": "网络可能不稳定，或站点已发布新版本，请刷新页面重试。"
+  },
   "nav": {
     "profile": "个人中心",
     "points": "积分钱包",
