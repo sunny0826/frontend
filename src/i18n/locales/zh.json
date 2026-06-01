@@ -59,7 +59,7 @@
   },
   "hero": {
     "kicker": "开源价值网络",
-    "title.line1": "开源的世界里",
+    "title.line1": "在开源的世界里",
     "title.line2": "每一份贡献都值得回报",
     "description": "OpenShare 把跨平台贡献、开发者能力、组织需求与积分激励连接成一条可验证的价值协议，让开源影响力可以被发现、评估、连接并回馈。",
     "search.ariaLabel": "搜索仓库、开发者和标签",
@@ -219,7 +219,7 @@
     "company": "公司",
     "company.contact": "联系我们",
     "copyright": "© 2026 OpenShare. 保留所有权利。",
-    "slogan": "开源的世界里，每一份贡献都值得回报"
+    "slogan": "在开源的世界里，每一份贡献都值得回报"
   },
   "auth": {
     "login": "登录",

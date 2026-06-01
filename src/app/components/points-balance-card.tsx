@@ -51,9 +51,9 @@ export function PointsBalanceCard({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* 现金积分 */}
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800">
-              <div className="flex items-center justify-center size-10 rounded-full bg-emerald-100 dark:bg-emerald-900">
-                <Banknote className="size-5 text-emerald-600 dark:text-emerald-400" />
+            <div className="flex items-center gap-3 p-3 rounded-lg border border-chart-2/25 bg-chart-2/10">
+              <div className="flex items-center justify-center size-10 rounded-full bg-chart-2/15">
+                <Banknote className="size-5 text-chart-2" />
               </div>
               <div>
                 <div className="flex items-center gap-1">
@@ -73,20 +73,20 @@ export function PointsBalanceCard({
                     </TooltipContent>
                   </Tooltip>
                 </div>
-                <p className="text-xl font-semibold text-emerald-700 dark:text-emerald-300">
+                <p className="text-xl font-semibold text-chart-2">
                   {balance.cash.toLocaleString()}
                 </p>
               </div>
             </div>
 
             {/* 礼物积分 */}
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-violet-50 dark:bg-violet-950/30 border border-violet-200 dark:border-violet-800">
-              <div className="flex items-center justify-center size-10 rounded-full bg-violet-100 dark:bg-violet-900">
-                <Gift className="size-5 text-violet-600 dark:text-violet-400" />
+            <div className="flex items-center gap-3 p-3 rounded-lg border border-chart-4/25 bg-chart-4/10">
+              <div className="flex items-center justify-center size-10 rounded-full bg-chart-4/15">
+                <Gift className="size-5 text-chart-4" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">{t('points.giftPoints')}</p>
-                <p className="text-xl font-semibold text-violet-700 dark:text-violet-300">
+                <p className="text-xl font-semibold text-chart-4">
                   {balance.gift.toLocaleString()}
                 </p>
               </div>
