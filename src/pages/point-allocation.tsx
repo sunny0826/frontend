@@ -13,12 +13,14 @@ import {
   Send,
   HelpCircle,
   RotateCcw,
+  Info,
 } from "lucide-react";
 import api, { getApiError } from "@/lib/api";
 import {
   inferLabelAvatarUrl,
   normalizeRepoPlatform,
   getDeveloperProfileUrlByPlatform,
+  getRepoUrlByPlatform,
 } from "@/pages/insight/domain/repoPlatform";
 import { OPEN_DIGGER_PLATFORM_LOGO_BASE } from "@/pages/insight/api/constants";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
@@ -63,6 +65,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/app/components/ui/tooltip";
+import {
+  HoverCard,
+  HoverCardTrigger,
+  HoverCardContent,
+} from "@/app/components/ui/hover-card";
 import { toast } from "sonner";
 import { cn } from "@/app/components/ui/utils";
 
@@ -114,6 +121,8 @@ interface PreviewRecipient {
   gitee_login?: string;
   gitlab_login?: string;
   atomgit_login?: string;
+  // Top 3 贡献度仓库
+  top_repos?: { platform: string; repo_name: string; openrank: number }[];
 }
 
 interface PreviewResponse {
@@ -1094,6 +1103,50 @@ export default function PointAllocationPage() {
                         )}
                       </div>
 
+                      {/* Mobile: Top Repos */}
+                      {r.top_repos && r.top_repos.length > 0 && (
+                        <div className="mt-2 rounded-md border border-border bg-muted/30 px-3 py-2">
+                          <p className="text-xs font-semibold text-muted-foreground mb-1">
+                            {t('pointAllocation.topReposTitle')}
+                          </p>
+                          <div className="space-y-1">
+                            {r.top_repos.map((repo, idx) => {
+                              const repoPlatformNorm = normalizeRepoPlatform(repo.platform);
+                              const repoLogo = repoPlatformNorm
+                                ? `${OPEN_DIGGER_PLATFORM_LOGO_BASE}${repoPlatformNorm}.png`
+                                : "";
+                              const repoUrl = getRepoUrlByPlatform(repo.platform, repo.repo_name);
+                              return (
+                                <div key={idx} className="flex items-center justify-between gap-2">
+                                  <a
+                                    href={repoUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    title={repo.repo_name}
+                                    className="inline-flex items-center gap-1.5 min-w-0 text-primary hover:underline"
+                                  >
+                                    {repoLogo && (
+                                      <img
+                                        src={repoLogo}
+                                        alt={repo.platform}
+                                        className="size-3.5 rounded-full object-cover shrink-0"
+                                        onError={(e) => {
+                                          (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                        }}
+                                      />
+                                    )}
+                                    <span className="truncate text-xs">{repo.repo_name}</span>
+                                  </a>
+                                  <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                                    {repo.openrank.toFixed(2)}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
                       <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
                         <div>
                           <p className="text-xs text-muted-foreground">{t('pointAllocation.calculatedPoints')}</p>
@@ -1150,6 +1203,7 @@ export default function PointAllocationPage() {
                       <TableHead>{t('pointAllocation.username')}</TableHead>
                       <TableHead>{t('pointAllocation.status')}</TableHead>
                       <TableHead className="text-right">{t('pointAllocation.contribution')}</TableHead>
+                      <TableHead className="text-center">{t('pointAllocation.topRepos')}</TableHead>
                       <TableHead className="text-right">{t('pointAllocation.calculatedPoints')}</TableHead>
                       <TableHead className="text-right">{t('pointAllocation.adjustedPoints')}</TableHead>
                       <TableHead className="text-center">{t('pointAllocation.action')}</TableHead>
@@ -1207,6 +1261,62 @@ export default function PointAllocationPage() {
                         </TableCell>
                         <TableCell className="text-right">
                           {r.contribution_score.toFixed(2)}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {r.top_repos && r.top_repos.length > 0 ? (
+                            <HoverCard openDelay={150} closeDelay={100}>
+                              <HoverCardTrigger asChild>
+                                <button
+                                  type="button"
+                                  className="inline-flex items-center justify-center rounded-md p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                                >
+                                  <Info className="size-4" />
+                                </button>
+                              </HoverCardTrigger>
+                              <HoverCardContent align="start" className="w-auto max-w-md">
+                                <p className="mb-2 text-xs font-semibold text-muted-foreground">
+                                  {t('pointAllocation.topReposTitle')}
+                                </p>
+                                <div className="space-y-1.5">
+                                  {r.top_repos.map((repo, idx) => {
+                                    const repoPlatformNorm = normalizeRepoPlatform(repo.platform);
+                                    const repoLogo = repoPlatformNorm
+                                      ? `${OPEN_DIGGER_PLATFORM_LOGO_BASE}${repoPlatformNorm}.png`
+                                      : "";
+                                    const repoUrl = getRepoUrlByPlatform(repo.platform, repo.repo_name);
+                                    return (
+                                      <div key={idx} className="flex items-center justify-between gap-2">
+                                        <a
+                                          href={repoUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          title={repo.repo_name}
+                                          className="inline-flex items-center gap-1.5 min-w-0 text-primary hover:underline"
+                                        >
+                                          {repoLogo && (
+                                            <img
+                                              src={repoLogo}
+                                              alt={repo.platform}
+                                              className="size-3.5 rounded-full object-cover shrink-0"
+                                              onError={(e) => {
+                                                (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                              }}
+                                            />
+                                          )}
+                                          <span className="truncate text-sm">{repo.repo_name}</span>
+                                        </a>
+                                        <span className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground">
+                                          {repo.openrank.toFixed(2)}
+                                        </span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </HoverCardContent>
+                            </HoverCard>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
                         </TableCell>
                         <TableCell className="text-right">
                           {(computedBasePoints.get(getRecipientKey(r)) ?? 0).toLocaleString()}

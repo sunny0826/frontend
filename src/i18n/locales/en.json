@@ -769,6 +769,8 @@
     "username": "Username",
     "status": "Status",
     "contribution": "Contribution",
+    "topRepos": "Details",
+    "topReposTitle": "Top 3 Repos by Contribution",
     "calculatedPoints": "Calculated Points",
     "adjustedPoints": "Adjusted Points",
     "action": "Action",

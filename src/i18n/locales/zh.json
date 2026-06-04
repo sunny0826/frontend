@@ -769,6 +769,8 @@
     "username": "用户名",
     "status": "状态",
     "contribution": "贡献度",
+    "topRepos": "详情",
+    "topReposTitle": "贡献度 Top 3 仓库",
     "calculatedPoints": "计算积分",
     "adjustedPoints": "调整后积分",
     "action": "操作",
