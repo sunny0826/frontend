@@ -747,7 +747,6 @@
     "selectedTags": "Selected Labels",
     "removeTag": "Remove {{name}} label",
     "operation": "Operation",
-    "step3Title": "Step 3 - Select Time Range",
     "startMonth": "Start Month",
     "endMonth": "End Month",
     "previewButton": "Preview Allocation Results",
@@ -803,7 +802,13 @@
       "or": "Union: add projects from this label to the previous result",
       "not": "Exclusion: remove projects of this label from the previous result"
     },
-    "expressionPreview": "Expression"
+    "expressionPreview": "Expression",
+    "step3Title": "Step 3 - Developer Limit",
+    "step4Title": "Step 4 - Select Time Range",
+    "topNLabel": "Number of Developers",
+    "topNPlaceholder": "Leave empty or -1 for all",
+    "topNHint": "Up to 300,000 records can be returned.",
+    "topNAll": "All"
   },
   "profileEdit": {
     "title": "Edit Profile",

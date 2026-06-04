@@ -14,6 +14,7 @@ import {
   HelpCircle,
   RotateCcw,
   Info,
+  Users,
 } from "lucide-react";
 import api, { getApiError } from "@/lib/api";
 import {
@@ -268,6 +269,9 @@ export default function PointAllocationPage() {
   const [startMonth, setStartMonth] = useState(defaults.start);
   const [endMonth, setEndMonth] = useState(defaults.end);
 
+  // Step 4 - Developer limit (Top N)
+  const [topN, setTopN] = useState<string>("");
+
   // Preview
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewData, setPreviewData] = useState<PreviewResponse | null>(null);
@@ -483,6 +487,7 @@ export default function PointAllocationPage() {
   // --- Actions ---
   /** Preview 请求体：仅包含范围参数，不再发送计算参数 */
   function buildPreviewBody() {
+    const topNValue = topN.trim() === "" ? -1 : Number(topN);
     return {
       source_selector: selectedPool!.source_selector,
       project_scope: {
@@ -493,6 +498,7 @@ export default function PointAllocationPage() {
       user_scope: null,
       start_month: startMonth + "-01",
       end_month: endMonth + "-01",
+      top_n: isNaN(topNValue) ? -1 : topNValue,
     };
   }
 
@@ -845,12 +851,39 @@ export default function PointAllocationPage() {
         </CardContent>
       </Card>
 
-      {/* Step 3 - 时间区间 */}
+      {/* Step 3 - 开发者数量限制 */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Users className="size-5" />
+            {t('pointAllocation.step3Title')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="space-y-2">
+            <Label>{t('pointAllocation.topNLabel')}</Label>
+            <Input
+              type="number"
+              min={-1}
+              inputMode="numeric"
+              placeholder={t('pointAllocation.topNPlaceholder')}
+              value={topN}
+              onChange={(e) => { setTopN(e.target.value); setPreviewData(null); }}
+              className="max-w-xs"
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {t('pointAllocation.topNHint')}
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Step 4 - 时间区间 */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <Calendar className="size-5" />
-            {t('pointAllocation.step3Title')}
+            {t('pointAllocation.step4Title')}
           </CardTitle>
         </CardHeader>
         <CardContent>

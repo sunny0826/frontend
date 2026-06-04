@@ -747,7 +747,6 @@
     "selectedTags": "已选标签",
     "removeTag": "移除 {{name}} 标签",
     "operation": "运算方式",
-    "step3Title": "步骤 3 - 选择时间区间",
     "startMonth": "开始月份",
     "endMonth": "结束月份",
     "previewButton": "预览分配结果",
@@ -803,7 +802,13 @@
       "or": "并集：将此标签的项目合并到前面结果中",
       "not": "差集：从前面结果中排除属于此标签的项目"
     },
-    "expressionPreview": "运算表达式"
+    "expressionPreview": "运算表达式",
+    "step3Title": "步骤 3 - 开发者数量限制",
+    "step4Title": "步骤 4 - 选择时间区间",
+    "topNLabel": "返回开发者数量",
+    "topNPlaceholder": "留空或填 -1 表示全部",
+    "topNHint": "最多返回 30 万条记录。",
+    "topNAll": "全部"
   },
   "profileEdit": {
     "title": "编辑资料",
