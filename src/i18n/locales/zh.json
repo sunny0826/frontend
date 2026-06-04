@@ -790,7 +790,18 @@
     "loadPoolFailed": "获取积分池失败",
     "prevPage": "上一页",
     "nextPage": "下一页",
-    "paginationInfo": "第 {{start}}-{{end}} 位 / 共 {{total}} 位"
+    "paginationInfo": "第 {{start}}-{{end}} 位 / 共 {{total}} 位",
+    "operator": {
+      "and": "与",
+      "or": "或",
+      "not": "非"
+    },
+    "operatorHint": {
+      "and": "交集：仅保留同时属于前面结果和此标签的项目",
+      "or": "并集：将此标签的项目合并到前面结果中",
+      "not": "差集：从前面结果中排除属于此标签的项目"
+    },
+    "expressionPreview": "运算表达式"
   },
   "profileEdit": {
     "title": "编辑资料",

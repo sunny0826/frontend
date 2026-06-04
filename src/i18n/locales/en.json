@@ -790,7 +790,18 @@
     "loadPoolFailed": "Failed to load point pools",
     "prevPage": "Previous",
     "nextPage": "Next",
-    "paginationInfo": "{{start}}-{{end}} of {{total}}"
+    "paginationInfo": "{{start}}-{{end}} of {{total}}",
+    "operator": {
+      "and": "AND",
+      "or": "OR",
+      "not": "NOT"
+    },
+    "operatorHint": {
+      "and": "Intersection: keep only projects in both the previous result and this label",
+      "or": "Union: add projects from this label to the previous result",
+      "not": "Exclusion: remove projects of this label from the previous result"
+    },
+    "expressionPreview": "Expression"
   },
   "profileEdit": {
     "title": "Edit Profile",

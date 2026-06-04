@@ -64,6 +64,7 @@ import {
   TooltipTrigger,
 } from "@/app/components/ui/tooltip";
 import { toast } from "sonner";
+import { cn } from "@/app/components/ui/utils";
 
 const PREVIEW_PAGE_SIZE = 10;
 
@@ -136,7 +137,7 @@ interface AllocationItem {
 
 interface ExecuteRequestBody {
   source_selector: SourceSelector;
-  project_scope: { tags: string[]; operation: string };
+  project_scope: { tags: string[]; operators?: string[]; operation: string };
   user_scope: null;
   start_month: string;
   end_month: string;
@@ -215,7 +216,29 @@ export default function PointAllocationPage() {
       },
     ];
   });
-  const projectOperation = "AND";
+  const [tagOperators, setTagOperators] = useState<string[]>([]);
+
+  const updateOperator = (index: number, op: string) => {
+    setTagOperators((prev) => {
+      const next = [...prev];
+      next[index] = op;
+      return next;
+    });
+    setPreviewData(null);
+  };
+
+  const buildExpressionPreview = (tags: TagItem[], operators: string[]): string => {
+    if (tags.length === 0) return "";
+    if (tags.length === 1) return tags[0].name;
+
+    const opSymbols: Record<string, string> = { AND: "∩", OR: "∪", NOT: "-" };
+    let expr = tags[0].name;
+    for (let i = 0; i < operators.length; i++) {
+      const symbol = opSymbols[operators[i]] || "∪";
+      expr = `(${expr} ${symbol} ${tags[i + 1]?.name ?? ""})`;
+    }
+    return expr;
+  };
 
   // Strip preload params from the URL once consumed, so that refreshing or
   // navigating back does not re-add the same tag.
@@ -455,7 +478,8 @@ export default function PointAllocationPage() {
       source_selector: selectedPool!.source_selector,
       project_scope: {
         tags: selectedTags.map((t) => t.id),
-        operation: selectedTags.length >= 2 ? projectOperation : "AND",
+        operators: tagOperators.length > 0 ? tagOperators : undefined,
+        operation: "OR",
       },
       user_scope: null,
       start_month: startMonth + "-01",
@@ -483,7 +507,8 @@ export default function PointAllocationPage() {
       source_selector: selectedPool!.source_selector,
       project_scope: {
         tags: selectedTags.map((t) => t.id),
-        operation: selectedTags.length >= 2 ? projectOperation : "AND",
+        operators: tagOperators.length > 0 ? tagOperators : undefined,
+        operation: "OR",
       },
       user_scope: null,
       start_month: startMonth + "-01",
@@ -659,45 +684,86 @@ export default function PointAllocationPage() {
           {selectedTags.length > 0 && (
             <div className="space-y-2">
               <Label>{t('pointAllocation.selectedTags')}</Label>
-              <div className="flex flex-wrap gap-2">
-                {selectedTags.map((tag) => {
+              <div className="flex flex-col gap-2">
+                {selectedTags.map((tag, index) => {
                   const labelLogo = inferLabelAvatarUrl(tag.id);
                   return (
-                    <div
-                      key={tag.id}
-                      className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 shadow-sm"
-                    >
-                      {labelLogo && (
-                        <img
-                          src={labelLogo}
-                          alt={tag.name}
-                          className="size-6 rounded-full object-cover shrink-0"
-                          onError={(e) => {
-                            (e.currentTarget as HTMLImageElement).style.display = 'none';
-                          }}
-                        />
+                    <div key={tag.id} className="flex items-center gap-2">
+                      {/* 运算符按钮（第2个标签起） */}
+                      {index > 0 && (
+                        <div className="inline-flex rounded-md border text-xs">
+                          {(["AND", "OR", "NOT"] as const).map((op) => (
+                            <Tooltip key={op}>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  tabIndex={-1}
+                                  className={cn(
+                                    "px-2 py-1 transition-colors first:rounded-l-md last:rounded-r-md",
+                                    tagOperators[index - 1] === op
+                                      ? "bg-primary text-primary-foreground"
+                                      : "hover:bg-muted"
+                                  )}
+                                  onClick={() => updateOperator(index - 1, op)}
+                                >
+                                  {t(`pointAllocation.operator.${op.toLowerCase()}`)}
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {t(`pointAllocation.operatorHint.${op.toLowerCase()}`)}
+                              </TooltipContent>
+                            </Tooltip>
+                          ))}
+                        </div>
                       )}
-                      <span className="text-base font-semibold leading-none">{tag.name}</span>
-                      {tag.type && (
-                        <Badge variant="outline" className="text-xs">
-                          {tag.type}
-                        </Badge>
-                      )}
-                      <button
-                        type="button"
-                        aria-label={t('pointAllocation.removeTag', { name: tag.name })}
-                        className="ml-1 inline-flex size-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                        onClick={() => {
-                          setSelectedTags((prev) => prev.filter((t) => t.id !== tag.id));
-                          setPreviewData(null);
-                        }}
+                      {/* 标签徽章 */}
+                      <div
+                        className="flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/5 px-2.5 py-1.5 shadow-sm"
                       >
-                        <X className="size-3.5" />
-                      </button>
+                        {labelLogo && (
+                          <img
+                            src={labelLogo}
+                            alt={tag.name}
+                            className="size-5 rounded-full object-cover shrink-0"
+                            onError={(e) => {
+                              (e.currentTarget as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                        )}
+                        <span className="text-sm font-semibold leading-none">{tag.name}</span>
+                        {tag.type && (
+                          <Badge variant="outline" className="text-[11px] px-1.5 py-0">
+                            {tag.type}
+                          </Badge>
+                        )}
+                        <button
+                          type="button"
+                          aria-label={t('pointAllocation.removeTag', { name: tag.name })}
+                          className="ml-0.5 inline-flex size-6 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                          onClick={() => {
+                            setSelectedTags((prev) => prev.filter((t) => t.id !== tag.id));
+                            setTagOperators((prev) => {
+                              if (index === 0) {
+                                return prev.slice(1);
+                              } else {
+                                return prev.filter((_, i) => i !== index - 1);
+                              }
+                            });
+                            setPreviewData(null);
+                          }}
+                        >
+                          <X className="size-3" />
+                        </button>
+                      </div>
                     </div>
                   );
                 })}
               </div>
+              {selectedTags.length >= 2 && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  {buildExpressionPreview(selectedTags, tagOperators)}
+                </p>
+              )}
             </div>
           )}
 
@@ -728,6 +794,9 @@ export default function PointAllocationPage() {
                     disabled={alreadyAdded}
                     onClick={() => {
                       setSelectedTags((prev) => [...prev, tag]);
+                      if (selectedTags.length >= 1) {
+                        setTagOperators((prev) => [...prev, "OR"]);
+                      }
                       setTagSearchQuery("");
                       setTagSearchResults([]);
                       setPreviewData(null);
